@@ -3,9 +3,15 @@ import Logger from "./Logger";
 import { client } from "../../index";
 import { DiscordClient } from "./DiscordClient";
 import { commandsFolderName, ownerId } from "../../config";
-import { CommandTypes, RegisterCommandOptions, RegisterTypes } from "../types/Command";
 import {
-    APIInteractionGuildMember, ApplicationCommandType,
+    CommandModule,
+    CommandTypes,
+    RegisterCommandOptions,
+    RegisterTypes,
+} from "../types/Command";
+import {
+    APIInteractionGuildMember,
+    ApplicationCommandType,
     Channel,
     Collection,
     Guild,
@@ -22,65 +28,60 @@ export async function registerCommands(client: DiscordClient, options: RegisterC
 }
 
 async function getCommandModules(client: DiscordClient): Promise<void> {
-    let commandPaths: string[] = await glob(`**/${commandsFolderName}/**/**/*.js`);
-    for (const command of commandPaths) {
-        let importPath: string = `../..${command.replace(/^dist[\\\/]|\\/g, "/")}`;
+    const commandPaths: string[] = await glob(`**/${commandsFolderName}/**/**/*.js`);
+
+    for (const commandPath of commandPaths) {
+        const importPath: string = `../..${commandPath.replace(/^dist[\\\/]|\\/g, "/")}`;
+
         try {
-            let module = (await import(importPath)).default;
+            const module: CommandModule = (await import(importPath)).default;
+
             if (module.type === CommandTypes.SlashCommand && (!module.data.name || !module.data.description)) {
-                Logger.error(`No name or description for command at ${importPath} set`);
-                return;
+                return Logger.error(`No name or description for command at ${importPath} set.`);
             }
-            if (module.type === CommandTypes.SlashCommand) {
-                if (module.disabled) continue;
-                client.commands.slash.set(module.data.name, module);
-            } else if (module.type === CommandTypes.PrefixCommand) {
-                if (module.disabled) continue;
-                client.commands.prefix.set(module.name, module);
-                if (module.aliases) {
-                    for (const alias of module.aliases) {
-                        client.commands.aliases.prefix.set(alias, module.name);
-                    }
+
+            if (module.disabled) {
+                continue;
+            }
+
+            if (module.type === CommandTypes.SlashCommand) client.commands[module.type].set(module.data.name, module);
+            else if (module.type === CommandTypes.ContextMenu) client.commands[module.type].set(module.data.name, module);
+            else if (module.type === CommandTypes.PrefixCommand) client.commands[module.type].set(module.name, module);
+            else if (module.type === CommandTypes.MessageCommand) client.commands[module.type].set(module.name, module);
+            else if (module.type === CommandTypes.PingCommand) client.commands[module.type].set(module.name, module);
+
+            if ((
+                module.type === CommandTypes.PrefixCommand
+                || module.type === CommandTypes.MessageCommand
+                || module.type === CommandTypes.PingCommand
+            ) && module.aliases
+            ) {
+                for (const alias of module.aliases) {
+                    client.commands.aliases[module.type].set(alias, module.name);
                 }
-            } else if (module.type === CommandTypes.MessageCommand) {
-                if (module.disabled) continue;
-                client.commands.message.set(module.name, module);
-                if (module.aliases) {
-                    for (const alias of module.aliases) {
-                        client.commands.aliases.message.set(alias, module.name);
-                    }
-                }
-            } else if (module.type === CommandTypes.PingCommand) {
-                if (module.disabled) continue;
-                client.commands.ping.set(module.name, module);
-                if (module.aliases) {
-                    for (const alias of module.aliases) {
-                        client.commands.aliases.ping.set(alias, module.name);
-                    }
-                }
-            } else if (module.type === CommandTypes.ContextMenu) {
-                if (module.disabled) continue;
-                client.commands.context.set(module.data.name, module);
             }
         } catch (err) {
             Logger.error(`Failed to load command at ${importPath}`, err);
         }
-    }
-    if (client.commands.slash.size > 100) {
-        Logger.error("You can only register 100 Slash Commands.");
-        process.exit();
-    }
-    if ((client.commands.context.filter(
-        command => command.data.type === ApplicationCommandType.Message)).size > 5
-    ) {
-        Logger.error("You can only register 5 Message Context Menus.");
-        process.exit();
-    }
-    if ((client.commands.context.filter(
-        command => command.data.type === ApplicationCommandType.User)).size > 5
-    ) {
-        Logger.error("You can only register 5 Message User Menus.");
-        process.exit();
+
+        if (client.commands.slash.size > 100) {
+            Logger.error("You can only register 100 Slash Commands.");
+            process.exit();
+        }
+
+        if ((client.commands.context.filter(
+            command => command.data.type === ApplicationCommandType.Message)).size > 5
+        ) {
+            Logger.error("You can only register 5 Message Context Menus.");
+            process.exit();
+        }
+
+        if ((client.commands.context.filter(
+            command => command.data.type === ApplicationCommandType.User)).size > 5
+        ) {
+            Logger.error("You can only register 5 Message User Menus.");
+            process.exit();
+        }
     }
 }
 
@@ -103,59 +104,74 @@ async function deploySlashCommands(client: DiscordClient): Promise<void> {
 }
 
 async function uploadSlashCommands(type: RegisterTypes, commands: Array<any>): Promise<void> {
-    if (!process.env.CLIENT_TOKEN) return Logger.error("No TOKEN set!");
-    if (!process.env.CLIENT_ID) return Logger.error("No CLIENT_ID set!");
-    if (RegisterTypes.Guild && !process.env.GUILD_ID) return Logger.error("No GUILD_ID set!");
+    if (!process.env.CLIENT_TOKEN) {
+        return Logger.error("No process.env.TOKEN set.");
+    }
+
+    if (!process.env.CLIENT_ID) {
+        return Logger.error("No process.env.CLIENT_ID set.");
+    }
+
+    if (RegisterTypes.Guild && !process.env.GUILD_ID) {
+        return Logger.error("No process.env.GUILD_ID set.");
+    }
 
     const rest: REST = new REST({ version: "10" }).setToken(process.env.CLIENT_TOKEN);
     try {
-        Logger.log(`Started refreshing ${commands.length} application commands`);
+        Logger.log(`Started refreshing ${commands.length} application commands.`);
+
         await rest.put(
             Routes[type](process.env.CLIENT_ID, process.env.GUILD_ID), { body: commands }
         );
-        Logger.log(`Successfully reloaded ${commands.length} application commands`);
+
+        Logger.log(`Successfully reloaded ${commands.length} application commands.`);
     } catch (err) {
-        Logger.error("Error in uploadCommands", err);
+        Logger.error("Error while uploading slash commands.", err);
     }
 }
 
 export async function deleteCommands(commandIds: string[], type: RegisterTypes): Promise<void> {
-    if (!process.env.CLIENT_ID) return Logger.error("No CLIENT_ID set!");
-    if (RegisterTypes.Guild && !process.env.GUILD_ID) return Logger.error("No GUILD_ID set!");
-
-    const rest: REST = new REST({ version: "10" }).setToken(process.env.CLIENT_TOKEN);
-    if (type === RegisterTypes.Guild) {
-        for (const commandId of commandIds) {
-            await rest.delete(Routes.applicationGuildCommand(process.env.CLIENT_ID, process.env.GUILD_ID, commandId))
-                .then(() => Logger.log(`Successfully deleted guild command: ${commandId}`))
-                .catch(console.error);
-        }
+    if (!process.env.CLIENT_ID) {
+        return Logger.error("No process.env.CLIENT_ID set!");
     }
 
-    if (type === RegisterTypes.Global) {
-        for (const commandId of commandIds) {
-            await rest.delete(Routes.applicationCommand(process.env.CLIENT_ID, commandId))
-                .then(() => Logger.log(`Successfully deleted global command: ${commandId}`))
-                .catch(console.error);
-        }
+    if (RegisterTypes.Guild && !process.env.GUILD_ID) {
+        return Logger.error("No process.env.GUILD_ID set!");
+    }
+
+    const rest: REST = new REST({ version: "10" }).setToken(process.env.CLIENT_TOKEN);
+    const route = type === RegisterTypes.Guild
+        ? Routes.applicationGuildCommand(process.env.CLIENT_ID, process.env.GUILD_ID || "", "")
+        : Routes.applicationCommand(process.env.CLIENT_ID, "");
+
+    for (const commandId of commandIds) {
+        await rest.delete(`${route}${commandId}`)
+            .then(() => Logger.log(`Successfully deleted ${type === RegisterTypes.Guild ? "guild" : "global"} command: ${commandId}`))
+            .catch(console.error);
     }
 }
 
 export async function deleteAllCommands(type: RegisterTypes): Promise<void> {
-    if (!process.env.CLIENT_ID) return Logger.error("No CLIENT_ID set!");
-    if (RegisterTypes.Guild && !process.env.GUILD_ID) return Logger.error("No GUILD_ID set!");
-
-    const rest: REST = new REST({ version: "10" }).setToken(process.env.CLIENT_TOKEN);
-    if (type === RegisterTypes.Guild) {
-        await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), { body: [] })
-            .then(() => Logger.log("Successfully deleted all guild commands"))
-            .catch(console.error);
+    if (!process.env.CLIENT_ID) {
+        Logger.error("No process.env.CLIENT_ID set!");
+        return;
     }
 
-    if (type === RegisterTypes.Global) {
-        await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: [] })
-            .then(() => Logger.log("Successfully deleted all global commands"))
-            .catch(console.error);
+    if (type === RegisterTypes.Guild && !process.env.GUILD_ID) {
+        Logger.error("No process.env.GUILD_ID set!");
+        return;
+    }
+
+    const rest: REST = new REST({ version: "10" }).setToken(process.env.CLIENT_TOKEN);
+    const route = type === RegisterTypes.Guild
+        ? Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID || "")
+        : Routes.applicationCommands(process.env.CLIENT_ID);
+
+    try {
+        await rest.put(route, { body: [] });
+        Logger.log(`Successfully deleted all ${type === RegisterTypes.Guild ? "guild" : "global"} commands`);
+    } catch (err) {
+        Logger.error(`Error deleting ${type === RegisterTypes.Guild ? "guild" : "global"} commands`, err);
     }
 }
 
@@ -181,25 +197,18 @@ export async function isAllowedCommand(
         || (command.nsfw && channel && !(channel as TextChannel).nsfw);
 }
 
-export async function hasCooldown(userId: string, commandName: string, cooldown: number | undefined): Promise<boolean | number> {
-    if (cooldown) {
-        let currentTimestamp: number = Math.floor(Date.now() / 1000);
-        let commandCollection: Collection<string, number> | undefined = client.cooldowns.user.get(commandName);
+export function hasCooldown(userId: string, commandName: string, cooldown: number | undefined): boolean | number {
+    if (!cooldown) return true;
 
-        if (!commandCollection) {
-            client.cooldowns.user.set(commandName, new Collection<string, number>());
-            commandCollection = client.cooldowns.user.get(commandName);
-        }
+    const currentTimestamp: number = Math.floor(Date.now() / 1000);
+    let commandCollection: Collection<string, number> = client.cooldowns.user.get(commandName) || new Collection<string, number>();
+    client.cooldowns.user.set(commandName, commandCollection);
 
-        let userCooldown: number | undefined = commandCollection?.get(userId);
-        if (userCooldown) {
-            if (currentTimestamp < userCooldown) {
-                return userCooldown - currentTimestamp;
-            }
-        }
-
-        commandCollection?.set(userId, currentTimestamp + cooldown);
-        return true;
+    const userCooldown: number | undefined = commandCollection.get(userId);
+    if (userCooldown && currentTimestamp < userCooldown) {
+        return userCooldown - currentTimestamp;
     }
+
+    commandCollection.set(userId, currentTimestamp + cooldown);
     return true;
 }

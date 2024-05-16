@@ -1,89 +1,61 @@
 import { client } from "../../index";
 import { Message } from "discord.js";
-import { getCommandOnCooldownEmbed, prefix } from "../../config";
 import { hasCooldown, isAllowedCommand } from "./handleCommands";
-import { MessageCommandModule, PingCommandModule, PrefixCommandModule } from "../types/Command";
+import { getCommandOnCooldownEmbed, prefix } from "../../config";
+import { CommandTypes, MessageCommandModule, PingCommandModule, PrefixCommandModule } from "../types/Command";
 
 export async function handleMessageCommands(message: Message): Promise<void> {
     if (!client.user) return;
-    if (message.content.startsWith(prefix)) await handlePrefixCommand(message);
-    else if (message.content.startsWith(`<@${client.user.id}>`)) await handlePingCommand(message);
-    else await handleMessageCommand(message);
+    if (message.content.startsWith(prefix)) await handleCommand(CommandTypes.PrefixCommand, message);
+    else if (message.content.startsWith(`<@${client.user.id}>`)) await handleCommand(CommandTypes.PingCommand, message);
+    else await handleCommand(CommandTypes.MessageCommand, message);
 }
 
-async function handlePrefixCommand(message: Message): Promise<void> {
-    const matches = prefix.match(/\s/g);
-    const whitespaceAmount: number = matches ? matches.length : 0;
-    const messageCommand: string = message.content.split(" ")[whitespaceAmount].replace(prefix, "");
-
-    let command: PrefixCommandModule | string | undefined =
-        client.commands.prefix.get(messageCommand)
-        || client.commands.aliases.prefix.get(messageCommand);
-
-    if (typeof command === "string") command = client.commands.prefix.get(command);
-
-    if (command) {
-        if (command.permissions && !hasPermissions(message.member, command.permissions)) return;
-        const cooldown: boolean | number = await hasCooldown(message.author.id, command.name, command.cooldown);
-        if (typeof cooldown === "number") {
-            await message.reply({
-                embeds: [getCommandOnCooldownEmbed(cooldown, command.name)]
-            });
-            return;
-        }
-
-        message.content.replace(`${prefix}${command.name} `, "");
-        if (!await isAllowedCommand(command, message.member?.user, message.guild, message.channel, message.member))
-            await command.execute(message);
-    }
-}
-
-async function handlePingCommand(message: Message): Promise<void> {
+async function handleCommand(
+    type: CommandTypes.PrefixCommand
+        | CommandTypes.PingCommand
+        | CommandTypes.MessageCommand,
+    message: Message
+): Promise<void> {
     if (!client.user) return;
+    let commandName: string = "";
 
-    const messageCommand: string = message.content.split(" ")[1].replace(/ /g, "");
-    let command: PingCommandModule | string | undefined =
-        client.commands.ping.get(messageCommand)
-        || client.commands.aliases.ping.get(messageCommand);
-
-    if (typeof command === "string") command = client.commands.ping.get(command);
-
-    if (command) {
-        if (command.permissions && !hasPermissions(message.member, command.permissions)) return;
-        const cooldown: boolean | number = await hasCooldown(message.author.id, command.name, command.cooldown);
-        if (typeof cooldown === "number") {
-            await message.reply({
-                embeds: [getCommandOnCooldownEmbed(cooldown, command.name)]
-            });
-            return;
-        }
-
-        message.content = message.content.replace(`<@${client.user.id}> ${command.name} `, "");
-        if (!await isAllowedCommand(command, message.member?.user, message.guild, message.channel, message.member))
-            await command.execute(message);
+    if (type === CommandTypes.PrefixCommand) {
+        const matches = prefix.match(/\s/g);
+        const whitespaceAmount: number = matches ? matches.length : 0;
+        commandName = message.content.split(" ")[whitespaceAmount].replace(prefix, "");
+        message.content = message.content.replace(`${prefix}${commandName} `, "");
     }
-}
 
-async function handleMessageCommand(message: Message): Promise<void> {
-    const messageCommand: string = message.content.split(" ")[0];
-    let command: MessageCommandModule | string | undefined =
-        client.commands.message.get(messageCommand)
-        || client.commands.aliases.message.get(messageCommand);
+    else if (type === CommandTypes.PingCommand) {
+        commandName = message.content.split(" ")[1].replace(/ /g, "");
+        message.content = message.content.replace(`<@${client.user.id}> ${commandName} `, "");
+    }
 
-    if (typeof command === "string") command = client.commands.message.get(command);
+    else if (type === CommandTypes.MessageCommand) {
+        commandName = message.content.split(" ")[0];
+    }
 
-    if (command) {
-        if (command.permissions && !hasPermissions(message.member, command.permissions)) return;
-        const cooldown: boolean | number = await hasCooldown(message.author.id, command.name, command.cooldown);
+    let commandModule: PrefixCommandModule | PingCommandModule | MessageCommandModule | string | undefined =
+        client.commands[type].get(commandName) || client.commands.aliases[type].get(commandName);
+    if (typeof commandModule === "string") commandModule = client.commands[type].get(commandModule);
+
+    if (commandModule) {
+        if (commandModule.permissions && !hasPermissions(message.member, commandModule.permissions)) {
+            return;
+        }
+
+        const cooldown: number | boolean = hasCooldown(message.author.id, commandModule.name, commandModule.cooldown);
         if (typeof cooldown === "number") {
             await message.reply({
-                embeds: [getCommandOnCooldownEmbed(cooldown, command.name)]
+                embeds: [getCommandOnCooldownEmbed(cooldown, commandModule.name)]
             });
             return;
         }
 
-        if (!await isAllowedCommand(command, message.member?.user, message.guild, message.channel, message.member))
-            await command.execute(message);
+        if (!await isAllowedCommand(commandModule, message.member?.user, message.guild, message.channel, message.member)) {
+            await commandModule.execute(message);
+        }
     }
 }
 

@@ -8,11 +8,11 @@ import {
 } from "discord.js";
 
 export enum CommandTypes {
-    SlashCommand = "SlashCommand",
-    PrefixCommand = "PrefixCommand",
-    MessageCommand = "MessageCommand",
-    PingCommand = "PingCommand",
-    ContextMenu = "ContextMenu"
+    SlashCommand = "slash",
+    PrefixCommand = "prefix",
+    MessageCommand = "message",
+    PingCommand = "ping",
+    ContextMenu = "context"
 }
 
 export enum RegisterTypes {
@@ -40,6 +40,8 @@ export interface CommandCollectionsAliases {
 export interface CooldownCollections {
     user: Collection<string, Collection<string, number>>;
 }
+
+export type CommandModule = SlashCommandModule | PrefixCommandModule | MessageCommandModule | PingCommandModule | ContextMenuCommandModule;
 
 interface BaseCommandModule {
     cooldown?: number;

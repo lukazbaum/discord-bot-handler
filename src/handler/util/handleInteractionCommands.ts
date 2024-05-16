@@ -1,70 +1,46 @@
 import Logger from "./Logger";
 import { client } from "../../index";
 import { hasCooldown, isAllowedCommand } from "./handleCommands";
-import { ContextMenuCommandModule, SlashCommandModule } from "../types/Command";
+import { CommandTypes, ContextMenuCommandModule, SlashCommandModule } from "../types/Command";
 import { getCommandNotAllowedEmbed, getCommandOnCooldownEmbed } from "../../config";
-import {
-    AutocompleteInteraction,
-    CommandInteraction,
-    ContextMenuCommandInteraction,
-    Interaction
-} from "discord.js";
+import { AutocompleteInteraction, CommandInteraction, ContextMenuCommandInteraction, Interaction } from "discord.js";
 
 export async function handleInteractionCommands(interaction: Interaction): Promise<void> {
-    if (interaction.isChatInputCommand()) await handleSlashCommands(interaction);
-    else if (interaction.isContextMenuCommand()) await handleContextMenu(interaction);
+    if (interaction.isChatInputCommand()) await handleCommand(CommandTypes.SlashCommand, interaction);
+    else if (interaction.isContextMenuCommand()) await handleCommand(CommandTypes.ContextMenu, interaction);
     else if (interaction.isAutocomplete()) await handleAutocomplete(interaction);
 }
 
-async function handleSlashCommands(interaction: CommandInteraction): Promise<void> {
-    const command: SlashCommandModule | undefined = client.commands.slash.get(interaction.commandName);
-    if (!command) return Logger.error(`No command matching ${interaction.commandName} was found.`);
+async function handleCommand(
+    type: CommandTypes.SlashCommand | CommandTypes.ContextMenu,
+    interaction: CommandInteraction | ContextMenuCommandInteraction
+): Promise<void> {
+    const commandModule: SlashCommandModule | ContextMenuCommandModule | undefined = client.commands[type].get(interaction.commandName);
+    if (!commandModule) {
+        return Logger.error(`No command matching ${interaction.commandName} was found.`);
+    }
 
-    const cooldown: boolean | number = await hasCooldown(interaction.user.id, command.data.name, command.cooldown);
+    const cooldown: boolean | number = hasCooldown(interaction.user.id, commandModule.data.name, commandModule.cooldown);
     if (typeof cooldown === "number") {
         await interaction.reply({
-            embeds: [getCommandOnCooldownEmbed(cooldown, command.data.name)],
+            embeds: [getCommandOnCooldownEmbed(cooldown, commandModule.data.name)],
             ephemeral: true
         });
         return;
     }
 
     if (
-        await isAllowedCommand(command, interaction.user, interaction.guild, interaction.channel, interaction.member)
+        await isAllowedCommand(commandModule, interaction.user, interaction.guild, interaction.channel, interaction.member)
     ) {
-        await interaction.reply({ embeds: [getCommandNotAllowedEmbed(interaction as Interaction)], ephemeral: true });
-        return;
-    }
-
-    try {
-        await command.execute(interaction);
-    } catch (err) {
-        return Logger.error(`Error executing ${interaction.commandName}`, err);
-    }
-}
-
-async function handleContextMenu(interaction: ContextMenuCommandInteraction): Promise<void> {
-    const command: ContextMenuCommandModule | undefined = client.commands.context.get(interaction.commandName);
-    if (!command) return Logger.error(`No command matching ${interaction.commandName} was found.`);
-
-    const cooldown: boolean | number = await hasCooldown(interaction.user.id, command.data.name, command.cooldown);
-    if (typeof cooldown === "number") {
         await interaction.reply({
-            embeds: [getCommandOnCooldownEmbed(cooldown, command.data.name)],
+            embeds: [getCommandNotAllowedEmbed(interaction as Interaction)],
             ephemeral: true
         });
         return;
     }
 
-    if (
-        await isAllowedCommand(command, interaction.user, interaction.guild, interaction.channel, interaction.member)
-    ) {
-        await interaction.reply({ embeds: [getCommandNotAllowedEmbed(interaction as Interaction)], ephemeral: true });
-        return;
-    }
-
     try {
-        await command.execute(interaction);
+        await commandModule.execute(interaction as any);
     } catch (err) {
         return Logger.error(`Error executing ${interaction.commandName}`, err);
     }
@@ -72,8 +48,13 @@ async function handleContextMenu(interaction: ContextMenuCommandInteraction): Pr
 
 async function handleAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
     const command: SlashCommandModule | undefined = client.commands.slash.get(interaction.commandName);
-    if (!command) return Logger.error(`No command matching ${interaction.commandName} was found.`);
-    if (!command.autocomplete) return Logger.error(`No autocomplete in ${interaction.commandName} was found.`)
+    if (!command) {
+        return Logger.error(`No command matching ${interaction.commandName} was found.`);
+    }
+
+    if (!command.autocomplete) {
+        return Logger.error(`No autocomplete in ${interaction.commandName} was found.`)
+    }
 
     try {
         await command.autocomplete(interaction);
