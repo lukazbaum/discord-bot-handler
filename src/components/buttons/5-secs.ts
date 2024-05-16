@@ -1,20 +1,17 @@
-import { ButtonInteraction, GuildChannel, ChannelType, EmbedBuilder} from "discord.js";
+import {ButtonInteraction, GuildChannel, ChannelType, EmbedBuilder} from "discord.js";
 import { ComponentModule, ComponentTypes } from "../../handler/types/Component";
 
 export = {
-    id: "channel_unlock",
+    id: "5_sec",
     type: ComponentTypes.Button,
     async execute(interaction: ButtonInteraction): Promise<void>{
 	    if (!interaction.channel) return;
             if (interaction.channel.type !== ChannelType.GuildText) return;
-	    await interaction.channel.permissionOverwrites.edit(`1143236724718317673`,{
-		    ViewChannel: true, 
-		    SendMessages: true 
-	    }); 
+            await interaction.channel.setRateLimitPerUser(5)
 	    await interaction.update({
                     embeds: [ new EmbedBuilder()
-                            .setTitle("Channel Unlocked")
-                            .setDescription("Channel allows public messsages again") ],
+                            .setTitle("Slowmode On")
+                            .setDescription("5 Second Slowmode Enabled\n*to disable use ep slowoff*") ],
                     components: []
         })
     }

@@ -2,19 +2,16 @@ import { ButtonInteraction, GuildChannel, ChannelType, EmbedBuilder} from "disco
 import { ComponentModule, ComponentTypes } from "../../handler/types/Component";
 
 export = {
-    id: "channel_unlock",
+    id: "30_sec",
     type: ComponentTypes.Button,
     async execute(interaction: ButtonInteraction): Promise<void>{
 	    if (!interaction.channel) return;
             if (interaction.channel.type !== ChannelType.GuildText) return;
-	    await interaction.channel.permissionOverwrites.edit(`1143236724718317673`,{
-		    ViewChannel: true, 
-		    SendMessages: true 
-	    }); 
+	    await interaction.channel.setRateLimitPerUser(30)
 	    await interaction.update({
                     embeds: [ new EmbedBuilder()
-                            .setTitle("Channel Unlocked")
-                            .setDescription("Channel allows public messsages again") ],
+                            .setTitle("Slowmode On")
+                            .setDescription("30 Second Slowmode Enabled\n*to disable use ep slowoff*") ],
                     components: []
         })
     }
