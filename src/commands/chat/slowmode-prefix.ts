@@ -1,4 +1,7 @@
-import { ChannelManager, 
+import {ActionRowBuilder,
+	ButtonBuilder, 
+	ButtonStyle,
+	ChannelManager, 
 	EmbedBuilder, 
 	Channel, 
 	ChannelType,
@@ -16,8 +19,6 @@ export = {
     ownerOnly: true,
     async execute(message: Message): Promise<void> {
 	if(message.channel.type !== ChannelType.GuildText) return;
-     	if(message.channel.rateLimitPerUser) {
-                message.channel.setRateLimitPerUser(0)
                 let island = await getisland(message.channel.id)
 		let users = [island.user,
 				island.cowner1,
@@ -31,14 +32,42 @@ export = {
                 	if(users[i]) message.channel.permissionOverwrites.edit(users[i], 
 									       {ManageMessages: true})
 		}
-	}
 		let embed1 = new EmbedBuilder()
-			.setTitle("Channel Manager:  Slowmode ")
-                	.setDescription(`Slowmode Has Been Set 
-                                *to re-enable slowmode, use command ep slowoff`)
+			.setTitle("Channel Manager:  Slowmode")
+                	.setDescription(`Slowmode Enabled. Choose Time 
+                                *to disable slowmode, use command ep slowoff*`)
                 	.setColor(`#097969`)
+		
+		 const row: any = new ActionRowBuilder()
+        	.addComponents(
+			new ButtonBuilder()
+                                .setCustomId("2_sec")
+                                .setLabel("2 Secs")
+                                .setStyle(ButtonStyle.Secondary)
+                                .setEmoji("🐢"),
+                	new ButtonBuilder()
+                        	.setCustomId("5_sec")
+                        	.setLabel("5 Secs")
+                        	.setStyle(ButtonStyle.Secondary)
+                        	.setEmoji("🐢"),
+                	new ButtonBuilder()
+                        	.setCustomId("10_sec")
+                        	.setLabel("10 Secs")
+                        	.setStyle(ButtonStyle.Secondary)
+                        	.setEmoji("🐢"),
+			new ButtonBuilder()
+                                .setCustomId("30_sec")
+                                .setLabel("30 Secs")
+                                .setStyle(ButtonStyle.Secondary)
+                                .setEmoji("🐢"),
+			new ButtonBuilder()
+                                .setCustomId("45_sec")
+                                .setLabel("45 Secs")
+                                .setStyle(ButtonStyle.Secondary)
+                                .setEmoji("🐢")
+                )
 
-   		await message.reply({embeds: [embed1]}) 
+   		await message.reply({embeds: [embed1], components: [row]},) 
     }
     
 } as PrefixCommandModule;
