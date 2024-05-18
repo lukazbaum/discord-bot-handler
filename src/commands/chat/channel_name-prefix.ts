@@ -6,6 +6,7 @@ import { EmbedBuilder,
 	GuildChannel, 
 	ChannelType, TextChannel } from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+const emojiRegex = require('emoji-regex');
 
 export = {
     name: "name",
@@ -16,37 +17,40 @@ export = {
     disabled: false, 
     async execute(message: Message): Promise<void> {
 	  if(message.channel.type !== ChannelType.GuildText) return;
-	  let newName = ""
-	  let stringContent = message.content.toString(),
-		  word = "name",
-		  substring = '';
-    	  if(stringContent.indexOf(word)  -1) {
-		  newName = stringContent.substr(stringContent.indexOf(word) + word.length);
-	  }
-
-	  if(Number(newName.length) < 1){
-		  message.reply("Please specify the name")
+	  let newName;
+	  let stringContent = message.content.toString()
+	  newName = stringContent.split("name")
+          if(stringContent.endsWith("name")) {	  
+		  await message.reply("Please specify Channel Name")
 		  return;
 		  }
-	  const regex = new RegExp(/\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu)
-          //const regex = new RegExp(/\p{Emoji}/gu)
-	  let emojiName = regex.exec(newName)
-	  let channelWord = " "
-	  let channelName = " "
-	  if(emojiName !== null) {
-		 channelWord = newName.substring(newName.lastIndexOf(' ') + 1); 
-		 channelName = channelName.concat(emojiName + ' ' + '・' + channelWord)
-		 message.channel.edit({name: channelName})
+	  const regex = emojiRegex();
+	  let channelWord;
+	  let channelName= ""
+	  let emojiName;
+
+	  for (const match of String(newName).matchAll(regex)) {
+		  emojiName = match[0]
+	  }
+
+	  if(emojiName) {
+		 channelWord = String(newName).split(`${emojiName}`)[1].trimStart(); 
+		 channelName = String(channelName).concat(String(emojiName) + '・' + String(channelWord));
+		 await message.channel.edit({name: channelName})
+	  }
+	  if(String(newName).trimStart().startsWith("<")) {
+		  await message.reply("You can only use standard emojis")
+		  return;
 	  }else {
-		  channelWord = newName.substring(newName.lastIndexOf(' ') + 1);
-		  channelName = channelName.concat('・' + channelWord)
-		  message.channel.edit({name: channelName})
+		  channelWord = String(newName).trimStart() 
+		  channelName = String(channelName).concat('・' + channelWord)
+		  await message.channel.edit({name: channelName})
 	  }
 	  let embed = new EmbedBuilder()
                     .setTitle("Channel Name Change")
-                    .setDescription(`channel name has been set
+                    .setDescription(`channel name has been set to ${channelName}
 
-				    *channel names can be changed every 10 minutes only*`)
+				    *channel names can take up to 10 minutes to appear*`)
                     .setColor('#097969')
 	   message.reply({embeds:[embed]})
 	  
