@@ -15,10 +15,12 @@ export = {
                 for (let i = 0;i < addids.length; i++) {
                         userlist = await userlist.concat(`\n added: <@!${addids[i].user}>`)
                 }
-	let ownerlist = " "
+	let ownerlist = ""
 	let cowners = [island.user,island.cowner1,island.cowner2,island.cowner3,island.cowner4,island.cowner5,island.cowner6,island.cowner7]
-        	for(let i = 0;i < 7; i++) {
-			ownerlist = await ownerlist.concat(`\n owner: <@!${cowners[i]}>`)
+	const filteredOwners: string[] = cowners.filter((s): s is string => !!(s));
+
+        	for(let i = 0; i < filteredOwners.length; i++) {
+			ownerlist = await ownerlist.concat(`\nco-owner: <@!${filteredOwners[i]}>`)
 			}
        let embed = new EmbedBuilder()
 	       	    .setTitle("Channel Locking")
@@ -36,13 +38,18 @@ export = {
 		new ButtonBuilder()
 			.setCustomId("channel_lock")
 			.setLabel("Lock Channel")
-			.setStyle(ButtonStyle.Danger)
+			.setStyle(ButtonStyle.Primary)
 			.setEmoji("🔐"),
 		new ButtonBuilder()
 			.setCustomId("channel_unlock")
 			.setLabel("Unlock Channel")
-			.setStyle(ButtonStyle.Success)
-			.setEmoji("🔓")
+			.setStyle(ButtonStyle.Primary)
+			.setEmoji("🔓"),
+		new ButtonBuilder()
+			.setCustomId("cancel")
+			.setLabel("Cancel")
+			.setStyle(ButtonStyle.Danger)
+			.setEmoji("✖️")
 		)
 	await message.reply({embeds:[embed], components: [row], });
     }

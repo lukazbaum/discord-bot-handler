@@ -1,4 +1,4 @@
-import {  Client, GuildChannel, GuildMember,  ChannelType, Message, ChannelManager,  EmbedBuilder,  MessageMentions} from "discord.js";
+import {  Role, PermissionsBitField, GuildChannel, GuildMember,  ChannelType, Message, ChannelManager,  EmbedBuilder} from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const {getcowners, bannedusers, addedusers, getisland } = require('/home/ubuntu/ep_bot/extras/functions');
 
@@ -14,11 +14,14 @@ export = {
 	    const alladds = await addedusers(message.channel.id);
 	    const allBans = await bannedusers(message.channel.id);
 	    const channelInfo = await getisland(message.channel.id) 
+	    const verifiedRoleId = "1143236724718317673"
 	    
 	    let addList = ' '
 	    let bannedList =  ' '
 	    let cowners = ' '
             let eventsState = ' '
+	    let isHidden = ' '
+
 	    let cownersList = [channelInfo.cowner1,channelInfo.cowner2,channelInfo.cowner3,channelInfo.cowner4,channelInfo.cowner5,channelInfo.cowner6,channelInfo.cowner7]
 	    const filteredOwners: string[] = cownersList.filter((s): s is string => !!(s));
 
@@ -38,7 +41,16 @@ export = {
 	    }else{
 		    eventsState = "Events Disabled"
 	    }
-
+	    
+	    if(message.channel.permissionsFor(verifiedRoleId).toJSON() === "1024"){
+		    isHidden = "Channel Is Locked"
+	    }else if(message.channel.permissionsFor(verifiedRoleId).toJSON() === "3072"){
+		    isHidden = "Channel is Open"
+	    }else if(message.channel.permissionsFor(verifiedRoleId).toJSON() === "0") {
+		    isHidden = "Channel is Closed"
+	    }
+	    console.log(message.channel.permissionsFor(verifiedRoleId).toJSON())
+	    
 
 	    let embed1 = new EmbedBuilder()
 	   	.setTitle("Channel Manager: Channel Info")
@@ -46,7 +58,8 @@ export = {
 	 	.addFields({name:"__Added Users__", value:`${addList}`, inline: true},
 			  {name:"__Banned Users__", value: `${bannedList}`, inline: true},
 			  {name:"__Current Cowners__", value: `${cowners}`, inline: true},
-			  {name:"__Events On or Off?__", value: `${eventsState}`, inline: true}
+			  {name:"__Events On or Off?__", value: `${eventsState}`, inline: true},
+			  {name:"__Channel Hidden?__", value: `${isHidden}`, inline: true}
 			)
 		.setColor(`#097969`)
 
