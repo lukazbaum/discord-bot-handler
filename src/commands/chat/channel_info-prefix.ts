@@ -13,9 +13,8 @@ export = {
 	    
 	    const alladds = await addedusers(message.channel.id);
 	    const allBans = await bannedusers(message.channel.id);
-	    const channelInfo = await getisland(message.channel.id) 
-	    const verifiedRoleId = "1143236724718317673"
-	    
+	    const channelInfo = await getisland(message.channel.id);
+	    const verifiedRoleId = '1143236724718317673'
 	    let addList = ' '
 	    let bannedList =  ' '
 	    let cowners = ' '
@@ -49,17 +48,15 @@ export = {
 	    }else if(message.channel.permissionsFor(verifiedRoleId).toJSON() === "0") {
 		    isHidden = "Channel is Closed"
 	    }
-	    console.log(message.channel.permissionsFor(verifiedRoleId).toJSON())
 	    
-
 	    let embed1 = new EmbedBuilder()
 	   	.setTitle("Channel Manager: Channel Info")
 		.setDescription(`**Channel Owner:** <@!${channelInfo.user}>`)
 	 	.addFields({name:"__Added Users__", value:`${addList}`, inline: true},
-			  {name:"__Banned Users__", value: `${bannedList}`, inline: true},
 			  {name:"__Current Cowners__", value: `${cowners}`, inline: true},
+			  {name:"__Banned Users__", value: `${bannedList}`, inline: true},
 			  {name:"__Events On or Off?__", value: `${eventsState}`, inline: true},
-			  {name:"__Channel Hidden?__", value: `${isHidden}`, inline: true}
+			  {name:"__Channel Visibility__", value: `${isHidden}`, inline: true}
 			)
 		.setColor(`#097969`)
 

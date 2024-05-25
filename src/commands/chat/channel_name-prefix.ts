@@ -14,7 +14,7 @@ export = {
     type: CommandTypes.PrefixCommand,
     channelWhitelist:["1147233774938107966"],
     ownerOnly: true,
-    disabled: false, 
+    cooldown: 30,
     async execute(message: Message): Promise<void> {
 	  if(message.channel.type !== ChannelType.GuildText) return;
 	  let newName;
