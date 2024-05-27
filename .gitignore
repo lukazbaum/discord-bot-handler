@@ -1,7 +1,12 @@
-.idea/
-.vscode/
+*.old
+*.config
+tsconfig*
+*.log
+config*
+.env
 dist/
 node_modules/
-.env
 package-lock.json
-yarn.lock
+util/
+config.ts
+tsconfig.json

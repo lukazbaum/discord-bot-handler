@@ -1,11 +1,11 @@
-import { Intent, ConsoleColor } from "./handler";
 import { EmbedBuilder, Interaction } from "discord.js";
+import { Intent, ConsoleColor } from "./handler";
 
 // Message command prefix.
-export const prefix: string = "!";
+export const prefix: string = "pm ";
 
 // Intents which will be enabled by default.
-export const defaultIntents: Intent[] = [Intent.Guilds, Intent.MessageContent];
+export const defaultIntents: Intent[] = [Intent.Guilds, Intent.MessageContent, Intent.GuildMessages, Intent.GuildMembers, Intent.GuildPresences];
 
 // Default folder names.
 export const eventsFolderName: string = "events";
@@ -13,7 +13,7 @@ export const commandsFolderName: string = "commands";
 export const componentsFolderName: string = "components";
 
 // Your Discord ID (for owner only commands)
-export const ownerId: string = "712205125158174751";
+export const ownerId: string = "936693149114449921";
 
 // Layout for the info logging message.
 export function getLoggerLogMessage(message: string): string {
