@@ -1,6 +1,6 @@
 import { Message, TextChannel, ChannelType, Guild, PermissionsBitField, ButtonInteraction, GuildChannel, EmbedBuilder} from "discord.js";
 import { ComponentModule, ComponentTypes,} from "../../handler/types/Component";
-const { removeuser, removeislanduser, getisland, bannedusers, addedusers, removecowners, removeban, checkisland  } = require('/home/ubuntu/ep_bot/extras/functions');
+const { removeuser, removeislanduser, getisland, bannedusers, addedusers, removeban} = require('/home/ubuntu/ep_bot/extras/functions');
 
 export = {
     id: "confirm_uc",
