@@ -1,6 +1,9 @@
 import {  Message, TextChannel, GuildChannelManager, ChannelType, Guild, PermissionsBitField, EmbedBuilder}  from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
-const { getisland, addeduser, banneduser } = require('/home/ubuntu/ep_bot/extras/functions');
+const { getisland, addedusers, bannedusers } = require('/home/ubuntu/ep_bot/extras/functions');
+const { amarikey } = require('../../../../ep_bot/extras/settings')
+const { AmariBot } = require("amaribot.js");
+const amariclient = new AmariBot(amarikey);
 
 export = {
     name: "upgrade",
@@ -10,12 +13,12 @@ export = {
     ownerOnly: true,
     async execute(message: Message): Promise<void> {
          try{
-		let island = await getisland(msg.channel.id)
-		let myamari = await amariclient.getUserLevel(msg.guild.id, `${island.user}`)
+		let island = await getisland(message.channel.id)
+		let myamari = await amariclient.getUserLevel(message.guild.id, `${island.user}`)
 		let level = parseInt(`${myamari.level}`)
-		let channel = await msg.guild.channels.cache.get(`${island.channel}`)
             	let user = `${island.user}`
-		let memberTarget = msg.guild.members.cache.get(user)
+		let memberTarget = message.guild.members.cache.get(user)
+		let cowner = ' '
 
 		let boosterRole = "1142141020218347601"
 		let staffRole = "1148992217202040942"
@@ -26,10 +29,13 @@ export = {
 		let adventureTrails = "1147909373180530708"
 		let tropicalLounge = "1147909539413368883"
 		let parkPeaks = "1147909156196593787"
+		
+		const channel = message.guild.channels.cache.find(channel => channel.id === `${island.channel}`) as TextChannel;
 
 		if(memberTarget.roles.cache.has(staffRole)){
                     if(channel.parentId === staffParent) {
-                        return message.reply('You cant move staff channels')
+                        message.reply('You cant move staff channels')
+			return;
                     }else{
                             await channel.setParent(staffParent);
                             await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
@@ -42,13 +48,16 @@ export = {
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                                 message.reply('Your Channel Has Been Moved to Booster Fields')
                         }else{
-                                    return message.reply('You are a booster and at the highest category')
+                                message.reply('You are a booster and at the highest category')
+				return;
                              }
                 } else if(level <= 39){
-                                return message.reply('Reach Amari Level 40+ for channel upgrades')
+                                message.reply('Reach Amari Level 40+ for channel upgrades')
+				return;
 		}else if((level >= 40) && (level <= 59)){
                         if(channel.parentId === parkPavilion) {
-                                return message.reply("no upgrade available till amari lvl. 60")
+                                message.reply("no upgrade available till amari lvl. 60")
+				return;
                         }else{
 				await channel.setParent(parkPavilion), {reason: "channel upgrade"}
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
@@ -56,21 +65,24 @@ export = {
                         }
 		}else if((level >= 60) && (level <= 79)){
                         if(channel.parentId === adventureTrails) {
-                                return message.reply("no upgrade availble until Amari lvl 80")
+                                message.reply("no upgrade availble until Amari lvl 80")
+				return;
                         }else{await channel.setParent(adventureTrails), {reason: 'channel upgrade'}
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
-                                 message.reply('Your Channel Has Moved to Adventure Trails')
+                                message.reply('Your Channel Has Moved to Adventure Trails')
                         }
 		}else if((level >= 80) && (level <= 119)){
                         if(channel.parentId === tropicalLounge ) {
-                                return message.reply("no upgrade availble until Amari lvl 120")
+                                message.reply("no upgrade availble until Amari lvl 120")
+				return;
                         } else {await channel.setParent(tropicalLounge), {reason: 'channel upgrade'}
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                                 message.reply('Your Channel Has Moved to Tropical Lounge')
                         }
 		}else if(level >= 120){
                         if(channel.parentId === parkPeaks) {
-                                return message.reply('Channel Fully Upgraded Already!')
+                                message.reply('Channel Fully Upgraded Already!')
+				return;
                         }else {await channel.setParent(parkPeaks), {reason: 'channel upgrade'}
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                                 message.reply('Your Channel Has Moved to Park Peaks')
@@ -78,7 +90,7 @@ export = {
                 }else{
 			message.reply("something happened, contact a dev")
 		}
-                for(i = 1; i <= 7; i++) {
+                for(let i = 1; i <= 7; i++) {
                 	if(i ===1){ cowner = island.cowner1
 			}else if(i===2){ cowner = island.cowner2
 			}else if(i===3){ cowner = island.cowner3
@@ -117,7 +129,5 @@ export = {
                 {console.error(err)}
                 message.reply('something happened, contact an Admin')
     		}
-	}
-
 } as PrefixCommandModule;
 
