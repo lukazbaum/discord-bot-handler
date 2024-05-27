@@ -1,6 +1,6 @@
-import {  Message, ButtonStyle, ButtonBuilder, ActionRowBuilder, TextChannel, GuildChannelManager, ChannelType, Guild, PermissionsBitField, EmbedBuilder}  from "discord.js";
+import {  Message, ButtonStyle, ButtonBuilder, ActionRowBuilder, GuildChannelManager, EmbedBuilder}  from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
-const { removeuser, removeislanduser, getisland, bannedusers, addedusers, removecowners, removeban, checkisland  } = require('/home/ubuntu/ep_bot/extras/functions');
+const { getisland } = require('/home/ubuntu/ep_bot/extras/functions');
 
 export = {
     name: "unassign",
@@ -12,7 +12,7 @@ export = {
 	    try{ 
 		if(message.mentions.channels.map(m => m).length){
 		}else{
-                        await message.reply("you must specifiy a valid channel")
+                        await message.reply("you must specifiy a valid channel including the #")
                         return;
                 }
 		let channelTemp = message.mentions.channels.first()
