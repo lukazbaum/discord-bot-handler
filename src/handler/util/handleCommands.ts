@@ -190,6 +190,8 @@ export async function isAllowedCommand(
             || (command.userBlacklist && command.userBlacklist.includes(user.id))
             || (command.channelWhitelist && channel && !command.channelWhitelist.includes(channel.id))
             || (command.channelBlacklist && channel && command.channelBlacklist.includes(channel.id))
+            || (command.categoryWhitelist && channel && !channel.isDMBased() && !command.categoryWhitelist.includes(channel.parentId))
+            || (command.categoryBlacklist && channel && !channel.isDMBased() && command.categoryBlacklist.includes(channel.parentId))
             || (command.guildWhitelist && guild && !command.guildWhitelist.includes(guild.id))
             || (command.guildBlacklist && guild && command.guildBlacklist.includes(guild.id))
             || (command.roleWhitelist && !command.roleWhitelist.some((roleId: string) => memberRoles.cache.has(roleId)))
