@@ -9,16 +9,16 @@ import {ActionRowBuilder,
 	MessageManager, 
 	MessageCollector } from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
-const {getisland} = require('/home/ubuntu/ep_bot/extras/functions');
+const {getisland, isOwner} = require('/home/ubuntu/ep_bot/extras/functions');
 
 export = {
     name: "slowmode",
     aliases: ["smon", "Slowmodeon", "slowon"],
     type: CommandTypes.PrefixCommand,
-    channelWhitelist:["1147233774938107966"],
-    ownerOnly: true,
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777'],
     async execute(message: Message): Promise<void> {
-	if(message.channel.type !== ChannelType.GuildText) return;
+	try{
+		if(message.channel.type !== ChannelType.GuildText) return;
                 let island = await getisland(message.channel.id)
 		let users = [island.user,
 				island.cowner1,
@@ -32,6 +32,7 @@ export = {
                 	if(users[i]) message.channel.permissionOverwrites.edit(users[i], 
 									       {ManageMessages: true})
 		}
+
 		let embed1 = new EmbedBuilder()
 			.setTitle("Channel Manager:  Slowmode")
                 	.setDescription(`Slowmode Enabled. Choose Time 
@@ -65,9 +66,10 @@ export = {
                                 .setLabel("45 Secs")
                                 .setStyle(ButtonStyle.Secondary)
                                 .setEmoji("🐢")
-                )
+                	)
 
    		await message.reply({embeds: [embed1], components: [row]},) 
+	}catch(err)
+  	{console.log(err)}
     }
-    
 } as PrefixCommandModule;

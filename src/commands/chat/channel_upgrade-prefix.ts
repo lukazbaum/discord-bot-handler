@@ -1,6 +1,6 @@
 import {  Message, TextChannel, GuildChannelManager, ChannelType, Guild, PermissionsBitField, EmbedBuilder}  from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
-const { getisland, addedusers, bannedusers } = require('/home/ubuntu/ep_bot/extras/functions');
+const { isOwner, getisland, addedusers, bannedusers } = require('/home/ubuntu/ep_bot/extras/functions');
 const { amarikey } = require('../../../../ep_bot/extras/settings')
 const { AmariBot } = require("amaribot.js");
 const amariclient = new AmariBot(amarikey);
@@ -9,17 +9,36 @@ export = {
     name: "upgrade",
     aliases: ["Upgrade", "up"],
     type: CommandTypes.PrefixCommand,
-    channelWhitelist:["1147233774938107966"],
-    ownerOnly: true,
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644'],
+    categoryWhitelist: ['1147909067172483162',
+                        '1147909156196593787',
+                        '1147909539413368883',
+                        '1147909373180530708',
+                        '1147909282201870406',
+                        '1147909200924643349',
+                        '1140190313915371530'],
     async execute(message: Message): Promise<void> {
          try{
-		let island = await getisland(message.channel.id)
-		let myamari = await amariclient.getUserLevel(message.guild.id, `${island.user}`)
-		let level = parseInt(`${myamari.level}`)
-            	let user = `${island.user}`
-		let memberTarget = message.guild.members.cache.get(user)
-		let cowner = ' '
+		let checkOwner = await isOwner(message.author.id)
+                if(checkOwner[0].channel !== message.channel.id) {
+                        await message.reply('you must be an owner/cowner of this channel to run this command')
+                        return;
+                }
+		let targetChannel;
+		let channelName = message.mentions.channels.first()
+		if(channelName) {
+			targetChannel = channelName.id
+		}else{
+			targetChannel = message.channel.id
+		}
 
+		let cowner = ' '
+		let island = await getisland(`${targetChannel}`)
+		if(!island.channel){
+			await message.reply('Channel is not registered to a user')
+			return;
+		}
+					   
 		let boosterRole = "1142141020218347601"
 		let staffRole = "1148992217202040942"
 		let staffParent = "1140190313915371530"
@@ -29,8 +48,13 @@ export = {
 		let adventureTrails = "1147909373180530708"
 		let tropicalLounge = "1147909539413368883"
 		let parkPeaks = "1147909156196593787"
+		let myamari = await amariclient.getUserLevel(message.guild.id, `${island.user}`)
+		let level = parseInt(`${myamari.level}`)
+                let user = `${island.user}`
+		let memberTarget = message.guild.members.cache.get(user)
 		
 		const channel = message.guild.channels.cache.find(channel => channel.id === `${island.channel}`) as TextChannel;
+		
 
 		if(memberTarget.roles.cache.has(staffRole)){
                     if(channel.parentId === staffParent) {
@@ -38,6 +62,7 @@ export = {
 			return;
                     }else{
                             await channel.setParent(staffParent);
+			    await channel.lockPermissions()
                             await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                             message.reply('Since you have the staff role, you are moved to staff area')
                     }
@@ -45,6 +70,7 @@ export = {
                 }else if(memberTarget.roles.cache.has(boosterRole)){
                         if(channel.parentId !== boosterParent){
                                 await channel.setParent(boosterParent);
+				await channel.lockPermissions()
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                                 message.reply('Your Channel Has Been Moved to Booster Fields')
                         }else{
@@ -60,6 +86,7 @@ export = {
 				return;
                         }else{
 				await channel.setParent(parkPavilion), {reason: "channel upgrade"}
+				await channel.lockPermissions()
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                                 message.reply('Your Channel Has Moved to Picnic Pavlilion')
                         }
@@ -68,6 +95,7 @@ export = {
                                 message.reply("no upgrade availble until Amari lvl 80")
 				return;
                         }else{await channel.setParent(adventureTrails), {reason: 'channel upgrade'}
+				await channel.lockPermissions()
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                                 message.reply('Your Channel Has Moved to Adventure Trails')
                         }
@@ -76,6 +104,7 @@ export = {
                                 message.reply("no upgrade availble until Amari lvl 120")
 				return;
                         } else {await channel.setParent(tropicalLounge), {reason: 'channel upgrade'}
+				await channel.lockPermissions()
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                                 message.reply('Your Channel Has Moved to Tropical Lounge')
                         }
@@ -84,6 +113,7 @@ export = {
                                 message.reply('Channel Fully Upgraded Already!')
 				return;
                         }else {await channel.setParent(parkPeaks), {reason: 'channel upgrade'}
+				await channel.lockPermissions()
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                                 message.reply('Your Channel Has Moved to Park Peaks')
                         }

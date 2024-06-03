@@ -6,9 +6,9 @@ export = {
     name: "remfav",
     aliases: ["Remfav", 'remchan'],
     type: CommandTypes.PrefixCommand,
-    channelWhitelist:["1147233774938107966"],
-    ownerOnly: true,
+    roleWhitelist: ['1143236724718317673','1147864509344661644', '1148992217202040942','1143236724718317673'],
     async execute(message: Message): Promise<void> {
+	try{
 	    if (!message.mentions.channels.map(m => m).length) {
 		    await message.reply('Did you forget to add the channel?')
 		    return;
@@ -25,6 +25,8 @@ export = {
 	    	await remfav(user, channelName)
 	    	await message.reply(`<#${channelName}> has been removed from favorites`)
 	    }
+	}catch(err)
+  	{console.log(err)}
 
     },
 } as PrefixCommandModule;

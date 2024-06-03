@@ -6,9 +6,9 @@ export = {
     name: "favs",
     aliases: ["chanfav", "ch", "chfav", "fav"],
     type: CommandTypes.PrefixCommand,
-    channelWhitelist:["1147233774938107966"],
-    ownerOnly: true,
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1143236724718317673'],
     async execute(message: Message): Promise<void> {
+	try{
 	    const channelFavs = await checkfav(message.author.id)
 	    if (!channelFavs.length) {
 		let embed1 = new EmbedBuilder()
@@ -31,5 +31,7 @@ export = {
                     .setColor('#097969')
 		    .setDescription(`${channelList}`);
 			await  message.reply({embeds:[embed2]})
+	}catch(err)
+  	{console.log(err)}
     }
 } as PrefixCommandModule;

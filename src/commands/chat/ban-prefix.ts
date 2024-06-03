@@ -1,62 +1,85 @@
-import {  Client, GuildChannel, GuildMember, PermissionsBitField, ChannelType, Message, ChannelManager,  EmbedBuilder,  MessageMentions} from "discord.js";
+import {  Client, 
+	GuildChannel, 
+	GuildMember, 
+	PermissionsBitField, 
+	ChannelType, 
+	Message, 
+	ChannelManager,  
+	EmbedBuilder,  
+	MessageMentions} from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
-const {banuser, bannedusers, removeuser} = require('/home/ubuntu/ep_bot/extras/functions');
+const {getisland, banuser, bannedusers, removeuser, isOwner} = require('../../../util/functions');
 
 export = {
     name: "ban",
     aliases: ["Ban"],
     type: CommandTypes.PrefixCommand,
-    channelWhitelist:["1147233774938107966"],
-    ownerOnly: true,
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777'],
+    categoryWhitelist: ['1147909067172483162',
+                        '1147909156196593787',
+                        '1147909539413368883',
+                        '1147909373180530708',
+                        '1147909282201870406',
+                        '1147909200924643349',
+                        '1140190313915371530'],
     async execute(message: Message): Promise<void> {
-	    if(message.channel.type !== ChannelType.GuildText) return;
-	    if (!message.mentions.users.map(m => m).length) {
-		    await message.reply('Did you forget to add the user?')
-		    return;
-	    }
-         //@ts-ignore
-	    const id = await message.mentions.users.first().id
-	    const checkbans = await bannedusers(message.channel.id);
-	    let cleanid = await id.replace(/\D/g, '');
-	    //@ts-ignore
-	    const memberTarget = message.guild.members.cache.get(id)
-	    //@ts-ignore
-	    if (memberTarget.roles.cache.has("1148992217202040942")) {
+	try{
+		let checkOwner = await isOwner(message.author.id)
+                if(checkOwner[0].channel !== message.channel.id) {
+                        await message.reply('you must be an owner/cowner of this channel to run this command')
+                        return;
+                }
+	    	if(message.channel.type !== ChannelType.GuildText) return;
+	    	if (!message.mentions.users.map(m => m).length) {
+			    await message.reply('Did you forget to add the user?')
+			    return;
+	    	}
 
-		    await message.reply('Nice. You cant ban a staff member')
-		    return;
-	    }
+	    	const channelInfo = await getisland(message.channel.id);
+            	const user = message.author.id
+
+	    	const id = await message.mentions.users.first().id
+	    	const checkbans = await bannedusers(message.channel.id);
+	    	let cleanid = await id.replace(/\D/g, '');
+	    	const memberTarget = message.guild.members.cache.get(id)
+	    
+	    	if (memberTarget.roles.cache.has("1148992217202040942")) {
+			    await message.reply('Nice. You cant ban a staff member')
+		    	return;
+	    	}
             
-	    if(id  === message.author.id){
-                  await message.reply("Seriously? <a:ep_bozabonk:1164312811468496916>")
-		  return;
-	    }
+	    	if(id  === message.author.id){
+                	  await message.reply("Seriously? <a:ep_bozabonk:1164312811468496916>")
+		  	return;
+	    	}
 	    
+	    	const isBanned = checkbans.some((banned) => banned.user === cleanid) 
 
-	    //@ts-ignore
-	    const isBanned = checkbans.some((banned) => banned.user === cleanid) 
-	    if(isBanned) {
-		    await message.reply('user is already banned')
-		    return;
-	    } else {
+	    	if(isBanned) {
+			    await message.reply('user is already banned')
+		    	return;
+	    	} else {
+	    		await banuser(cleanid, message.channel.id)
+			await removeuser(cleanid, message.channel.id)
+	        	await message.channel.permissionOverwrites.edit(cleanid, {ViewChannel:false});
+	    	}
+
+	    	let banlist = " "
+	    	const allbans = await bannedusers(message.channel.id);
 	    
-	    	await banuser(cleanid, message.channel.id)
-		await removeuser(cleanid, message.channel.id)
-	        await message.channel.permissionOverwrites.edit(cleanid, {ViewChannel:false});
-	    }
-	   //@ts-ignore
-	    let banlist = " "
-	    const allbans = await bannedusers(message.channel.id);
-	    for (let i = 0;i < allbans.length; i++) {
+	    	for (let i = 0;i < allbans.length; i++) {
                         banlist = await banlist.concat(`\n> ${i+1}. <@!${allbans[i].user}>`)
                 }
-	    let embed1 = new EmbedBuilder()
-	   	.setTitle("Channel Manager: Ban Channel User")
-		.setDescription(`__Current List of Banned Users__
+	    
+	    	let embed1 = new EmbedBuilder()
+	   		.setTitle("Channel Manager: Ban Channel User")
+			.setDescription(`__Current List of Banned Users__
 				${banlist}
 				*to unban a user, use command ep unban*`)
-		.setColor(`#097969`)
+			.setColor(`#097969`)
 
-	   	await message.reply({embeds:[embed1]})
+	   		await message.reply({embeds:[embed1]})
+	 }catch(err)
+         {console.log(err)}
     },
 } as PrefixCommandModule;
