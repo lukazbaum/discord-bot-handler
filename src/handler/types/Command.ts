@@ -50,6 +50,8 @@ interface BaseCommandModule {
     userBlacklist?: string[];
     channelWhitelist?: string[];
     channelBlacklist?: string[];
+    categoryWhitelist?: string[];
+    categoryBlacklist?: string[];
     guildWhitelist?: string[];
     guildBlacklist?: string[];
     roleWhitelist?: string[];

@@ -143,6 +143,8 @@ Command arguments are optional settings that can be applied to each command to c
 - `userBlacklist?`: Array of user IDs prohibited from using the command.
 - `channelWhitelist?`: Array of channel IDs where the command can be used.
 - `channelBlacklist?`: Array of channel IDs where the command cannot be used.
+- `categoryWhitelist?`: Array of category IDs where the command can be used.
+- `categoryBlacklist?`: Array of category IDs where the command cannot be used.
 - `guildWhitelist?`: Array of guild IDs where the command can be used.
 - `guildBlacklist?`: Array of guild IDs where the command cannot be used.
 - `roleWhitelist?`: Array of role IDs allowed to use the command.
