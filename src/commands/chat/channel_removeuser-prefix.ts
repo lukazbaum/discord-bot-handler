@@ -4,7 +4,7 @@ const {isOwner, removeuser, removecowners, getisland, addedusers} = require('/ho
 
 export = {
     name: "removeuser",
-    aliases: ["Removeuser", "remuser", "deluser"],
+    aliases: ["Removeuser", "remuser", "rem"],
     type: CommandTypes.PrefixCommand,
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777'],
     categoryWhitelist: ['1147909067172483162',
@@ -71,6 +71,7 @@ export = {
 			let ownerid = remuser[0].slice(-1)
 		    	await removecowners(message.channel.id, ownerid)
 		    	let channelCowner = message.guild.members.cache.get(ownerid)
+			console.log(channelCowner)
 		    	await channelCowner.roles.remove(cownerRole)
 	    	}
 

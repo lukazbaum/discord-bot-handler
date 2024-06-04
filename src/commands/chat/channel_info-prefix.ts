@@ -1,4 +1,4 @@
-import {  Role, PermissionsBitField, GuildChannel, GuildMember,  ChannelType, Message, ChannelManager,  EmbedBuilder} from "discord.js";
+import {  Role, BitField, PermissionsBitField, GuildChannel, GuildMember,  ChannelType, Message, ChannelManager,  EmbedBuilder} from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const {getcowners, bannedusers, addedusers, getisland, isOwner} = require('/home/ubuntu/ep_bot/extras/functions');
 
@@ -66,15 +66,17 @@ export = {
 	    	}else{
 			eventsState = "Off"
 	    	}
-	    
-	    	if(message.channel.permissionsFor(verifiedRoleId).toJSON() === "1024"){
-			isHidden = "Locked"
-	    	}else if(message.channel.permissionsFor(verifiedRoleId).toJSON() === "3072"){
-		    	isHidden = "Public"
-	    	}else if(message.channel.permissionsFor(verifiedRoleId).toJSON() === "0") {
-		    	isHidden = "Closed"
-	    	}
-	    
+		let bitfield = message.channel.permissionsFor(verifiedRoleId).bitfield
+		let permArray = new PermissionsBitField(bitfield).toArray()
+		
+		if((permArray.includes('ViewChannel')) && (permArray.includes('SendMessages'))){
+			isHidden = 'Public'
+		}else if((permArray.includes('ViewChannel')) && (!permArray.includes('SendMessages'))){
+			isHidden = 'Locked'
+		}else{
+			isHidden = 'Hidden'
+		}
+
 	    	let embed1 = new EmbedBuilder()
 	   		.setTitle("Channel Manager: Channel Info")
 			.setDescription(`**Channel Owner:** <@!${channelInfo.user}>`)

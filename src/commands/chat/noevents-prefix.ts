@@ -1,6 +1,6 @@
 import { Message } from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
-const { getisland,  disableevents } = require("/home/ubuntu/ep_bot/extras/functions");
+const { getisland,  disableevents, isOwner} = require("/home/ubuntu/ep_bot/extras/functions");
 
 export = {
     name: "noevents",
