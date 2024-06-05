@@ -1,4 +1,4 @@
-import {  Role, PermissionsBitField, GuildChannel, GuildMember,  ChannelType, Message, ChannelManager,  EmbedBuilder} from "discord.js";
+import {  Role, BitField, PermissionsBitField, GuildChannel, GuildMember,  ChannelType, Message, ChannelManager,  EmbedBuilder} from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const {getCoChannels, getcowners, checkisland, bannedusers, addedusers, getisland } = require('/home/ubuntu/ep_bot/extras/functions');
 const { amarikey } = require('/home/ubuntu/ep_bot/extras/settings')
@@ -51,7 +51,7 @@ export = {
 	    let alladds;
 	    let allBans;
 	    let embed1;
-	    let myamari = await amariclient.getUserLevel(message.guild.id, `${channelInfo.user}`)
+	    let myamari = await amariclient.getUserLevel(message.guild.id, `${user}`)
 	    const member = message.guild.members.cache.get(user)
 	    let roleMap = member.roles.cache
 	    		   .sort((a, b) => b.position - a.position)
@@ -113,15 +113,21 @@ export = {
 	    	}else{
 			    eventsState = "Off"
 	    	}
-	    
-	    	if(message.channel.permissionsFor(verifiedRoleId).toJSON() === "1024"){
-			    isHidden = "Locked"
-	    	}else if(message.channel.permissionsFor(verifiedRoleId).toJSON() === "3072"){
-			    isHidden = "Public"
-	    	}else if(message.channel.permissionsFor(verifiedRoleId).toJSON() === "0") {
-			    isHidden = "Hidden"
-	    	}
-	    		embed1 = new EmbedBuilder()
+
+	   	let bitfield = message.channel.permissionsFor(verifiedRoleId).bitfield
+                let permArray = new PermissionsBitField(bitfield).toArray()
+
+                if((permArray.includes('ViewChannel')) && (permArray.includes('SendMessages'))){
+                        isHidden = 'Public'
+                }else if((permArray.includes('ViewChannel')) && (!permArray.includes('SendMessages'))){
+                        isHidden = 'Locked'
+                }else{
+                        isHidden = 'Hidden'
+                } 
+	    }
+
+		if(channelInfo) {
+	    		 embed1 = new EmbedBuilder()
 	   			.setTitle("Staff User Info")
 				.setDescription(`** User Info For: ** ${userName}
 					         ** User Owns Channel: ** <#${channel}>`)
@@ -157,10 +163,11 @@ export = {
 					   {name:"__Cowner On Channels__", value:`${chCownerList}`, inline: true}
                         		)
 				.setColor(`#097969`)
-	    	}	
+	    	}
 
 	   	await message.reply({embeds:[embed1]})
 
     }catch(err)
     {console.log(err)}
-}} as PrefixCommandModule;
+  }
+} as PrefixCommandModule;
