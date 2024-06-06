@@ -16,8 +16,14 @@ export = {
     aliases: ["smon", "Slowmodeon", "slowon"],
     type: CommandTypes.PrefixCommand,
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777'],
+    categoryWhitelist: ["1147909067172483162", "1147909156196593787", "1140190313915371530"],
     async execute(message: Message): Promise<void> {
 	try{
+		let checkOwner = await isOwner(message.author.id)
+                if(checkOwner[0].channel !== message.channel.id) {
+                        await message.reply('you must be an owner/cowner of this channel to run this command')
+                        return;
+                }
 		if(message.channel.type !== ChannelType.GuildText) return;
                 let island = await getisland(message.channel.id)
 		let users = [island.user,

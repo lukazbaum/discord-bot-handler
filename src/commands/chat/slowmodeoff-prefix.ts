@@ -6,15 +6,21 @@ import { ChannelManager,
 	MessageManager, 
 	MessageCollector } from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
-const {getisland} = require('/home/ubuntu/ep_bot/extras/functions');
+const {getisland, isOwner} = require('/home/ubuntu/ep_bot/extras/functions');
 
 export = {
     name: "slowmodeoff",
     aliases: ["smoff", "Slowmodeoff", "slowoff"],
     type: CommandTypes.PrefixCommand,
     roleWhitelist: ['1147864509344661644', '1148992217202040942'],
+    categoryWhitelist: ["1140190313915371530", "1147909067172483162", "1147909156196593787"]
     async execute(message: Message): Promise<void> {
 	try{
+		let checkOwner = await isOwner(message.author.id)
+                if(checkOwner[0].channel !== message.channel.id) {
+                        await message.reply('you must be an owner/cowner of this channel to run this command')
+                        return;
+                }
 		if(message.channel.type !== ChannelType.GuildText) return;
      		if(message.channel.rateLimitPerUser) {
                 	message.channel.setRateLimitPerUser(0)
