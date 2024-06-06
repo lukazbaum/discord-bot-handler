@@ -14,6 +14,7 @@ export = {
     aliases: [],
     type: CommandTypes.PrefixCommand,
     roleWhitelist: ['1147864509344661644', '1148992217202040942'],
+    categoryWhitelist: ["1147909282201870406", "1147909373180530708", "1147909539413368883", "1147909156196593787", "1147909067172483162", "1140190313915371530"],
     cooldown: 30,
     async execute(message: Message): Promise<void> {
 	try{
