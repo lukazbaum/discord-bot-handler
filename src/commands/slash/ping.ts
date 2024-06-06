@@ -4,6 +4,7 @@ import { CommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "di
 export = {
     type: CommandTypes.SlashCommand,
     register: RegisterTypes.Guild,
+    disabled: true,
     data: new SlashCommandBuilder()
         .setName("ping")
         .setDescription("Replies with pong!")

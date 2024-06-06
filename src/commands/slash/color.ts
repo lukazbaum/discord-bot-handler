@@ -5,6 +5,7 @@ import { CommandTypes, RegisterTypes, SlashCommandModule, Color, BackgroundColor
 export = {
     type: CommandTypes.SlashCommand,
     register: RegisterTypes.Guild,
+    disabled: true,
     data: new SlashCommandBuilder()
         .setName("color")
         .setDescription("Replies with a colored message!")

@@ -15,7 +15,7 @@ export = {
                 .setFooter({text:message.author.tag, iconURL:message.author.displayAvatarURL()})
 		.setTimestamp()
 		.setColor('#097969')
-                .setFields({name: "Want to add a channel to this list?", value:"Type `pm addfav`"})
+                .setFields({name: "Want to add a channel to this list?", value:"Type `ep addfav`"})
 		.setDescription(`Channel List\n\nYou do not have any favorite channel.`)
         		await message.reply({embeds:[embed1]})
 	    }

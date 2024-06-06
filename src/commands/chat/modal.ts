@@ -11,6 +11,7 @@ import {
 
 export = {
     type: CommandTypes.SlashCommand,
+    disabled: true,
     register: RegisterTypes.Guild,
     data: new SlashCommandBuilder()
         .setName("modal")

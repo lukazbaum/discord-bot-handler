@@ -4,6 +4,7 @@ import { AutocompleteInteraction, PermissionFlagsBits, SlashCommandBuilder } fro
 export = {
     type: CommandTypes.SlashCommand,
     register: RegisterTypes.Guild,
+    disabled: true,
     data: new SlashCommandBuilder()
         .setName("autocomplete")
         .setDescription("Example of the autocomplete feature!")

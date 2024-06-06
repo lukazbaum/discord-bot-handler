@@ -10,7 +10,7 @@ export = {
         if (!client.user) return;
 
         client.user.setStatus(UserStatus.Online);
-        client.user.setActivity("Development", { type: ActivityType.Watching });
+        client.user.setActivity("In Development", { type: ActivityType.Watching });
         Logger.log(`Ready! Logged in as ${client.user.tag}`);
     }
 } as EventModule;

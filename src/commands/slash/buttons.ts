@@ -11,6 +11,7 @@ import {
 export = {
     type: CommandTypes.SlashCommand,
     register: RegisterTypes.Guild,
+    disabled: true,
     data: new SlashCommandBuilder()
         .setName("buttons")
         .setDescription("Replies with buttons!")
