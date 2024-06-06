@@ -7,7 +7,14 @@ export = {
     aliases: ["Hide", "unhide", "Unhide"],
     type: CommandTypes.PrefixCommand,
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777'],
-    categoryWhitelist: ['1140190313915371530'],
+    categoryWhitelist: ['1140190313915371530',
+                        '1147909156196593787',
+                        '1147909539413368883',
+                        '1147909373180530708',
+                        '1147909282201870406',
+                        '1147909200924643349',
+                        '1147909067172483162',
+                        '1140190313915371530'],
     async execute(message: Message): Promise<void> {
 		let checkOwner = await isOwner(message.author.id)
 		if(checkOwner[0].channel !== message.channel.id) {
