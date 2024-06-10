@@ -175,28 +175,51 @@ export async function deleteAllCommands(type: RegisterTypes): Promise<void> {
     }
 }
 
-export async function isAllowedCommand(
+export function isAllowedCommand(
     command: any,
     user: User | undefined,
     guild: Guild | null,
     channel: Channel | null,
     member: GuildMember | APIInteractionGuildMember | null
-): Promise<boolean> {
+): boolean {
     if (!user || !member) return false;
+
     const memberRoles: any = member.roles;
 
-    return ((command.ownerOnly && user.id !== ownerId)
-            || (command.userWhitelist && !command.userWhitelist.includes(user.id))
-            || (command.userBlacklist && command.userBlacklist.includes(user.id))
-            || (command.channelWhitelist && channel && !command.channelWhitelist.includes(channel.id))
-            || (command.channelBlacklist && channel && command.channelBlacklist.includes(channel.id))
-            || (command.categoryWhitelist && channel && !channel.isDMBased() && !command.categoryWhitelist.includes(channel.parentId))
-            || (command.categoryBlacklist && channel && !channel.isDMBased() && command.categoryBlacklist.includes(channel.parentId))
-            || (command.guildWhitelist && guild && !command.guildWhitelist.includes(guild.id))
-            || (command.guildBlacklist && guild && command.guildBlacklist.includes(guild.id))
-            || (command.roleWhitelist && !command.roleWhitelist.some((roleId: string) => memberRoles.cache.has(roleId)))
-            || (command.roleBlacklist && command.roleBlacklist.some((roleId: string) => memberRoles.cache.has(roleId))))
-        || (command.nsfw && channel && !(channel as TextChannel).nsfw);
+    const notAllowedConditions = [
+        command.ownerOnly && user.id !== ownerId,
+        command.userWhitelist && !command.userWhitelist.includes(user.id),
+        command.userBlacklist && command.userBlacklist.includes(user.id),
+        command.channelWhitelist && channel && !command.channelWhitelist.includes(channel.id),
+        command.channelBlacklist && channel && command.channelBlacklist.includes(channel.id),
+        command.categoryWhitelist && channel && !channel.isDMBased() && !command.categoryWhitelist.includes(channel.parentId),
+        command.categoryBlacklist && channel && !channel.isDMBased() && command.categoryBlacklist.includes(channel.parentId),
+        command.guildWhitelist && guild && !command.guildWhitelist.includes(guild.id),
+        command.guildBlacklist && guild && command.guildBlacklist.includes(guild.id),
+        command.roleWhitelist && !command.roleWhitelist.some((roleId: string) => memberRoles.cache.has(roleId)),
+        command.roleBlacklist && command.roleBlacklist.some((roleId: string) => memberRoles.cache.has(roleId)),
+        command.nsfw && channel && !(channel as TextChannel).nsfw
+    ];
+
+    if (notAllowedConditions.some(Boolean)) return false;
+
+    if(
+        !command.optionalUserWhitelist
+        && !command.optionalChannelWhitelist
+        && !command.optionalCategoryWhitelist
+        && !command.optionalGuildWhitelist
+        && !command.optionalRoleWhitelist
+    ) return true;
+
+    const allowedByOptionalList = [
+        command.optionalUserWhitelist && command.optionalUserWhitelist.includes(user.id),
+        command.optionalChannelWhitelist && channel && command.optionalChannelWhitelist.includes(channel.id),
+        command.optionalCategoryWhitelist && channel && !channel.isDMBased() && command.optionalCategoryWhitelist.includes(channel.parentId),
+        command.optionalGuildWhitelist && guild && command.optionalGuildWhitelist.includes(guild.id),
+        command.optionalRoleWhitelist && command.optionalRoleWhitelist.some((roleId: string) => memberRoles.cache.has(roleId))
+    ];
+
+    return allowedByOptionalList.some(Boolean);
 }
 
 export function hasCooldown(userId: string, commandName: string, cooldown: number | undefined): boolean | number {

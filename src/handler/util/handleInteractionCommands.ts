@@ -30,7 +30,7 @@ async function handleCommand(
     }
 
     if (
-        await isAllowedCommand(commandModule, interaction.user, interaction.guild, interaction.channel, interaction.member)
+        !isAllowedCommand(commandModule, interaction.user, interaction.guild, interaction.channel, interaction.member)
     ) {
         await interaction.reply({
             embeds: [getCommandNotAllowedEmbed(interaction as Interaction)],

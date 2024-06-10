@@ -53,7 +53,7 @@ async function handleCommand(
             return;
         }
 
-        if (!await isAllowedCommand(commandModule, message.member?.user, message.guild, message.channel, message.member)) {
+        if (isAllowedCommand(commandModule, message.member?.user, message.guild, message.channel, message.member)) {
             await commandModule.execute(message);
         }
     }

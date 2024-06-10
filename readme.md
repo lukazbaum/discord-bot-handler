@@ -149,8 +149,16 @@ Command arguments are optional settings that can be applied to each command to c
 - `guildBlacklist?`: Array of guild IDs where the command cannot be used.
 - `roleWhitelist?`: Array of role IDs allowed to use the command.
 - `roleBlacklist?`: Array of role IDs prohibited from using the command.
+- `optionalUserWhitelist?`: Array of user IDs optionally allowed to use the command.¹
+- `optionalChannelWhitelist?`: Array of channel IDs optionally allowed to use the command.¹
+- `optionalCategoryWhitelist?`: Array of category IDs optionally allowed to use the command.¹
+- `optionalGuildWhitelist?`: Array of guild IDs optionally allowed to use the command.¹
+- `optionalRoleWhitelist?`: Array of role IDs optionally allowed to use the command.¹
 - `nsfw?`: If true, the command can only be used in age-restricted (NSFW) channels.
 - `disabled?`: If true, the command won't be registered and thus, will be unavailable for use.
+
+¹ **Note on Optional Whitelists**:
+When using optional whitelists, the command will be allowed to execute if any one of the optional whitelist conditions is met.
 
 #### 🛠️ Example Usage:
 ```typescript
