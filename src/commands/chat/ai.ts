@@ -1,8 +1,9 @@
 import { CommandInteraction, EmbedBuilder, Interaction, Message, MessageReaction, ButtonBuilder, ButtonStyle } from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+const { OPENAI_API_KEY } = require('../../../../ep_bot/extras/settings')
 const OpenAI = require("openai");
 const openai = new OpenAI({
-          apiKey: "sk-proj-9jToazJdoOAaldFCQ9lIT3BlbkFJJVIJVtkkIqyamRsX2nof",
+          apiKey: OPENAI_API_KEY,
                 });
 
 export = {
