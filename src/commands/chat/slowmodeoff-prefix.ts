@@ -13,13 +13,19 @@ export = {
     aliases: ["smoff", "Slowmodeoff", "slowoff"],
     type: CommandTypes.PrefixCommand,
     roleWhitelist: ['1147864509344661644', '1148992217202040942'],
-    categoryWhitelist: ["1140190313915371530", "1147909067172483162", "1147909156196593787"]
+    categoryWhitelist: ["1140190313915371530", "1147909067172483162", "1147909156196593787"],
     async execute(message: Message): Promise<void> {
 	try{
 		let checkOwner = await isOwner(message.author.id)
-                if(checkOwner[0].channel !== message.channel.id) {
-                        await message.reply('you must be an owner/cowner of this channel to run this command')
-                        return;
+                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+
+                if(checkOwner[0].channel !== message.channel.id ){
+                        if(checkStaff.roles.cache.has('1148992217202040942')){
+                                // continue 
+                        }else{
+                                await message.reply('you must be an owner/cowner of this channel to run this command')
+                                         return;
+                        }
                 }
 		if(message.channel.type !== ChannelType.GuildText) return;
      		if(message.channel.rateLimitPerUser) {

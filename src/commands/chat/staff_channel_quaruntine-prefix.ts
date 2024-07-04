@@ -6,9 +6,9 @@ export = {
     name: "quaruntine",
     aliases: ["Quaruntine", "qch"],
     type: CommandTypes.PrefixCommand,
-    channelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
     roleWhitelist:["1148992217202040942"],
-    categoryWhitelist:["1140190313915371530"],
+    optionalCategoryWhitelist:["1140190313915371530"],
+    optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
     async execute(message: Message): Promise<void> {
 	    try{ 
 		if(message.mentions.channels.map(m => m).length){

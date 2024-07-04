@@ -1,5 +1,5 @@
 import { EventModule } from "../handler";
-import { Events, Interaction } from "discord.js";
+import { Client, EmbedBuilder, Events, ActionRowBuilder, ButtonBuilder, ButtonStyle, Interaction } from "discord.js";
 import { handleComponents } from "../handler/util/handleComponents";
 import { handleInteractionCommands } from "../handler/util/handleInteractionCommands";
 
@@ -20,5 +20,7 @@ export = {
             || interaction.isAnySelectMenu()
             || interaction.isModalSubmit()
         ) await handleComponents(interaction);
+	
+	
     }
 } as EventModule;

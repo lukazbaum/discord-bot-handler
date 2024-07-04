@@ -19,6 +19,7 @@
     "forceConsistentCasingInFileNames": true,
     "removeComments": true,
     "noImplicitAny": false,
+    "sourceMap": false,
     "typeRoots": ["node_modules/@types", "./handler/types/ProcessEnv.d.ts"],
     "baseUrl": "./",
     "lib": ["esnext", "dom"]

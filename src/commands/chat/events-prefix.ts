@@ -17,9 +17,15 @@ export = {
     async execute(message: Message): Promise<void> {
 	try{
 		let checkOwner = await isOwner(message.author.id)
-                if(checkOwner[0].channel !== message.channel.id) {
-                        await message.reply('you must be an owner/cowner of this channel to run this command')
-                        return;
+                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+
+                if(checkOwner[0].channel !== message.channel.id ){
+                        if(checkStaff.roles.cache.has('1148992217202040942')){
+                                // continue
+                        }else{
+                                await message.reply('you must be an owner/cowner of this channel to run this command')
+                                         return;
+                        }
                 }
         	let is = await getisland(message.channel.id)
 		
@@ -27,7 +33,7 @@ export = {
 			await message.reply("This channel isn't assigned to a user.")
 		}else{
 	       		await enableevents(message.channel.id)
-        		await message.reply("Epic RPG and Idle Alerts Are Enabled use `ep noevents` to disable")
+        		await message.reply("eRPG/Idle Event Alerts Are Enabled use `ep noevents` to disable")
 		}
 	}catch(err)
   	{console.log(err)}

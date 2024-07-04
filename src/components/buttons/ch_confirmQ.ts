@@ -44,7 +44,15 @@ export = {
 			    .setDescription(`The Channel <#${channelId}>, owned by <@!${user}>, has been succesfully quarantined. Use **ep recover #CHANNEL NAME** to recover channel.`)
                             .setColor('#097969')],
                     components: []
-        });
+        	});
+		let embed2 = new EmbedBuilder()
+                        .setTitle("Channel Manager: Channel Quaruntine")
+                        .setDescription(`<@!${user}> is no longer the owner of channel: <#${channelId}>`)
+                        .addFields({name:"**--Channel Sent to Quaruntine--**", value: new Date().toLocaleString(), inline: true},
+                                  {name:"**--Channel Quaruntined By--**", value: `${getMessageContent.author}`, inline: true},
+                        )
+                 var qlog = await interaction.guild.channels.cache.find(channel => channel.name === `quaruntine-logs`) as TextChannel;
+                 qlog.send({embeds: [embed2]})
     }catch(err) {console.log(err)}
     
 }} as ComponentModule;

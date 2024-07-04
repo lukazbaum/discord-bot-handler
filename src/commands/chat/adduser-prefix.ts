@@ -3,8 +3,8 @@ import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const {isOwner, adduser, addedusers, removeban} = require('../../../util/functions');
 
 export = {
-    name: "add",
-    aliases: ["Add", "adduser", "Adduser"],
+    name: "adduser",
+    aliases:  ["addusers", "Adduser", "au"],
     type: CommandTypes.PrefixCommand,
     roleWhitelist: ['1147864509344661644', '1148992217202040942', '1246691890183540777','1246691890183540777'],
     categoryWhitelist: ['1147909067172483162',
@@ -17,9 +17,15 @@ export = {
     async execute(message: Message): Promise<void> {
 	try{
 		let checkOwner = await isOwner(message.author.id)
-                if(checkOwner[0].channel !== message.channel.id) {
-                        await message.reply('you must be an owner/cowner of this channel to run this command')
-                        return;
+                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+
+                if(checkOwner[0].channel !== message.channel.id ){
+                        if(checkStaff.roles.cache.has('1148992217202040942')){
+                                // continue
+                        }else{
+                                await message.reply('you must be an owner/cowner of this channel to run this command')
+                                         return;
+                        }
                 }
 		if(message.channel.type !== ChannelType.GuildText) return;
 		if (!message.mentions.users.map(m => m).length) {

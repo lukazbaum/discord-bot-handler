@@ -4,9 +4,15 @@ import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 export = {
     name: "rolecheck",
     type: CommandTypes.PrefixCommand,
-    channelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
     roleWhitelist:["1148992217202040942"],
-    categoryWhitelist:["1140190313915371530"],
+    optionalCategoryWhitelsit:['1147909067172483162',
+                        '1147909156196593787',
+                        '1147909539413368883',
+                        '1147909373180530708',
+                        '1147909282201870406',
+                        '1147909200924643349',
+                        '1140190313915371530'],
+    optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
     async execute(message: Message): Promise<void> {
 	try{
 		if(message.channel.type !== ChannelType.GuildText) return;

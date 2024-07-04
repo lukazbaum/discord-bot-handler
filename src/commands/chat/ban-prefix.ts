@@ -25,10 +25,16 @@ export = {
     async execute(message: Message): Promise<void> {
 	try{
 		let checkOwner = await isOwner(message.author.id)
-                if(checkOwner[0].channel !== message.channel.id) {
-                        await message.reply('you must be an owner/cowner of this channel to run this command')
-                        return;
-                }
+		let checkStaff = await  message.guild.members.cache.get(message.author.id)
+
+                if(checkOwner[0].channel !== message.channel.id ){
+			if(checkStaff.roles.cache.has('1148992217202040942')){
+				// continue 
+			}else{
+                        	await message.reply('you must be an owner/cowner of this channel to run this command')
+                       			 return;
+                	}
+		}
 	    	if(message.channel.type !== ChannelType.GuildText) return;
 	    	if (!message.mentions.users.map(m => m).length) {
 			    await message.reply('Did you forget to add the user?')
@@ -41,13 +47,15 @@ export = {
 	    	const id = await message.mentions.users.first().id
 	    	const checkbans = await bannedusers(message.channel.id);
 	    	let cleanid = await id.replace(/\D/g, '');
-	    	const memberTarget = message.guild.members.cache.get(id)
+	    	const memberTarget = await message.guild.members.cache.get(id)
 	    
 	    	if (memberTarget.roles.cache.has("1148992217202040942")) {
 			    await message.reply('Nice. You cant ban a staff member')
-		    	return;
-	    	}
-            
+		    		return;
+	    	}else if( memberTarget.roles.cache.has("1140520446241034290")){   
+				await message.reply('you can not ban server bots') 
+					return;
+           	} 
 	    	if(id  === message.author.id){
                 	  await message.reply("Seriously? <a:ep_bozabonk:1164312811468496916>")
 		  	return;

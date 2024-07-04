@@ -1,15 +1,18 @@
-import {  Message, ButtonStyle, ButtonBuilder, ActionRowBuilder, GuildChannelManager, EmbedBuilder}  from "discord.js";
+import {  TextChannel, Message, ButtonStyle, ButtonBuilder, ActionRowBuilder, GuildChannelManager, EmbedBuilder}  from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const { getisland } = require('/home/ubuntu/ep_bot/extras/functions');
 
 export = {
     name: "unassign",
     aliases: ["Unassign", "uc", "uch"],
-    channelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
+    type: CommandTypes.PrefixCommand,
     roleWhitelist:["1148992217202040942"],
+    optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228","1142401741866946702"],
+    optionalCategoryWhitelsit:["1137072690264551604"],
     async execute(message: Message): Promise<void> {
 	    try{ 
 		if(message.mentions.channels.map(m => m).length){
+			//pass;
 		}else{
                         await message.reply("you must specifiy a valid channel including the #")
                         return;

@@ -6,30 +6,14 @@ const { AmariBot } = require("amaribot.js");
 const amariclient = new AmariBot(amarikey);
 
 export = {
-    name: "upgrade",
-    aliases: ["Upgrade", "up"],
+    name: "staff_upgrade",
+    aliases: ["staff_Upgrade", "sup", "changecat"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644'],
-    categoryWhitelist: ['1147909067172483162',
-                        '1147909156196593787',
-                        '1147909539413368883',
-                        '1147909373180530708',
-                        '1147909282201870406',
-                        '1147909200924643349',
-                        '1140190313915371530'],
+    roleWhitelist:["1148992217202040942"],
+    optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
+    optionalCategoryWhitelist:["1137072690264551604"],
     async execute(message: Message): Promise<void> {
          try{
-		let checkOwner = await isOwner(message.author.id)
-                let checkStaff = await  message.guild.members.cache.get(message.author.id)
-
-                if(checkOwner[0].channel !== message.channel.id ){
-                        if(checkStaff.roles.cache.has('1148992217202040942')){
-                                // continue 
-                        }else{
-                                await message.reply('you must be an owner/cowner of this channel to run this command')
-                                         return;
-                        }
-                } 
 		let targetChannel;
 		let channelName = message.mentions.channels.first()
 		if(channelName) {
@@ -78,14 +62,21 @@ export = {
                                 await channel.setParent(boosterParent);
 				await channel.lockPermissions()
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
-                                message.reply('Your Channel Has Been Moved to Booster Fields')
+                                message.reply('Users Channel Has Been Moved to Booster Fields')
                         }else{
-                                message.reply('You are a booster and at the highest category')
+                                message.reply('user is a booster and at the highest category')
 				return;
-                             }
-                } else if(level <= 39){
-                                message.reply('Reach Amari Level 40+ for channel upgrades')
-				return;
+			}
+                } else if((level >= 20) && (level <= 39)){
+				if(channel.parentId === skaterPark) {
+					message.reply("Users channel is in the right amari level")
+					return;
+				}else{
+					await channel.setParent(skaterPark), {reason: "channel channel change"}
+					await channel.lockPermissions()
+					await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
+					message.reply("Users Channel Has Moved to Skater Park")
+				}
 		}else if((level >= 40) && (level <= 59)){
                         if(channel.parentId === parkPavilion) {
                                 message.reply("no upgrade available till amari lvl. 60")
@@ -94,7 +85,7 @@ export = {
 				await channel.setParent(parkPavilion), {reason: "channel upgrade"}
 				await channel.lockPermissions()
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
-                                message.reply('Your Channel Has Moved to Picnic Pavlilion')
+                                message.reply('Users Channel Has Moved to Picnic Pavlilion')
                         }
 		}else if((level >= 60) && (level <= 79)){
                         if(channel.parentId === adventureTrails) {
@@ -103,7 +94,7 @@ export = {
                         }else{await channel.setParent(adventureTrails), {reason: 'channel upgrade'}
 				await channel.lockPermissions()
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
-                                message.reply('Your Channel Has Moved to Adventure Trails')
+                                message.reply('Users Channel Has Moved to Adventure Trails')
                         }
 		}else if((level >= 80) && (level <= 119)){
                         if(channel.parentId === tropicalLounge ) {
@@ -112,7 +103,7 @@ export = {
                         } else {await channel.setParent(tropicalLounge), {reason: 'channel upgrade'}
 				await channel.lockPermissions()
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
-                                message.reply('Your Channel Has Moved to Tropical Lounge')
+                                message.reply('Users Channel Has Moved to Tropical Lounge')
                         }
 		}else if(level >= 120){
                         if(channel.parentId === parkPeaks) {
@@ -121,7 +112,7 @@ export = {
                         }else {await channel.setParent(parkPeaks), {reason: 'channel upgrade'}
 				await channel.lockPermissions()
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
-                                message.reply('Your Channel Has Moved to Park Peaks')
+                                message.reply('Users Channel Has Moved to Park Peaks')
                         }
                 }else{
 			message.reply("something happened, contact a dev")
@@ -158,12 +149,11 @@ export = {
                         }
                 }
 		let embed = new EmbedBuilder()
-                    .setTitle("Channel Manager: Channel Upgrade")
-		    .setDescription("Channel Has Been Upgraded. *NOTE* Channel is Hidden. Use `ep unhide` to make it public")
+                    .setTitle("Channel Manager: Channel Upgrade/Change")
+		    .setDescription("Channel Has Been Moved. \n*NOTE* Channel is Hidden. Use `ep unhide` to make it public")
                 	await message.reply({embeds: [embed]})
              } catch (err)
-                {console.error(err)}
-                message.reply('something happened, contact an Admin')
-    		}
+                {console.log(err)}
+    	}
 } as PrefixCommandModule;
 

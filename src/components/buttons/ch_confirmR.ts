@@ -75,7 +75,15 @@ export = {
 					    Channel owner  can use *ep upgrade* to move to right category.`)
                             .setColor('#097969')],
                     components: []
-        });
+        	});
+		let embed2 = new EmbedBuilder()
+                        .setTitle("Channel Manager: Channel Recover")
+                        .setDescription(`<@!${user}> is now the owner of channel: <#${channelId}>`)
+                        .addFields({name:"**--Channel Recovered At--**", value: new Date().toLocaleString(), inline: true},
+                                  {name:"**--Channel Assigned By--**", value: `${getMessageContent.author}`, inline: true},
+                        )
+                var qlog = await interaction.guild.channels.cache.find(channel => channel.name === `quaruntine-logs`) as TextChannel;
+                qlog.send({embeds: [embed2]})
     }catch(err) {console.log(err)}
     
 }} as ComponentModule;

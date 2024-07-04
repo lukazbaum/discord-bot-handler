@@ -1,0 +1,65 @@
+import { Message, ChannelType, ChannelManager, Role, GuildChannel, GuildMember, BitField, PermissionsBitField, EmbedBuilder } from "discord.js";
+import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+const { guildBan } = require('/home/ubuntu/ep_bot/extras/functions');
+
+
+export = {
+    name: "banuser",
+    type: CommandTypes.PrefixCommand,
+    roleWhitelist:["1148992217202040942"],
+    async execute(message: Message): Promise<void> {
+	try{
+		if(message.channel.type !== ChannelType.GuildText) return;
+
+		let messageContent = message.content.toString().toLowerCase()
+
+		if(messageContent.endsWith("banuser")) {
+			await message.reply("usage: `ep banuser USER REASON`")
+			return;
+		}
+		let commands = messageContent.split("banuser")
+		let user = message.mentions.users.first()
+		let reason = commands.slice(1).join(' '); // Reason of the ban (Everything behind the mention)
+		if (!user) {
+			try{
+			    if (!message.guild.members.get(commands.slice(0, 1).join(' '))) 
+					throw new Error('Couldn\' get a Discord user with this userID!');
+
+			     user = message.guild.members.get(args.slice(0, 1).join(' '));
+			     user = user.user;
+			} catch (error) {
+				await message.reply("User does not exist")
+			}		
+		}
+		if (user === message.author){ 
+			await message.reply('You can\'t ban yourself'); 
+			return;
+		}
+		if (!reason){
+			await message.reply('You forgot to enter a reason for this ban!'); 
+			return;
+		}
+		if (!message.guild.member(user).bannable){ 
+			await message.reply('You can\'t ban this user'); 
+			return;
+		}
+		await message.guild.ban(user)
+		let date = new Date().toLocaleString()
+		await guildBan(user, 'ban', reason, message.author.id, date)
+
+		
+		let embed = new EmbedBuilder()
+			.setTitle("Staff Manager: Server Ban")
+			.setDescroption(`**Action**: Ban
+					**User**: ${user.username}#${user.discriminator} (${user.id})
+					**Reason**: ${reason}`);	
+
+        	await message.reply({embeds: [embed]})
+		var userlog = await interaction.guild.channels.cache.find(channel => channel.name === `mod_log`) as TextChannel;
+                await userlog.send({embeds: [embed]})
+	}catch(err)
+	{ await message.reply('something happened, contact a dev')
+	console.log(err)}
+
+    }
+} as PrefixCommandModule;

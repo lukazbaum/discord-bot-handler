@@ -18,19 +18,20 @@ export = {
                 .setFields({name: "Want to add a channel to this list?", value:"Type `ep addfav`"})
 		.setDescription(`Channel List\n\nYou do not have any favorite channel.`)
         		await message.reply({embeds:[embed1]})
+		    	return;
 	    }
-		let channelList = " "
-		for (let i = 0;i < channelFavs.length; i++) {
-			channelList = await channelList.concat(`\n ${i+1} <#${channelFavs[i].channel}>`)
-		}
+	    let channelList = " "
+	    for (let i = 0; i < channelFavs.length; i++) {
+		channelList = await channelList.concat(`\n ${i+1} <#${channelFavs[i].channel}>`)
+	    }
 				
-		let embed2 =  new EmbedBuilder()
+	    let embed2 =  new EmbedBuilder()
 		    .setTitle("Quick Channel List")
 		    .setFooter({text:message.author.tag, iconURL:message.author.displayAvatarURL()})
                     .setTimestamp()
                     .setColor('#097969')
 		    .setDescription(`${channelList}`);
-			await  message.reply({embeds:[embed2]})
+	   await message.reply({embeds:[embed2]})
 	}catch(err)
   	{console.log(err)}
     }

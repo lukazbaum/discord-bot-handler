@@ -16,11 +16,12 @@ export const client: DiscordClient = new DiscordClient({
     await client.registerEvents();
     await client.registerComponents();
     await client.registerCommands({
+
         // Whether to deploy your Slash Commands to the Discord API (refreshes command.data)
         // Not needed when just updating the execute function.
         // Keep in mind that guild commands (deploy: false) will be deployed instantly
         // and global commands (deploy: true) can take up to one hour.
-        deploy: true
+        deploy: false 
     });
     // Existing commands can be deleted with their id and RegisterType like this:
     // await client.deleteCommand("1239882465229668414", RegisterTypes.Guild)

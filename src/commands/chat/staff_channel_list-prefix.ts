@@ -6,10 +6,11 @@ export = {
     name: "channellist",
     aliases: ["Channellist", "cl"],
     type: CommandTypes.PrefixCommand,
-    channelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
     roleWhitelist:["1148992217202040942"],
-    categoryWhitelist:["1140190313915371530"],
+    optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
+    optionalCategoryWhitelist:["1137072690264551604"],
     async execute(message: Message): Promise<void> {
+
     try{
 	   if(message.channel.type !== ChannelType.GuildText) return;
 	   const allChannels = await getislands()  

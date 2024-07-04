@@ -9,9 +9,16 @@ export = {
     name: "userinfo",
     aliases: ["Userinfo", "ui", "chaninfo", "Chaninfo"],
     type: CommandTypes.PrefixCommand,
-    channelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
     roleWhitelist:["1148992217202040942"],
-    categoryWhitelist:["1140190313915371530"],
+    optionalCategoryWhitelist: ['1140190313915371530',
+                        '1147909156196593787',
+                        '1147909539413368883',
+                        '1147909373180530708',
+                        '1137072690264551604',
+                        '1147909282201870406',
+                        '1147909200924643349',
+                        '1147909067172483162',
+                        '1140190313915371530'],
     async execute(message: Message): Promise<void> {
     try{
 	    if(message.channel.type !== ChannelType.GuildText) return;
@@ -35,7 +42,7 @@ export = {
 		    channelInfo = await getisland(channel) 
 		    user = channelInfo.user
 	    }else{
-		    message.reply(`something went wrongi contact a Dev`)
+		    message.reply(`something went wrong contact a Dev`)
 		    return;
 	    }
 		    
@@ -129,7 +136,7 @@ export = {
 		if(channelInfo) {
 	    		 embed1 = new EmbedBuilder()
 	   			.setTitle("Staff User Info")
-				.setDescription(`** User Info For: ** ${userName}
+				.setDescription(`** User Info For: ** <@!${user}>
 					         ** User Owns Channel: ** <#${channel}>`)
 	 			.addFields({name:"__Channel Users__", value:`${addList}`, inline: true},
 					   {name:"__Channel Cowners__", value: `${cowners}`, inline: true},
