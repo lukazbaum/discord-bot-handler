@@ -11,7 +11,7 @@ const { OPENAI_API_KEY} = require('../../../../ep_bot/extras/settings')
 const OpenAI = require("openai");
 const openai = new OpenAI({
           apiKey: OPENAI_API_KEY,
-                });
+            });
 
 export = {
     name: "makeimage",
