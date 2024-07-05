@@ -81,24 +81,19 @@ export = {
 		 channelName = String(newName).split(`,`)[1].trimStart();
 		 channelName = channelName.replace(/>/g, '')
 	    }
-	   
+
 	   let channelExists =  await message.guild.channels.cache.find(channel => channel.id === `${channelName}`)
            let channelIHAZ = 0
-	   if(!channelExists){
-	   	await message.guild.channels.create({
-                	name: `${channelName}`,
-               		type: ChannelType.GuildText,
-               		parent: "1147909200924643349",
-       			})
-	       
-	   }else{
+
+	   if(channelExists){
 		   channelIHAZ = 1
 	   }
+	       
 
 	    await progress_bar.edit('====>...')
+	    
 	   
 	    let channel;
-	    
 	    if(channelIHAZ === 1) {
 		    channel = await message.guild.channels.cache.find(channel => channel.id === `${channelName}`) as TextChannel;
 		    if(memberTarget.roles.cache.has(staffRole)){
@@ -131,7 +126,12 @@ export = {
                         return;
                      }
             }else if(channelIHAZ === 0) {
-		    channel = await message.guild.channels.cache.find(channel => channel.name === `${channelName}`) as TextChannel;
+		    channel = await message.guild.channels.create({
+                        	name: `${channelName}`,
+                        	type: ChannelType.GuildText,
+                        	parent: "1147909200924643349",
+                        })
+
 		    if(emojiName) {
                  	channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
                  	channelName = " "
@@ -183,7 +183,7 @@ export = {
 				channel created by <@!${message.author.id}>`)
  	   let embed2 = new EmbedBuilder()
 		 .setTitle("Channel Manager: Channel Creation")
-		 .setDescription(`${owner} is assigned channel: <#${channel.id}> \n\n **Channel Manager Command:** pm help\n`)
+		 .setDescription(`${owner} is assigned channel: <#${channel.id}> \n\n **Channel Manager Command:** ep help\n`)
 		 .addFields({name:"**--Channel Created--**", value: new Date().toLocaleString(), inline: true},
 			    {name:"**--Channel Created By--**", value: `<@${message.author.id}>`, inline: true},
 		 )
