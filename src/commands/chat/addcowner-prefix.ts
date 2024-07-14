@@ -10,27 +10,35 @@ export = {
     categoryWhitelist: ['1147909156196593787', '1147909067172483162','1140190313915371530'],
     async execute(message: Message): Promise<void> {
 	 try{
-	 	let checkOwner = await isOwner(message.author.id)
-                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+		if(message.channel.type !== ChannelType.GuildText) return;
+                // This whole Block checks for the channel owner and if not channel owner
+                 // if its not the channel owner, checks for the staff role
+                 // if user is a staff member, they can run the command
+                 // if user is a channel owner or a cowner on the channel,
+                 // then they are authorized.
 
-                if(checkOwner[0].channel !== message.channel.id ){
-                        if(checkStaff.roles.cache.has('1148992217202040942')){
-                                // continue
-                        }else{
+                let getOwner = await isOwner(message.author.id)
+                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+                let channel = message.channel.id
+
+                //handles null values
+                let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+
+                if(!checkOwner){
+                        if(!(checkStaff.roles.cache.has('1148992217202040942'))){
                                 await message.reply('you must be an owner/cowner of this channel to run this command')
-                                         return;
+                                return;
+
+                        }else if(checkStaff.roles.cache.has('1148992217202040942')){
+                                console.log("Addcowner Ran In: ", message.channel.id, "by", message.author.id)
                         }
                 }
-	   	if(message.channel.type !== ChannelType.GuildText) return;
-	    	if (!message.mentions.users.map(m => m).length) {
-			    await message.reply('Did you forget to add the user?')
-		    		return;
-	    	}
+
 	    	const id = await message.mentions.users.first().id
 	    	const cleanid = await id.replace(/\D/g, '');
 	    	const checkAdds = await addedusers(message.channel.id);
             	const channelInfo = await getisland(message.channel.id);
-	    	const isAdded = checkAdds.some((added) => added.user === cleanid)
+	    	const isAdded = checkAdds && checkAdds.some((added) => added.user === cleanid)
 	    	let cowners = ' ' 
 	    	let addlist = ' '
 	    	let cownerRole = '1246691890183540777'
@@ -48,7 +56,7 @@ export = {
                         .map(pair => pair.split(":"));
 	    	const result = Object.fromEntries(cownersTemp);
 	   
-	    	function getOwner(obj, value) {
+	    	function getOwners(obj, value) {
 			    return Object.keys(obj)
 		    	.filter(key => obj[key] === value);
 	    	}
@@ -73,7 +81,7 @@ export = {
 		    		return;
 	    	}
 	    
-	    	let availableSpot = getOwner(result, 'null')
+	    	let availableSpot = getOwners(result, 'null')
 	    	let channelCowner = message.guild.members.cache.get(cleanid)
 	    	await insertcowner(message.channel.id, `${availableSpot[0]}`, cleanid)
 	    	await message.channel.permissionOverwrites.edit(cleanid, {

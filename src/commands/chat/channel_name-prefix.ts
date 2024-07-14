@@ -7,6 +7,8 @@ import { EmbedBuilder,
 	ChannelType, TextChannel } from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const { isOwner } = require('/home/ubuntu/ep_bot/extras/functions')
+const emojiRegex = require('emoji-regex');
+
 
 export = {
     name: "name",
@@ -23,18 +25,30 @@ export = {
     cooldown: 30,
     async execute(message: Message): Promise<void> {
 	try{
-		let checkOwner = await isOwner(message.author.id)
-                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+		if(message.channel.type !== ChannelType.GuildText) return;
+                // This whole Block checks for the channel owner and if not channel owner
+                 // if its not the channel owner, checks for the staff role
+                 // if user is a staff member, they can run the command
+                 // if user is a channel owner or a cowner on the channel / mentioned channel,
+                 // then they are authorized.
 
-                if(checkOwner[0].channel !== message.channel.id ){
-                        if(checkStaff.roles.cache.has('1148992217202040942')){
-                                // continue
-                        }else{
+                let getOwner = await isOwner(message.author.id)
+                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+                let channel = message.channel.id
+
+                //handles null values
+                let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+
+                if(!checkOwner){
+                        if(!(checkStaff.roles.cache.has('1148992217202040942'))){
                                 await message.reply('you must be an owner/cowner of this channel to run this command')
-                                         return;
+                                return;
+
+                        }else if(checkStaff.roles.cache.has('1148992217202040942')){
+                                console.log("Channel Name  Ran In: ", message.channel.id, "by", message.author.id)
                         }
                 }
-	  	if(message.channel.type !== ChannelType.GuildText) return;
+
 	  	let newName;
 	  	let stringContent = message.content.toString()
 	  	newName = stringContent.split("name")
@@ -49,9 +63,20 @@ export = {
 			await message.reply("You can only use standard emojis")
 			return;
 		}
-		channelWord = String(newName).trimStart() 
-		channelName = channelName.concat('・' + channelWord)
-		await message.channel.edit({name: channelName})
+		const regex = emojiRegex();
+                let emojiName;
+		for (const match of String(newName).matchAll(regex)) {
+                          emojiName = match[0]
+                }
+		if(emojiName) {
+                       channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
+                       channelName = String(channelName).concat(String(emojiName) + '・' + String(channelWord));
+                       await message.channel.edit({name: channelName})
+                } else {
+                       channelWord = String(newName)
+                       channelName = String(channelName).concat('・' + String(channelWord))
+                       await message.channel.edit({name: channelName})
+                }
 	  	
 		let embed = new EmbedBuilder()
                 	.setTitle("Channel Name Change")

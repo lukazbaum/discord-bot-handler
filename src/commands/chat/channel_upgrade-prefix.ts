@@ -19,24 +19,35 @@ export = {
                         '1140190313915371530'],
     async execute(message: Message): Promise<void> {
          try{
-		let checkOwner = await isOwner(message.author.id)
+		if(message.channel.type !== ChannelType.GuildText) return;
+                // This whole Block checks for the channel owner and if not channel owner
+                 // if its not the channel owner, checks for the staff role
+                 // if user is a staff member, they can run the command
+                 // if user is a channel owner or a cowner on the channel / mentioned channel,
+                 // then they are authorized.
+                
+                let getOwner = await isOwner(message.author.id)
                 let checkStaff = await  message.guild.members.cache.get(message.author.id)
-
-                if(checkOwner[0].channel !== message.channel.id ){
-                        if(checkStaff.roles.cache.has('1148992217202040942')){
-                                // continue 
-                        }else{
-                                await message.reply('you must be an owner/cowner of this channel to run this command')
-                                         return;
-                        }
-                } 
 		let targetChannel;
-		let channelName = message.mentions.channels.first()
-		if(channelName) {
-			targetChannel = channelName.id
-		}else{
-			targetChannel = message.channel.id
-		}
+                let channelName = message.mentions.channels.first()
+                if(channelName) {
+                        targetChannel = channelName.id
+                }else{
+                        targetChannel = message.channel.id
+                }
+
+                //handles null values
+                let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === targetChannel)
+
+                if(!checkOwner){
+                        if(!(checkStaff.roles.cache.has('1148992217202040942'))){
+                                await message.reply('you must be an owner/cowner of this channel to run this command')
+                                return;
+
+                        }else if(checkStaff.roles.cache.has('1148992217202040942')){
+                                console.log("Channel Upgrade Ran In: ", message.channel.id, "by", message.author.id)
+                        }
+                }
 
 		let cowner = ' '
 		let island = await getisland(`${targetChannel}`)
@@ -80,15 +91,15 @@ export = {
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                                 message.reply('Your Channel Has Been Moved to Booster Fields')
                         }else{
-                                message.reply('You are a booster and at the highest category')
+                                message.reply('Channel owner is a booster and at the highest category')
 				return;
                              }
                 } else if(level <= 39){
-                                message.reply('Reach Amari Level 40+ for channel upgrades')
+                                message.reply('Owner needs to Reach Amari Level 40+ for channel upgrades')
 				return;
 		}else if((level >= 40) && (level <= 59)){
                         if(channel.parentId === parkPavilion) {
-                                message.reply("no upgrade available till amari lvl. 60")
+                                message.reply("no upgrade available till owner at amari lvl. 60")
 				return;
                         }else{
 				await channel.setParent(parkPavilion), {reason: "channel upgrade"}
@@ -98,7 +109,7 @@ export = {
                         }
 		}else if((level >= 60) && (level <= 79)){
                         if(channel.parentId === adventureTrails) {
-                                message.reply("no upgrade availble until Amari lvl 80")
+                                message.reply("no upgrade availble until owner at Amari lvl 80")
 				return;
                         }else{await channel.setParent(adventureTrails), {reason: 'channel upgrade'}
 				await channel.lockPermissions()
@@ -107,7 +118,7 @@ export = {
                         }
 		}else if((level >= 80) && (level <= 119)){
                         if(channel.parentId === tropicalLounge ) {
-                                message.reply("no upgrade availble until Amari lvl 120")
+                                message.reply("no upgrade availble until owner at Amari lvl 120")
 				return;
                         } else {await channel.setParent(tropicalLounge), {reason: 'channel upgrade'}
 				await channel.lockPermissions()
@@ -162,8 +173,8 @@ export = {
 		    .setDescription("Channel Has Been Upgraded. *NOTE* Channel is Hidden. Use `ep unhide` to make it public")
                 	await message.reply({embeds: [embed]})
              } catch (err)
-                {console.error(err)}
-                message.reply('something happened, contact an Admin')
-    		}
+	    	{console.error(err)}
+
+    	}
 } as PrefixCommandModule;
 

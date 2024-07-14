@@ -7,11 +7,10 @@ const amariclient = new AmariBot(amarikey);
 
 export = {
     name: "staff_upgrade",
-    aliases: ["staff_Upgrade", "sup", "changecat"],
+    aliases: ["staffupgrade", "staff_Upgrade", "sup", "changecat"],
     type: CommandTypes.PrefixCommand,
     roleWhitelist:["1148992217202040942"],
-    optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
-    optionalCategoryWhitelist:["1137072690264551604"],
+    CategoryWhitelist:["1137072690264551604"], 
     async execute(message: Message): Promise<void> {
          try{
 		let targetChannel;
@@ -67,6 +66,9 @@ export = {
                                 message.reply('user is a booster and at the highest category')
 				return;
 			}
+		} else if((level >= 1) && (level <= 19)){
+			await message.reply("user does not hvae enough amari level. This usually happens because they removed a server boost")
+			return; 
                 } else if((level >= 20) && (level <= 39)){
 				if(channel.parentId === skaterPark) {
 					message.reply("Users channel is in the right amari level")
@@ -116,6 +118,7 @@ export = {
                         }
                 }else{
 			message.reply("something happened, contact a dev")
+			return;
 		}
                 for(let i = 1; i <= 7; i++) {
                 	if(i ===1){ cowner = island.cowner1

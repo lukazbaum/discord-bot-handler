@@ -17,26 +17,39 @@ export = {
 			'1140190313915371530'],
     async execute(message: Message): Promise<void> {
 	 try{
-		let checkOwner = await isOwner(message.author.id)
-                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+		if(message.channel.type !== ChannelType.GuildText) return;
+                // This whole Block checks for the channel owner and if not channel owner
+		 // if its not the channel owner, checks for the staff role
+		 // if user is a staff member, they can run the command
+		 // if user is a channel owner or a cowner on the channel / mentioned channel,
+		 // then they are authorized. 
 
-                if(checkOwner[0].channel !== message.channel.id ){
-                        if(checkStaff.roles.cache.has('1148992217202040942')){
-                                // continue 
-                        }else{
-                                await message.reply('you must be an owner/cowner of this channel to run this command')
-                                         return;
-                        }
-                } 
-	    	if(message.channel.type !== ChannelType.GuildText) return;
-	    	let channelName = message.mentions.channels.first()
-	    	let channel;
-	    	if(channelName) {
-			channel = channelName.id
-	    	}else{
-			channel = message.channel.id
-	    	}
-	    
+		let getOwner = await isOwner(message.author.id)
+                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+		let channelName = message.mentions.channels.first()
+                let channel;
+                
+		if(channelName) {
+                        channel = channelName.id
+                }else{
+                        channel = message.channel.id
+                }
+
+		//handles null values 
+		let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+
+                if(!checkOwner){
+                        if(!(checkStaff.roles.cache.has('1148992217202040942'))){
+				await message.reply('you must be an owner/cowner of this channel to run this command')
+                                return;
+
+                	}else if(checkStaff.roles.cache.has('1148992217202040942')){
+				console.log("Channel Info Ran In: ", message.channel.id, "by", message.author.id)
+			}
+		}
+	   
+	   	// get all channel information 
+
 	    	const alladds = await addedusers(`${channel}`);
 	    	const allBans = await bannedusers(`${channel}`);
 	    	const channelInfo = await getisland(`${channel}`);

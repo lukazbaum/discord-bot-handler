@@ -23,7 +23,19 @@ export = {
     try{
 	    if(message.channel.type !== ChannelType.GuildText) return;
 	    let stringContent = message.content.toString()
-	    if(!stringContent.includes('#') && !stringContent.includes('@')) {
+	    function isNumber(value) {
+  		return !isNaN(value);
+		}
+	    let stringContentNoSpace = stringContent.replace(/' '/g,'')
+	    let getUsername;
+
+	    if(isNumber(stringContentNoSpace)){
+		    getUsername = await message.guild.members.cache.get(stringContentNoSpace);
+		    if(!(getUsername)){
+			    await message.reply(`${stringContentNoSpace} this userid not a guild member`) 
+			    return;
+		    }
+	    }else if(!stringContent.includes('#') && !stringContent.includes('@')) {
 		    await message.reply('please specify either a user or #channelName') 
 		    return; 	
 	    }
@@ -37,6 +49,10 @@ export = {
 		    user = userName.id
 		    channelInfo = await checkisland(user)
 		    channel = channelInfo.channel
+	    }else if(getUsername.user.username){
+		    user = getUsername.id
+		    channelInfo = await checkisland(user)
+                    channel = channelInfo.channel
 	    }else if(channelName){
 		    channel = channelName.id
 		    channelInfo = await getisland(channel) 

@@ -90,13 +90,23 @@ export = {
 				{name:"➡ Channel Unassign (unrecoverable)", value: "> unassign, uc, uch"},
 				{name:"➡ Channel Assign: ex: `ep assign @user # ✅ channelname`", value: "> assign, Assign, ac, assignchannel, assignch", inline:false},
 				{name:"➡ Channel List: lists all channels and their non-pinged owners", value:"> channellist, Channellist, cl", inline:false},
-				{name:"➡ Channel Role Check: checks a specific roles permission in channel", value: "> rolecheck", inline:false},
-				{name:"➡ Channel Clear Messages: Bulk deletes a specified amount of messages in a channel", value: "> clear, delete", inline:false},
-				{name:"➡ Channel Upgrades: moves channel to appropriate area", value: "> staffupgrade, sup, changecat ", inline:false},
+			)
+		let staffpage2 = new EmbedBuilder()
+			.setTitle("Parkman Help: Staff Commands pt. 2")
+                        .setAuthor({ name: `🧩 Parkman Staff Help `})
+                        .setFooter({ text: `🧩 Parkman Help`})
+                        .setColor(`#097969`)
+			.addFields(
+                                {name:"➡ Channel Role Check: checks a specific roles permission in channel", value: "> rolecheck", inline:false},
+                                {name:"➡ Channel Clear Messages: Bulk deletes a specified amount of messages in a channel", value: "> clear, delete", inline:false},
+                                {name:"➡ Channel Upgrades: moves channel to appropriate area", value: "> staffupgrade, sup, changecat ", inline:false},
+                                {name:"➡ Server Ban User", value:"> banuser, bu, serverban, sb", inline:false},
+                                {name:"➡ Remove Server Ban", value:"> removeserverban, ub, rsb, ubuser, usb, sub", inline:false},
 			)
 
+
 		const userpages = [userpage1, userpage2, userpage3, userpage4]		
-		const staffpages = [staffpage1, userpage1, userpage2, userpage3, userpage4]
+		const staffpages = [staffpage1, staffpage2, userpage1, userpage2, userpage3, userpage4]
 		const options =  {
 			timeout: 600000, 
     			deleteMessage: true, 

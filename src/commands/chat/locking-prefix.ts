@@ -1,5 +1,5 @@
 import {CommandTypes, PrefixCommandModule} from "../../handler/types/Command";
-import { Message, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
+import { Guild, TextChannel, Message, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 const {addedusers, getisland, isOwner} = require('/home/ubuntu/ep_bot/extras/functions');
 
 export = {
@@ -16,17 +16,29 @@ export = {
                         '1140190313915371530'],
     async execute(message: Message): Promise<void> {
 	try{
-		let checkOwner = await isOwner(message.author.id)
-                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+                 // This whole Block checks for the channel owner and if not channel owner
+                 // if its not the channel owner, checks for the staff role
+                 // if user is a staff member, they can run the command
+                 // if user is a channel owner or a cowner on the channel / mentioned channel,
+                 // then they are authorized.
 
-                if(checkOwner[0].channel !== message.channel.id ){
-                        if(checkStaff.roles.cache.has('1148992217202040942')){
-                                // continue
-                        }else{
+                let getOwner = await isOwner(message.author.id)
+                let checkStaff = await  message.guild.members.cache.get(message.author.id)
+                let channel = message.channel.id
+
+                //handles null values
+                let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+
+                if(!checkOwner){
+                        if(!(checkStaff.roles.cache.has('1148992217202040942'))){
                                 await message.reply('you must be an owner/cowner of this channel to run this command')
-                                         return;
+                                return;
+
+                        }else if(checkStaff.roles.cache.has('1148992217202040942')){
+                                console.log("Channel Lock  Ran In: ", message.channel.id, "by", message.author.id)
                         }
                 }
+
 		let island = await getisland(message.channel.id)
 		let addids = await addedusers(message.channel.id)
 		let userlist = " "
