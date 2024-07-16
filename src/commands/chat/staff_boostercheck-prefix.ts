@@ -55,11 +55,16 @@ export = {
 			let user = getChannelUsers.user
 			if(user) {
 				let userInfo = message.guild.members.cache.get(user)
-				if(!(userInfo.roles.cache.some(role => role.id === '1142141020218347601'))){
+				if(!(userInfo.roles.cache.some(role => role.id === '1142141020218347601')) &&
+					(getChannelUsers.channel !== '1246550644479885312')){
 					channelsToMove = channelsToMove.concat(`\n> <#${getChannelUsers.channel}>`)
 				}
 
 			}
+	   }
+	   // in case of zero violations 
+	   if(channelsToMove.length <= 0){
+		   channelsToMove = channelsToMove.concat(`\n> No Violation`)
 	   }
 	   
 	   let embed = new EmbedBuilder()
