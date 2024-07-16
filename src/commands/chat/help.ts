@@ -100,6 +100,7 @@ export = {
                                 {name:"➡ Channel Role Check: checks a specific roles permission in channel", value: "> rolecheck", inline:false},
                                 {name:"➡ Channel Clear Messages: Bulk deletes a specified amount of messages in a channel", value: "> clear, delete", inline:false},
                                 {name:"➡ Channel Upgrades: moves channel to appropriate area", value: "> staffupgrade, sup, changecat ", inline:false},
+                                {name:"➡ Booster Channel Audit: Audits Booster Channels", value: "> boostercheck, bc, boosts", inline:false},
                                 {name:"➡ Server Ban User", value:"> banuser, bu, serverban, sb", inline:false},
                                 {name:"➡ Remove Server Ban", value:"> removeserverban, ub, rsb, ubuser, usb, sub", inline:false},
 			)
