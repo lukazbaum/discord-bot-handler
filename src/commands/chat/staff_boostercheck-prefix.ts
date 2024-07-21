@@ -66,6 +66,8 @@ export = {
 	   if(channelsToMove.length <= 0){
 		   channelsToMove = channelsToMove.concat(`\n> No Violation`)
 	   }
+	   let getUserDiscordInfo = message.author.id
+	   console.log(getUserDiscordInfo)
 	   
 	   let embed = new EmbedBuilder()
 	    	.setTitle("Staff Channel Manager:  Booster Channels ")

@@ -21,7 +21,7 @@ export = {
 				{name:"➡ Channel Favorites List", value: "> favs, chanfav, ch, chfav, fav", inline:false},
 				{name:"➡ Add Channel Favorites", value: "> addfav, Addfav", inline:false},
 				{name:"➡ Remove Channel Favorites", value: "> addfav, Addfav", inline:false},
-				{name:"➡ Use AI Chat", value: "> askai, askme, ask", inline:false},
+				{name:"➡ Use AI Chat", value: "> ai, askai, askme, ask", inline:false},
 				{name:"➡ Use AI Image Maker", value: "> makeimage, mi", inline: false},
 				{name:"➡ Server Emojis", value: "> emojis, emojilist, allemojis", inline: false},
 			)
@@ -52,7 +52,7 @@ export = {
                                        )
                         .setColor(`#097969`)
                         .addFields(
-                                {name:"➡ Add User To Channel", value: "> adduser, Adduser, au", inline:false},
+                                {name:"➡ Add User To Channel", value: "> useradd, adduser, Adduser, au", inline:false},
                                 {name:"➡ Ban User/Bot From  Channel", value: "> ban, Ban", inline:false},
                                 {name:"➡ Remove User From Channel", value: "> removeuser, Removeuser, remuser, rem", inline:false},
                                 {name:"➡ Pin Message", value: "> pin, pinn, Pin", inline:false},
@@ -101,7 +101,7 @@ export = {
                                 {name:"➡ Channel Clear Messages: Bulk deletes a specified amount of messages in a channel", value: "> clear, delete", inline:false},
                                 {name:"➡ Channel Upgrades: moves channel to appropriate area", value: "> staffupgrade, sup, changecat ", inline:false},
                                 {name:"➡ Booster Channel Audit: Audits Booster Channels", value: "> boostercheck, bc, boosts", inline:false},
-                                {name:"➡ Server Ban User", value:"> banuser, bu, serverban, sb", inline:false},
+                                {name:"➡ Server Ban User", value:"> banserver, bs, serverban, sb", inline:false},
                                 {name:"➡ Remove Server Ban", value:"> removeserverban, ub, rsb, ubuser, usb, sub", inline:false},
 			)
 

@@ -4,7 +4,7 @@ const {isOwner, adduser, addedusers, removeban} = require('../../../util/functio
 
 export = {
     name: "adduser",
-    aliases:  ["addusers", "Adduser", "au"],
+    aliases:  ["useradd","addusers", "Adduser", "au"],
     type: CommandTypes.PrefixCommand,
     roleWhitelist: ['1147864509344661644', '1148992217202040942', '1246691890183540777','1246691890183540777'],
     categoryWhitelist: ['1147909067172483162',
@@ -27,7 +27,7 @@ export = {
                 let checkStaff = await  message.guild.members.cache.get(message.author.id)
                 let channel = message.channel.id
 
-                //handles null values
+                	//handles null values
                 let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
 
                 if(!checkOwner){
@@ -36,28 +36,42 @@ export = {
                                 return;
 
                         }else if(checkStaff.roles.cache.has('1148992217202040942')){
-                                console.log("Addcowner Ran In: ", message.channel.id, "by", message.author.id)
+                                console.log("Add User Ran In: ", message.channel.id, "by", message.author.id)
                         }
                 }
-		if (!message.mentions.users.map(m => m).length) {
-		    await message.reply('Did you forget to add the user?')
-		    return;
+
+			// check for a valid username or id 
+		let messageContent = message.content.toString().toLowerCase();
+            	let messageContentSplit = messageContent.split(" ");
+            	let userName = message.mentions.users.first();
+		let id;
+		if(!userName){
+                	if(Number.isInteger(Number(messageContentSplit[0]))){
+				id = messageContentSplit[0]
+                    	}else{
+				await message.reply("please specify a valid userid or username")
+				return;
+			}
+		}else if(userName) {
+			id = message.mentions.users.first().id
 		}
-		const id = await message.mentions.users.first().id
+
+
+			// check if user is already added to db and not staff
 		const checkAdds = await addedusers(message.channel.id);
 		let cleanid = await id.replace(/\D/g, '');
-		const memberTarget = message.guild.members.cache.get(id)
-            
-		if(id  === message.author.id){
+		const memberTarget = message.guild.members.cache.get(cleanid)
+		if(cleanid === message.author.id){
 			await message.reply("Seriously? <a:ep_bozabonk:1164312811468496916>")
 			return;
 		}
 	    
 		const isAdded = checkAdds && checkAdds.some((added) => added.user === cleanid) 
+
 	    	if(isAdded) {
 			    await message.reply('user is already added')
 	    	} else {
-	    
+	   			// if user is not added, add user to db and channel 
 	    		await adduser(cleanid, message.channel.id)
 			await removeban(cleanid, message.channel.id)
 	        	await message.channel.permissionOverwrites.edit(cleanid, {
@@ -65,6 +79,7 @@ export = {
 				SendMessages: true,
 				});
 	    		}
+			// generate response embed
 	   //@ts-ignore
 	    	let addlist = " "
 	    	const alladds = await addedusers(message.channel.id);
