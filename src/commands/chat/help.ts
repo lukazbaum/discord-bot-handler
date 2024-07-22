@@ -74,6 +74,7 @@ export = {
                                 {name:"➡ Upgrade Channel", value: "> upgrade, Upgrade, up", inline:false},
 				{name:"➡ Slowmode On", value: ">slowmode, smon, Slowmodeon, slowon", inline:false},
 				{name:"➡ Slowmode Off", value: ">slowmodeoff, smoff, Slowmodeoff, slowoff", inline:false},
+				{name:"➡ Message Clear", value: ">clear, Clear, delete, clear", inline:false},
                         )
 
 		let staffpage1 = new EmbedBuilder ()
