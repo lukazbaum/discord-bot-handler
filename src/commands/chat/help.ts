@@ -12,7 +12,7 @@ export = {
 
 		let userpage1 = new EmbedBuilder ()
 			.setTitle("Parkman Help Menu: Channel Commands pt. 1")
-			.setAuthor({ name: `🧩 Epic Park Commands for All Users`})
+			.setAuthor({ name: `🧩 Epic Park Commands for **All Users**`})
         		.setFooter({ text: `🧩 Parkman Help`})
 			.setColor(`#097969`)
 			.setDescription("Parkman commands all start with `ep <commandName>` \n\nChannel command availability is based on channel category.\n\nall Epic Park Users can access the channel favorites and AI features\n\nstaff specific commands are found in `ep help staff` \n"
@@ -24,6 +24,11 @@ export = {
 				{name:"➡ Use AI Chat", value: "> ai, askai, askme, ask", inline:false},
 				{name:"➡ Use AI Image Maker", value: "> makeimage, mi", inline: false},
 				{name:"➡ Server Emojis", value: "> emojis, emojilist, allemojis", inline: false},
+				{name:"➡ Epic Park Scoreboard", value: "> score, scores, myscore, ms", inline: false},
+				{name:"➡ Give Love", value: "> love, loves, gl, givelove", inline: false},
+				{name:"➡ Give Hugs", value: "> hug, Hug, hugs, gh", inline: false},
+				{name:"➡ Give Thanks", value: "> thanks, thank, thankyou, ty", inline: false},
+				{name:"➡ Give Bonks", value: "> Bonks, bonk, bonkyou, by", inline: false},
 			)
 
 
@@ -72,9 +77,9 @@ export = {
                                 {name:"➡ Change Channel Description", value: "> desc", inline:false},
                                 {name:"➡ Change Channel Name ex. `ep name # ✅ channelname`", value: "> name", inline:false},
                                 {name:"➡ Upgrade Channel", value: "> upgrade, Upgrade, up", inline:false},
-				{name:"➡ Slowmode On", value: ">slowmode, smon, Slowmodeon, slowon", inline:false},
-				{name:"➡ Slowmode Off", value: ">slowmodeoff, smoff, Slowmodeoff, slowoff", inline:false},
-				{name:"➡ Message Clear", value: ">clear, Clear, delete, clear", inline:false},
+				{name:"➡ Slowmode On", value: "> slowmode, smon, Slowmodeon, slowon", inline:false},
+				{name:"➡ Slowmode Off", value: "> slowmodeoff, smoff, Slowmodeoff, slowoff", inline:false},
+				{name:"➡ Message Clear", value: "> clear, Clear, delete, clear", inline:false},
                         )
 
 		let staffpage1 = new EmbedBuilder ()
