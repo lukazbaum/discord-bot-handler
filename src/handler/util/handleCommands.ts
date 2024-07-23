@@ -28,7 +28,7 @@ export async function registerCommands(client: DiscordClient, options: RegisterC
 }
 
 async function getCommandModules(client: DiscordClient): Promise<void> {
-    const commandPaths: string[] = await glob(`**/${commandsFolderName}/**/**/*.js`);
+    const commandPaths: string[] = glob.sync(`**/${commandsFolderName}/**/*.js`, { ignore: '**/node_modules/**' });
 
     for (const commandPath of commandPaths) {
         const importPath: string = `../..${commandPath.replace(/^dist[\\\/]|\\/g, "/")}`;
