@@ -26,7 +26,6 @@ export = {
                 let channelID = interaction.message.channel.id
                 let channel = interaction.guild.channels.cache.find(channel => channel.id === channelID) as TextChannel;
 		let cowners = ' '
-                let cownerRole = '1246691890183540777'
 
 		if(isAdded) {
                         await removeuser(cleanid, interaction.message.channel.id)
@@ -44,12 +43,13 @@ export = {
                                 .filter(key => obj[key] === value);
                 }
 
+		console.log(getOwner(result, cleanid))
+
                 let remuser = getOwner(result, cleanid)
                 if(remuser[0]){
                         let ownerLocationid = remuser[0].slice(-1)
                         await removecowners(interaction.message.channel.id, ownerLocationid)
                         let channelCowner = interaction.message.guild.members.cache.get(cleanid)
-                        await channelCowner.roles.remove(cownerRole)
                 }
 
 		await channel.permissionOverwrites.delete(cleanid)

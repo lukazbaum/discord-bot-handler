@@ -9,6 +9,16 @@ const openai = new OpenAI({
 export = {
     name: "askai",
     aliases: ["ai", "askme", "ask"],
+    categoryWhitelist: ['1147909067172483162',
+                        '1147909156196593787',
+                        '1147909539413368883',
+                        '1147909373180530708',
+                        '1147909282201870406',
+                        '1147909200924643349',
+	    		'1137026511921229905',
+	    		'1152913513598173214',
+	    		'1140512246141812806',
+                        '1140190313915371530'],
     type: CommandTypes.PrefixCommand,
     async execute(message: Message): Promise<void> {
 	try{
@@ -57,7 +67,6 @@ export = {
 		await progress_bar.edit(`query finished`);
 	
 	}catch(err) {
-	    await message.reply('query failed');
         	console.log(err)}
 
 	}

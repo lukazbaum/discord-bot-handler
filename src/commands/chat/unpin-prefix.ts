@@ -7,14 +7,24 @@ export = {
     name: "unpin",
     aliases: ["Unpin", "removepin"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777'],
+    guildWhitelist: ['1135995107842195550', '801822272113082389'],
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
     categoryWhitelist: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
                         '1147909373180530708',
                         '1147909282201870406',
                         '1147909200924643349',
-                        '1140190313915371530'],
+                        '1137072690264551604',
+                        '1140190313915371530',
+                        '1203928376205905960',
+                        '1232728117936914432',
+                        '1192106199404003379',
+                        '1192108950049529906',
+                        '1225165761920630845',
+                        '966458661469839440',
+                        '825060923768569907'
+                        ],
     async execute(message: Message): Promise<void> {
 	try{
 		if(message.channel.type !== ChannelType.GuildText) return;
@@ -27,19 +37,31 @@ export = {
                 let getOwner = await isOwner(message.author.id)
                 let checkStaff = await  message.guild.members.cache.get(message.author.id)
                 let channel = message.channel.id
+		let serverId = message.guild.id
 
                 //handles null values
                 let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
 
+                // object is guildId:RoleId
+
+                const modRoleList: { [key: string]: string } = {
+                        "1135995107842195550": "1148992217202040942",
+                        "801822272113082389": "807826290295570432",
+                        };
+
+                const roleId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];
+
+
                 if(!checkOwner){
-                        if(!(checkStaff.roles.cache.has('1148992217202040942'))){
+                        if(!(checkStaff.roles.cache.has(roleId))){
                                 await message.reply('you must be an owner/cowner of this channel to run this command')
                                 return;
 
-                        }else if(checkStaff.roles.cache.has('1148992217202040942')){
-                                console.log("Channel Unpin Ran In: ", message.channel.id, "by", message.author.id)
+                        }else if(checkStaff.roles.cache.has(roleId)){
+                                console.log("Clear Ran In: ", message.channel.id, "by", message.author.id)
                         }
                 }
+
 	    	if(!message.reference){
 			await message.reply("reply to the message you want the pin removed")
 	   	 }	

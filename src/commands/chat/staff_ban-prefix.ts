@@ -56,7 +56,7 @@ export = {
 		let date = new Date().toLocaleString()
 		date = String(date.replace(',', ""))
 		await guildBan(user, 'ban', reason, message.author.id, String(date))
-		await message.guild.bans.create(`${user}`,{ deleteMessageSeconds: 60 * 60 * 24 * 14, reason: `${reason}` })
+		await message.guild.bans.create(`${user}`,{ deleteMessageSeconds: 60 * 60 * 24 * 7, reason: `${reason}` })
 		
 		let embed = new EmbedBuilder()
 			.setTitle("Staff Manager: Server Ban")
@@ -65,7 +65,7 @@ export = {
 					**Reason**: ${reason}	
 					**Date:** ${String(date)}
 					**Set By: ** ${message.author.username}
-					**Messages Deleted**: 2 Weeks Worth of Messages Deleted`) 
+					**Messages Deleted**: 7 Days Worth of Messages Deleted`) 
 
 		var banlog = await message.guild.channels.cache.find(channel => channel.id === `1160751610771820554`) as TextChannel;
                 banlog.send({embeds: [embed]})

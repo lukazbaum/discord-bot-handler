@@ -14,19 +14,6 @@ export = {
         if(message.author.bot) return;
         // Handles Prefix, Ping and Message commands.
         await handleMessageCommands(message);
-	    // handle RPG Events for auto ping
-        if(message.channel.type !== ChannelType.GuildText) return;
-	
-	if(message.author.id === "555955826880413696"){
-		if(message.channel.parentId === "1140190313915371530") {
-            		features.event.message(message, PermissionFlagsBits)
-        	}else {
-			let is = await getisland(message.channel.id)
-			if(is.events) {
-				features.event.message(message, PermissionFlagsBits)
-			}
-		}
-	}
 
     }catch(err)
         {console.log(err)}

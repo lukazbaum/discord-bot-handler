@@ -6,6 +6,7 @@ export = {
     name: "recover",
     aliases: ["Recover", "rch", "rc"],
     type: CommandTypes.PrefixCommand,
+    guildWhitelist: ['1135995107842195550'],
     roleWhitelist:["1148992217202040942"],
     optionalCategoryWhitelist:["1140190313915371530"],
     optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],

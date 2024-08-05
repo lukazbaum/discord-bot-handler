@@ -6,28 +6,41 @@ export = {
     name: "channellist",
     aliases: ["Channellist", "cl"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist:["1148992217202040942"],
-    optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
-    optionalCategoryWhitelist:["1137072690264551604"],
+    guildWhitelist: ['1135995107842195550', '801822272113082389'],
+    roleWhitelist:["1148992217202040942","807826290295570432", "1073788272452579359"],
+    optionalChannelWhitelist:["1142401741866946702","1147233774938107966", "1138531756878864434", "1151411404071518228","1142401741866946702","1158570345100488754"],
+    optionalCategoryWhitelist:["1137072690264551604","1203928376205905960","1152037896841351258"],
+    
     async execute(message: Message): Promise<void> {
 
     try{
 	   if(message.channel.type !== ChannelType.GuildText) return;
 	   const allChannels = await getislands()  
-	   let channelList= 'Epic Park Channel List:'
+	   let channelList= 'Server Channel List:'
+	   let serverId = message.guild.id
 
+	   const serverList: { [key: string]: string } = {
+                    '1135995107842195550': '1135995107842195550',
+                    '801822272113082389':  '801822272113082389',
+            };
+
+	    const serverSelect =  Object.entries(serverList).find(([key, val]) => key  === serverId)?.[1];
+
+	   		
 	   for(let i = 0; i < allChannels.length; i++) {
 		   if(`${allChannels[i].user}` !== '1151325182351392818'){
-		   channelList = channelList.concat(`\n> ${i+1}. <@!${allChannels[i].user}> owns: <#${allChannels[i].channel}>`)
-		   if(channelList.length >= 1900){
-			   await message.reply({content: channelList,
+		   	if(`${allChannels[i].server}` === serverSelect){
+		   	channelList = channelList.concat(`\n> ${i+1}. <@!${allChannels[i].user}> owns: <#${allChannels[i].channel}>`)
+		   		if(channelList.length >= 1900){
+			   		await message.reply({content: channelList,
   						allowedMentions: { parse: [] }})
-			   channelList = 'Epic Park Channel List:'
-		   }else if(channelList.length === 23) {
-			   return;
+			   		channelList = 'Server Channel List:'
+		   		}else if(channelList.length === 23) {
+			   		return;
 		   }
 	 	}
 	   }
+	 }
 	   await message.channel.send({content: channelList,
 				     allowedMentions:{ parse: []}})
 

@@ -6,7 +6,8 @@ export = {
     name: "favs",
     aliases: ["chanfav", "ch", "chfav", "fav"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1143236724718317673'],
+    guildWhitelist: ['1135995107842195550', '801822272113082389'],
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
     async execute(message: Message): Promise<void> {
 	try{
 	    const channelFavs = await checkfav(message.author.id)

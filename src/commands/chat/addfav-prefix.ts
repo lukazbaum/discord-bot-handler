@@ -6,7 +6,8 @@ export = {
     name: "addfav",
     aliases: ["Addfav"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777','1143236724718317673'],
+    guildWhitelist: ['1135995107842195550', '801822272113082389'],
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
     async execute(message: Message): Promise<void> {
 
 	try{
@@ -17,17 +18,13 @@ export = {
 	    if (messageContent.includes('https')) {
 		    let regex = new RegExp(/()\d+$/)
 		    channelName = messageContent.match(regex) 
-		    console.log("http message: ", channelName)
 	    }else if(digitChannel[0]){
 		    channelName = digitChannel[0]
-		    console.log("digit channel name ", channelName)
 	    }else if(message.mentions.channels.map(m => m).length) {
 		    channelName = message.mentions.channels.first()
-		    console.log("channel mention ", channelName)
 	    }
 	
 	    channelName = String(channelName).replace(/\D/g, '');
-	    console.log("Clean Channel Name: ", channelName)
 
 	    let user = message.author.id
 	    let channelList = ''

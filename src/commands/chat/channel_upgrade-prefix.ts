@@ -9,6 +9,7 @@ export = {
     name: "upgrade",
     aliases: ["Upgrade", "up"],
     type: CommandTypes.PrefixCommand,
+    guildWhitelist: ['1135995107842195550'],
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644'],
     categoryWhitelist: ['1147909067172483162',
                         '1147909156196593787',

@@ -12,10 +12,10 @@ export = {
 
 		let userpage1 = new EmbedBuilder ()
 			.setTitle("Parkman Help Menu: Channel Commands pt. 1")
-			.setAuthor({ name: `🧩 Epic Park Commands for **All Users**`})
+			.setAuthor({ name: `🧩 Parkman Commands `})
         		.setFooter({ text: `🧩 Parkman Help`})
 			.setColor(`#097969`)
-			.setDescription("Parkman commands all start with `ep <commandName>` \n\nChannel command availability is based on channel category.\n\nall Epic Park Users can access the channel favorites and AI features\n\nstaff specific commands are found in `ep help staff` \n"
+			.setDescription("Parkman commands all start with `ep <commandName>` \n\nChannel command availability is based on Server Availability.\n\nstaff specific commands are found in `ep help staff` \n"
 			)
 			.addFields(
 				{name:"➡ Channel Favorites List", value: "> favs, chanfav, ch, chfav, fav", inline:false},
@@ -24,7 +24,7 @@ export = {
 				{name:"➡ Use AI Chat", value: "> ai, askai, askme, ask", inline:false},
 				{name:"➡ Use AI Image Maker", value: "> makeimage, mi", inline: false},
 				{name:"➡ Server Emojis", value: "> emojis, emojilist, allemojis", inline: false},
-				{name:"➡ Epic Park Scoreboard", value: "> score, scores, myscore, ms", inline: false},
+				{name:"➡ Gratitude Scoreboard", value: "> score, scores, myscore, ms", inline: false},
 				{name:"➡ Give Love", value: "> love, loves, gl, givelove", inline: false},
 				{name:"➡ Give Hugs", value: "> hug, Hug, hugs, gh", inline: false},
 				{name:"➡ Give Thanks", value: "> thanks, thank, thankyou, ty", inline: false},
@@ -34,10 +34,10 @@ export = {
 
 		let userpage2 = new EmbedBuilder ()
 			.setTitle("Parkman Help: Channel Commands pt. 2")
-                        .setAuthor({ name: `🧩 Epic Park Channel Owner Commands `})
+                        .setAuthor({ name: `🧩 Channel Owner Commands `})
                         .setFooter({ text: `🧩 Parkman Help`})
 			.setColor(`#097969`)
-                        .setDescription("parkman commands all start with `ep <commandName>` \n\n> **Skater Park**: Channel Info, Enable and Disable Events, Make Channel Public/Private, Lock Channel\n> **Picnic Pavilian**: All Above\n> **Adventure Trails**: All Above\n> **Tropical Lounge**: All Above\n> **Park Peaks**: All Above\n> **Booosters**: All Commands\n"
+                        .setDescription("parkman commands all start with `ep <commandName>` \n\n"
 					)
 			.addFields(
 				{name:"➡ Channel Information ", value: "> info, channelinfo, chinfo, Info", inline:false},
@@ -51,9 +51,9 @@ export = {
 
 		let userpage3 = new EmbedBuilder ()
                         .setTitle("Parkman Help: Channel Commands pt. 3 ")
-                        .setAuthor({ name: `🧩 Epic Park Channel Owner Commands`})
+                        .setAuthor({ name: `🧩 Channel Owner Commands`})
                         .setFooter({ text: `🧩 Parkman Help`})
-                        .setDescription("parkman commands all start with `ep <commandName>` \n\n> **Skater Park**: Add Users, Remove Users, Pin\n> **Picnic Pavilian**: All Above\n> **Adventure Trails**: All Above\n> **Tropical Lounge**: All Above\n> **Park Peaks**: All Above + Add Channel Cowner/Remove Channel Cowner\n> **Booosters**: All Commands\n"
+                        .setDescription("parkman commands all start with `ep <commandName>` \n\n>" 
                                        )
                         .setColor(`#097969`)
                         .addFields(
@@ -71,7 +71,7 @@ export = {
                         .setAuthor({ name: `🧩 Parkman Channel Owner Commands `})
                         .setFooter({ text: `🧩 Parkman Help`})
                         .setColor(`#097969`)
-                        .setDescription("parkman commands all start with `ep <commandName>` \n\n> **Skater Park**: Upgrade\n> **Picnic Pavilian**: All Above + Change Channel Name\n> **Adventure Trails**: All Above + Change Channel Description\n> **Tropical Lounge**: All Above\n> **Park Peaks**: All Above\n> **Booosters**: All Commands\n"
+                        .setDescription("parkman commands all start with `ep <commandName>` \n\n>" 
                                        )
 			.addFields(
                                 {name:"➡ Change Channel Description", value: "> desc", inline:false},
@@ -87,7 +87,7 @@ export = {
                         .setAuthor({ name: `🧩 Parkman Staff Help `})
                         .setFooter({ text: `🧩 Parkman Help`})
                         .setColor(`#097969`)
-                        .setDescription("parkman commands all start with `ep <commandName>` \n\nStaff Members have access to all user commands\n\nCommands listed here are for staff members only\n"
+                        .setDescription("parkman commands all start with `ep <commandName>` \n\nStaff Members have access to all user commands\n\nCommands listed here are for staff members only\n\n >Not All Commands Are Enabled By Default"
 			)
 			.addFields(
 				{name:"➡ User Information", value:"> userinfo, ui, chaninfo, Chaninfo (will take both @user & #channelname", inline:false},

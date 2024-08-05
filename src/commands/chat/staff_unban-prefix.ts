@@ -34,7 +34,7 @@ export = {
 			console.log(getUsername)
 			if (getUsername.user.username === userName) {
 				await message.guild.members.unban(getUsername.user.id, reason)
-				user = getUsername.user.username
+				user = getUsername.user.id
 			}else{
 				message.reply("user is not listed as banned on this server")
 				return;
@@ -45,7 +45,7 @@ export = {
 				getUsername = await message.guild.bans.fetch(messageContentSplit[0])
                                 if (getUsername.user.id === messageContentSplit[0]){
                                 	message.guild.members.unban(getUsername.user.id, reason)
-					user = getUsername.user.username 
+					user = getUsername.user.id 
 					}else{
                                                 message.reply("user is not listed as banned on this server")
                                                 return;

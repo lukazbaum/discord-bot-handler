@@ -9,7 +9,8 @@ export = {
     name: "userinfo",
     aliases: ["Userinfo", "ui", "chaninfo", "Chaninfo"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist:["1148992217202040942"],
+    guildWhitelist: ['1135995107842195550', '801822272113082389'], 
+    roleWhitelist:["1148992217202040942","807826290295570432"],
     optionalCategoryWhitelist: ['1140190313915371530',
                         '1147909156196593787',
                         '1147909539413368883',
@@ -18,7 +19,15 @@ export = {
                         '1147909282201870406',
                         '1147909200924643349',
                         '1147909067172483162',
-                        '1140190313915371530'],
+                        '1140190313915371530',
+	                '1203928376205905960',
+                        '1232728117936914432',
+                        '1192106199404003379',
+                        '1192108950049529906',
+                        '1225165761920630845',
+                        '966458661469839440',
+                        '825060923768569907'
+			],
     async execute(message: Message): Promise<void> {
     try{
 	    if(message.channel.type !== ChannelType.GuildText) return;
@@ -43,6 +52,7 @@ export = {
 	    let channelName = message.mentions.channels.first()
 	    let user= '' 
 	    let channel = ''
+	    let serverId = message.guild.id
 	    let channelInfo;
 
 	    if(userName) {
@@ -62,7 +72,13 @@ export = {
 		    return;
 	    }
 		    
-	    const verifiedRoleId = '1143236724718317673'
+
+            const verifiedRoleList: { [key: string]: string } = {
+                    '1135995107842195550': '1143236724718317673',
+                    '801822272113082389': '807811542057222176',
+            };
+            const verifiedRoleId = Object.entries(verifiedRoleList).find(([key, val]) => key === serverId)?.[1];
+
 	    const cowner_channels = await getCoChannels(user);
 	    let addList = ' '
 	    let bannedList =  ' '
@@ -151,7 +167,7 @@ export = {
 
 		if(channelInfo) {
 	    		 embed1 = new EmbedBuilder()
-	   			.setTitle("Staff User Info")
+	   			.setTitle("Staff User Info View")
 				.setDescription(`** User Info For: ** <@!${user}>
 					         ** User Owns Channel: ** <#${channel}>`)
 	 			.addFields({name:"__Channel Users__", value:`${addList}`, inline: true},
@@ -172,7 +188,7 @@ export = {
 				.setColor(`#097969`)
 	    	} else {
 		   	 embed1 = new EmbedBuilder()
-                		.setTitle("Staff User Info")
+                		.setTitle("Staff User Info View")
                 		.setDescription(`** User Info For: ** ${userName}`)
 				.addFields(
 					   {name:"__User ID__", value: `${member.id}`, inline: true},

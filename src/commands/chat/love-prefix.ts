@@ -6,12 +6,15 @@ export = {
     name: "love",
     aliases: ["givelove", "Love", "gl", "loves"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777','1143236724718317673'],
+    guildWhitelist: ['1135995107842195550', '801822272113082389'],
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777','1143236724718317673','807811542057222176'],
     cooldown: 30,
     async execute(message: Message): Promise<void> {
 	try{
 		let messageContent = message.content
 		let giveId; 
+                let serverId = String(message.guild.id)
+
 		if(message.mentions.users.map(m => m).length) {
                     giveId = message.mentions.users.first().id
 		}else{
@@ -25,17 +28,17 @@ export = {
 			return;
 		}
 
-            	let check_score = await getpoints(giveId)
-            	let giver_score = await getpoints(message.author.id)
+            	let check_score = await getpoints(giveId, serverId)
+            	let giver_score = await getpoints(message.author.id, serverId)
             	let sender = message.author.id
             	if (!check_score) {
-                	    await addNewscore(`${giveId}`, 0, 0, 0, 0, 1, 0)
+                	    await addNewscore(`${giveId}`, `${serverId}`, 0, 0, 0, 0, 1, 0)
                 }
             	if(!giver_score){
-                	    await addNewscore(`${message.author.id}`,0, 0, 0, 0, 1, 0)
+                	    await addNewscore(`${message.author.id}`, `${serverId}`, 0, 0, 0, 0, 1, 0)
             	}
-            	await updateLove(giveId)
-           	await updateScore(message.author.id)
+            	await updateLove(giveId, serverId)
+           	await updateScore(message.author.id, serverId)
             	await message.reply({ content:`<@!${giveId}> got love from <@!${message.author.id}>`, allowedMentions: { repliedUser: false }})
 
 	

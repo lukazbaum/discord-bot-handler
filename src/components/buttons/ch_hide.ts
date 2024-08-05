@@ -8,8 +8,17 @@ export = {
     async execute(interaction: ButtonInteraction): Promise<void>{
 	    if(!interaction.channel) return;
             if(interaction.channel.type !== ChannelType.GuildText) return;
+	    let serverId = interaction.guild.id
+	    
+	    //guild setup
+	    const publicViewRoleList: { [key: string]: string } = {
+                        "1135995107842195550": "1143236724718317673",
+                        "801822272113082389": "807811542057222176",
+             };
 
-	    await interaction.channel.permissionOverwrites.edit(`1143236724718317673`, {
+            const publicRole = Object.entries(publicViewRoleList).find(([key, val]) => key === serverId)?.[1];
+
+	    await interaction.channel.permissionOverwrites.edit(publicRole, {
 		    ViewChannel: false,
 		    SendMessages: false
 	   });

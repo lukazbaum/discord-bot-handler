@@ -12,8 +12,17 @@ export = {
     name: "slowmodeoff",
     aliases: ["smoff", "Slowmodeoff", "slowoff"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist: ['1147864509344661644', '1148992217202040942'],
-    categoryWhitelist: ["1140190313915371530", "1147909067172483162", "1147909156196593787"],
+    guildWhitelist: ['1135995107842195550', '801822272113082389'],
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','807811542057222176'],
+    categoryWhitelist: ["1140190313915371530", "1147909067172483162", "1147909156196593787",
+    			'1203928376205905960',
+                        '1232728117936914432',
+                        '1192106199404003379',
+                        '1192108950049529906',
+                        '1225165761920630845',
+                        '966458661469839440',
+                        '825060923768569907'
+                        ],
     async execute(message: Message): Promise<void> {
 	try{
 		if(message.channel.type !== ChannelType.GuildText) return;

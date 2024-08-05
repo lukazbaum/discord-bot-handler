@@ -2,7 +2,7 @@ import { EmbedBuilder, Interaction } from "discord.js";
 import { Intent, ConsoleColor } from "./handler";
 
 // Message command prefix.
-export const prefix: string = "pm ";
+export const prefix: string = "ep ";
 
 // Intents which will be enabled by default.
 export const defaultIntents: Intent[] = [Intent.Guilds, Intent.MessageContent, Intent.GuildMessages, Intent.GuildMembers, Intent.GuildPresences];
@@ -33,7 +33,7 @@ export function getLoggerErrorMessage(message: string): string {
 // Generates an embed when a user lacks the necessary conditions to execute a command.
 export function getCommandNotAllowedEmbed(interaction: Interaction): EmbedBuilder {
     return new EmbedBuilder()
-        .setTitle("You are not allowed to use this command!")
+        .setTitle("You are not authorized to use this command!")
         .setColor("#DA373C")
 }
 

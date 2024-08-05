@@ -6,9 +6,12 @@ export = {
     name: "unassign",
     aliases: ["Unassign", "uc", "uch"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist:["1148992217202040942"],
-    optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228","1142401741866946702"],
-    optionalCategoryWhitelsit:["1137072690264551604"],
+    guildWhitelist: ['1135995107842195550', '801822272113082389'],
+    roleWhitelist:["1148992217202040942","1073788272452579359","807826290295570432"],
+    optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228","1142401741866946702","1269742900514914334"],
+    optionalCategoryWhitelist:["1137072690264551604",
+    				"1158570345100488754",
+    				"1203928376205905960"],
     async execute(message: Message): Promise<void> {
 	    try{ 
 		if(message.mentions.channels.map(m => m).length){
@@ -26,7 +29,7 @@ export = {
 		}
 		let confirmEmbed = new EmbedBuilder()
                     .setTitle("Staff Channel Manager: Unassign Channel")
-                    .setDescription("Unassigning a channel is permenant and unrecoverable. Consider `ep qch` to Quaruntine a channel") 
+                    .setDescription("Unassigning a channel is permenant and unrecoverable") 
                     .setColor('#097969')
 
         	const row: any = new ActionRowBuilder()

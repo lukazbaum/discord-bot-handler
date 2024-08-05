@@ -5,7 +5,8 @@ export = {
     name: "emojis",
     aliases: ["emojilist", "allemojis"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777'],
+    guildWhitelist: ['1135995107842195550', '801822272113082389'],
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
     async execute(message: typeof Message): Promise<void> {
 	try{
         async function chunkArray(array, size) {
