@@ -44,19 +44,32 @@ export = {
                 let getOwner = await isOwner(message.author.id)
                 let checkStaff = await  message.guild.members.cache.get(message.author.id)
                 let channel = message.channel.id
+		let serverId = message.guild.id
 
                 //handles null values
                 let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+		
+
+		  // object is guildId:RoleId
+
+                const modRoleIdList: { [key: string]: string } = {
+                        "1135995107842195550": "1148992217202040942",
+                        "801822272113082389": "807826290295570432",
+                 };
+
+                const roleId = Object.entries(modRoleIdList).find(([key, val]) => key === serverId)?.[1];
+
 
                 if(!checkOwner){
-                        if(!(checkStaff.roles.cache.has('1148992217202040942'))){
+                        if(!(checkStaff.roles.cache.has(roleId))){
                                 await message.reply('you must be an owner/cowner of this channel to run this command')
                                 return;
 
-                        }else if(checkStaff.roles.cache.has('1148992217202040942')){
-                                console.log("Channel Name  Ran In: ", message.channel.id, "by", message.author.id)
+                        }else if(checkStaff.roles.cache.has(roleId)){
+                                console.log("Channel Info Ran In: ", message.channel.id, "by", message.author.id)
                         }
                 }
+
 
 	  	let newName;
 	  	let stringContent = message.content.toString()
@@ -79,11 +92,19 @@ export = {
                 }
 		if(emojiName) {
                        channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
-                       channelName = String(channelName).concat(String(emojiName) + '・' + String(channelWord));
+		       if(message.guild.id === '1135995107842195550'){
+                       		channelName = String(channelName).concat(String(emojiName) + '・' + String(channelWord));
+		       }else if(message.guild.id === '801822272113082389'){
+			        channelName === String(channelName).concat('『'+String(emojiName)+'』'+String(channelWord));
+		       }
                        await message.channel.edit({name: channelName})
                 } else {
                        channelWord = String(newName)
-                       channelName = String(channelName).concat('・' + String(channelWord))
+		       if(message.guild.id === '1135995107842195550'){
+                       		channelName = String(channelName).concat('・' + String(channelWord))
+		       }else if(message.guild.id === '801822272113082389'){
+			        String(channelName).concat('『』'+String(channelWord))
+		       }
                        await message.channel.edit({name: channelName})
                 }
 	  	
