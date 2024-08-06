@@ -31,7 +31,8 @@ export = {
 	   for(let i = 0; i < allChannels.length; i++) {
 		   if(`${allChannels[i].user}` !== '1151325182351392818'){
 		   	if(`${allChannels[i].server}` === serverSelect){
-		   	channelList = channelList.concat(`\n> ${n+1}. <@!${allChannels[i].user}> owns: <#${allChannels[i].channel}>`)
+				n++;
+		   	channelList = channelList.concat(`\n> ${n}. <@!${allChannels[i].user}> owns: <#${allChannels[i].channel}>`)
 		   		if(channelList.length >= 1900){
 			   		await message.reply({content: channelList,
   						allowedMentions: { parse: [] }})
