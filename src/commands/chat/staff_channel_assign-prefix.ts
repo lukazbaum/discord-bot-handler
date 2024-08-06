@@ -215,7 +215,7 @@ export = {
                     if(emojiName) {
                         channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
                         channelName = " "
-                        channelName = String(channelName).concat('『'+String(emojiName)+'』 '+String(channelWord));
+                        channelName = String(channelName).concat('『'+String(emojiName)+'』'+String(channelWord));
                         await channel.edit({name: channelName})
                     } else {
                         channelWord = String(newName).split(',')[1].trimStart();

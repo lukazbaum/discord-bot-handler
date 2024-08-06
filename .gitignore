@@ -10,3 +10,4 @@ package-lock.json
 util/
 config.ts
 tsconfig.json
+*.swp
