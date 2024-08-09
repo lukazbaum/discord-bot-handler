@@ -35,7 +35,7 @@ export = {
                 let getOwner = await isOwner(message.author.id)
                 let checkStaff = await  message.guild.members.cache.get(message.author.id)
                 let channel = message.channel.id
-		 let serverId = message.guild.id
+		let serverId = message.guild.id
 
                 //handles null values
                 let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
@@ -56,18 +56,28 @@ export = {
                                 return;
 
                         }else if(checkStaff.roles.cache.has(roleId)){
-                                console.log("Clear Ran In: ", message.channel.id, "by", message.author.id)
+                                console.log("Remove user Ran In: ", message.channel.id, "by", message.author.id)
                         }
                 }
 
-	    	if (!message.mentions.users.map(m => m).length) {
-			await message.reply('Did you forget to add the user?')
-		    	return;
-	    	}
-	    	const id = await message.mentions.users.first().id
+		let messageContent = message.content.toString().toLowerCase();
+                let messageContentSplit = messageContent.split(" ");
+                let userName = message.mentions.users.first();
+                let id;
+                if(!userName){
+                        if(Number.isInteger(Number(messageContentSplit[0]))){
+                                id = messageContentSplit[0]
+                        }else{
+                                await message.reply("please specify a valid userid or username")
+                                return;
+                        }
+                }else if(userName) {
+                        id = message.mentions.users.first().id
+                }
+
+		let cleanid = await id.replace(/\D/g, '');
 	    	const checkAdds = await addedusers(message.channel.id)
 	    	const channelInfo = await getisland(message.channel.id) 
-	    	const cleanid = await id.replace(/\D/g, '')
 	    	const isAdded = checkAdds.some((added) => added.user === cleanid)
 	    	const cownersArray = [channelInfo.cowner1, 
 		    			channelInfo.cowner2, 
@@ -106,16 +116,13 @@ export = {
 	    	if(remuser[0]){
 			let ownerid = remuser[0].slice(-1)
 		    	await removecowners(message.channel.id, ownerid)
-		    	let channelCowner = message.guild.members.cache.get(ownerid)
-			console.log(channelCowner)
-		    	await channelCowner.roles.remove(cownerRole)
 	    	}
 
-	    	await message.channel.permissionOverwrites.delete(message.mentions.members.first().id)
+	    	await message.channel.permissionOverwrites.delete(cleanid)
 
 	    	let embed = new EmbedBuilder()
 	    		.setTitle("Channel Manager: Remove User")
-			.setDescription(`<@!${message.mentions.members.first().id}> has been removed
+			.setDescription(`<@!${cleanid}> has been removed
 				 \n *to add user back use ep adduser*`)
 			.setColor(`#097969`)
 

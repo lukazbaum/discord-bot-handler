@@ -59,12 +59,12 @@ export = {
                 }
 
 	    	const id = await message.mentions.users.first().id
+		const cleanid = await id.replace(/\D/g, '');
 	    	const checkAdds = await addedusers(message.channel.id);
             	const channelInfo = await getisland(message.channel.id);
 	    	const isAdded = checkAdds && checkAdds.some((added) => added.user === cleanid)
 	    	let cowners = ' ' 
 	    	let addlist = ' '
-                const cleanid = await id.replace(/\D/g, '');
 
 
 	    	if(id  === message.author.id){

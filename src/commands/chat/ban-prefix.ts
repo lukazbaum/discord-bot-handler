@@ -91,10 +91,10 @@ export = {
 	    	const memberTarget = await message.guild.members.cache.get(cleanid)
 
 	   	 	// safety check for staff and server level bots  
-	    	if (memberTarget.roles.cache.has("1148992217202040942")) {
+	    	if (memberTarget.roles.cache.has(roleId)) {
 			    await message.reply('Nice. You cant ban a staff member')
 		    		return;
-	    	}else if( memberTarget.roles.cache.has("1140520446241034290")){   
+	    	}else if(memberTarget.roles.cache.has("1140520446241034290")){   
 				await message.reply('you can not ban server bots') 
 					return;
            	} 

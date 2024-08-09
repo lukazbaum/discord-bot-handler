@@ -38,7 +38,6 @@ export = {
 		let channelName = message.mentions.channels.first()
 		let serverId = message.guild.id
                 let channel;
-		let checkOwner;
 
                 
 		if(channelName) {
@@ -53,11 +52,8 @@ export = {
 		};
 		const verifiedRoleId = Object.entries(verifiedRoleList).find(([key, val]) => key === serverId)?.[1];
 
-		const OwnerExists = Array.from(isOwner(message.author.id));
 		
-		if(OwnerExists.length !== 0) {
-			 checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
-		}
+	        let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
 		
 		 // object is guildId:RoleId
 

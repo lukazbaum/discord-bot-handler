@@ -95,9 +95,19 @@ export = {
                                 message.reply('Channel owner is a booster and at the highest category')
 				return;
                              }
+		} else if((channel.parentId === boosterParent) && (level >= 20) && (level <= 39)) {
+			 	await channel.setParent(skaterPark), {reason: "channel change"}
+                                await channel.lockPermissions()
+                                await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
+                                message.reply('Your Channel Has Been Moved to Skater Park')
                 } else if(level <= 39){
-                                message.reply('Owner needs to Reach Amari Level 40+ for channel upgrades')
-				return;
+				if((channel.parentId == boosterParent) && (level >=19)){
+					message.reply('owner does not have enough amari to own channel, use `ep quaruntine`')
+					return;
+				} else {
+                                	message.reply('Owner needs to Reach Amari Level 40+ for channel upgrades')
+					return;
+				}
 		}else if((level >= 40) && (level <= 59)){
                         if(channel.parentId === parkPavilion) {
                                 message.reply("no upgrade available till owner at amari lvl. 60")

@@ -9,6 +9,7 @@ export = {
     guildWhitelist: ['1135995107842195550', '801822272113082389'],
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
     categoryWhitelist: ['1147909067172483162',
+	    		'1142846259321913486',
                         '1147909156196593787',
                         '1147909539413368883',
                         '1147909373180530708',
@@ -63,6 +64,7 @@ export = {
 
 
 		let stringContent = message.content
+		 console.log(stringContent)
 
 		if(Number(stringContent)) {
 			if(Number(stringContent) === 0){
