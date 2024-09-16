@@ -101,7 +101,7 @@ export = {
                                 await channel.permissionOverwrites.create(user, {SendMessages:true, ViewChannel: true})
                                 message.reply('Your Channel Has Been Moved to Skater Park')
                 } else if(level <= 39){
-				if((channel.parentId == boosterParent) && (level >=19)){
+				if(level >=19){
 					message.reply('owner does not have enough amari to own channel, use `ep quaruntine`')
 					return;
 				} else {

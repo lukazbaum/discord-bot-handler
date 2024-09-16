@@ -57,11 +57,11 @@ export = {
 
 	    if(userName) {
 		    user = userName.id
-		    channelInfo = await checkisland(user)
+		    channelInfo = await checkisland(user, serverId)
 		    channel = channelInfo.channel
 	    }else if(getUsername.user.username){
 		    user = getUsername.id
-		    channelInfo = await checkisland(user)
+		    channelInfo = await checkisland(user, serverId)
                     channel = channelInfo.channel
 	    }else if(channelName){
 		    channel = channelName.id

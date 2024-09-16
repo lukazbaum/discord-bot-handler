@@ -18,6 +18,7 @@ export = {
 	    let noChannelBoosters = ' '    
 	    let channelsList = ''
 	    let channelsToMove = ''
+	    let serverId = message.guild.id
 	    
 	    // get all users with the "booster role" and their registered channels
 
@@ -25,7 +26,7 @@ export = {
 	    for(let i = 0; i < getUsers.length; i++) {
 		    let userTag = getUsers[i] 
 		    const member = message.guild.members.cache.find(member => member.user.tag === userTag);
-		    const getChannel = await checkisland(member.user.id)
+		    const getChannel = await checkisland(member.user.id, serverId)
 		    boosterUsers.push([member.user.id, getChannel.channel])
 
 	    }

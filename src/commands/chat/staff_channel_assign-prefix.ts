@@ -29,7 +29,7 @@ export = {
        		           return;
 	    }
 	    let ownerid = `${owner.id}`
-	    let channelCheck = checkisland(owner)
+	    let channelCheck = checkisland(owner, message.guild.id)
 	    let emojiName;
 	    let channelName;
 	    let channelWord;
@@ -57,7 +57,7 @@ export = {
                     return;
             }
             
-            const serverCheck = Array.from(checkisland(owner));
+            const serverCheck = Array.from(checkisland(owner, serverId));
 		 console.log(channelCheck)
 
 	    if(serverCheck) {

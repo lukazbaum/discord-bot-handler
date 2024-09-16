@@ -29,6 +29,7 @@ export = {
                         '1192108950049529906',
                         '1225165761920630845',
                         '966458661469839440',
+	    		'808109909266006087',
                         '825060923768569907'],
 
     async execute(message: Message): Promise<void> {
@@ -91,9 +92,21 @@ export = {
 	    	const memberTarget = await message.guild.members.cache.get(cleanid)
 
 	   	 	// safety check for staff and server level bots  
+	        const unbannableBots: { [key: string]: string } = {
+                        "801822272113082389": "1234731796944650340",
+                        };
+
+                const botId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];
+
+
+
+
 	    	if (memberTarget.roles.cache.has(roleId)) {
 			    await message.reply('Nice. You cant ban a staff member')
 		    		return;
+		}else if(cleanid == botId){
+				await message.reply('you can not ban server bots')
+				return;
 	    	}else if(memberTarget.roles.cache.has("1140520446241034290")){   
 				await message.reply('you can not ban server bots') 
 					return;

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Message, MessageManager, MessageCollector } from "discord.js";
+import { Message, ChannelType, MessageManager, MessageCollector } from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const {getisland, isOwner} = require('/home/ubuntu/ep_bot/extras/functions');
 
@@ -8,7 +8,11 @@ export = {
     aliases: ["Unpin", "removepin"],
     type: CommandTypes.PrefixCommand,
     guildWhitelist: ['1135995107842195550', '801822272113082389'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
+    roleWhitelist: ['1143236724718317673',
+	    		'1147864509344661644', 
+	    		'1148992217202040942',
+	    		'1147864509344661644',
+	    		'807811542057222176'],
     categoryWhitelist: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
@@ -22,7 +26,7 @@ export = {
                         '1192106199404003379',
                         '1192108950049529906',
                         '1225165761920630845',
-                        '966458661469839440',
+	    		'808109909266006087',
                         '825060923768569907'
                         ],
     async execute(message: Message): Promise<void> {
@@ -58,7 +62,7 @@ export = {
                                 return;
 
                         }else if(checkStaff.roles.cache.has(roleId)){
-                                console.log("Clear Ran In: ", message.channel.id, "by", message.author.id)
+                                console.log("Unpin Ran In: ", message.channel.id, "by", message.author.id)
                         }
                 }
 
