@@ -68,13 +68,16 @@ export = {
 
 	    	if(!message.reference){
 			await message.reply("reply to the message you want the pin removed")
+			return;
 	   	 }	
+
 	    	let repliedTo = await message.fetchReference(message.reference.messageId)
-            	if(!repliedTo.pinned){
+            	
+		if(!repliedTo.pinned){
 			await message.reply("Message is not pinned")
 	    	}else{
 			repliedTo.unpin()
-        	    	message.reply("Your Message pin is removed")
+        	    	await message.reply("Your Message pin is removed")
     		}
 	}catch(err)
        {console.log(err)}

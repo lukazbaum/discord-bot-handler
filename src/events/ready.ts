@@ -1,5 +1,5 @@
 import Logger from "../handler/util/Logger";
-import { Events, ActivityType } from "discord.js";
+import { Events, ActivityType, ClientPresence } from "discord.js";
 import { EventModule, UserStatus } from "../handler";
 import { DiscordClient } from "../handler/util/DiscordClient";
 
@@ -10,7 +10,7 @@ export = {
         if (!client.user) return;
 
         client.user.setStatus(UserStatus.Online);
-        client.user.setActivity("In Development", { type: ActivityType.Watching });
+        client.user.setActivity("ep help // Channel Manager", { type: ActivityType.Custom});
         Logger.log(`Ready! Logged in as ${client.user.tag}`);
     }
 } as EventModule;

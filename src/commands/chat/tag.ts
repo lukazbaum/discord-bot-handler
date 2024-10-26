@@ -2,10 +2,10 @@ import { Message } from "discord.js";
 import { CommandTypes, PingCommandModule } from "../../handler";
 
 export = {
-    name: "help",
+    name: "jordi",
+    guildWhitelist: ['1135995107842195550', '801822272113082389'],
     type: CommandTypes.PingCommand,
-    disabled: true,
     async execute(message: Message): Promise<void> {
-        await message.reply("How can I help you?");
+        await message.reply("Dont Bother Me");
     }
 } as PingCommandModule;

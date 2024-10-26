@@ -6,7 +6,7 @@ export = {
     aliases: ["pinn", "Pin"],
     type: CommandTypes.PrefixCommand,
     guildWhitelist: ['1135995107842195550', '801822272113082389'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
+    roleWhitelist: ['1143236724718317673','1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
     categoryWhitelist: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
@@ -35,10 +35,11 @@ export = {
                 let getOwner = await isOwner(message.author.id)
                 let checkStaff = await  message.guild.members.cache.get(message.author.id)
                 let channel = message.channel.id
-		               let serverId = message.guild.id
+		let serverId = message.guild.id
 
                 //handles null values
                 let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+		console.log(checkOwner)
 
                 // object is guildId:RoleId 
 
@@ -56,7 +57,7 @@ export = {
                                 return;
 
                         }else if(checkStaff.roles.cache.has(roleId)){
-                                console.log("Clear Ran In: ", message.channel.id, "by", message.author.id)
+                                console.log("Pin Ran In: ", message.channel.id, "by", message.author.id)
                         }
                 }
 
@@ -69,14 +70,14 @@ export = {
 		    	return;
 	    	}
 
-	    //@ts-ignore
+		//@ts-ignore
 	    	let repliedTo = await message.fetchReference(message.reference.messageId)
+
             	if(repliedTo.pinned){
 			await message.reply("Message Has A Pin.")
-		    	return;
 	    	}else{
-		    	await repliedTo.pin()
-        	    	message.reply("Your Message is Pinned")
+		    	repliedTo.pin()
+        	    	await message.reply("Your Message is Pinned")
 	    	}
 
 	}catch(err)
