@@ -6,8 +6,12 @@ export = {
     name: "favs",
     aliases: ["chanfav", "ch", "chfav", "fav"],
     type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550', '801822272113082389'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
+	// 1113339391419625572 - Epic Wonderland
+	// 801822272113082389 - Epic
+	// 1135995107842195550 - Epic Park
+	guildWhitelist: ['1135995107842195550', '801822272113082389','1113339391419625572'],
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
+					'1113407924409221120'], // epic wonderland staff
     async execute(message: Message): Promise<void> {
 	try{
 	    const channelFavs = await checkfav(message.author.id)

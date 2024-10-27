@@ -7,7 +7,7 @@ export = {
     name: "removeserverban",
     aliases: ["ub", "rsb", "ubuser", "usb", "sub"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist:["1148992217202040942"],
+    roleWhitelist:["1148992217202040942","1113414355669753907"],
     async execute(message: Message): Promise<void> {
 	try{
 		if(message.channel.type !== ChannelType.GuildText) return;

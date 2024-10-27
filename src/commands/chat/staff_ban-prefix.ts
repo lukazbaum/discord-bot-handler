@@ -7,7 +7,11 @@ export = {
     name: "banserver",
     aliases: ["bs", "serverban", "sb"],
     type: CommandTypes.PrefixCommand,
-    roleWhitelist:["1148992217202040942"],
+	// 1113339391419625572 - Epic Wonderland
+	// 801822272113082389 - Epic
+	// 1135995107842195550 - Epic Park
+	guildWhitelist: ['1135995107842195550', '801822272113082389','1113339391419625572'],
+    roleWhitelist:["1148992217202040942","1113407924409221120"],
     async execute(message: Message): Promise<void> {
 	try{
 		if(message.channel.type !== ChannelType.GuildText) return;

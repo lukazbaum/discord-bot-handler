@@ -6,8 +6,13 @@ export = {
     name: "info",
     aliases: ["channelinfo", "chinfo", "Info"],
     type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550', '801822272113082389'],
-    roleWhitelist: ['807826290295570432', '1262566008405622879','1147864509344661644', '1148992217202040942', '1246691890183540777','1073788272452579359'],
+	// 1113339391419625572 - Epic Wonderland
+	// 801822272113082389 - Epic
+	// 1135995107842195550 - Epic Park
+	guildWhitelist: ['1135995107842195550', '801822272113082389','1113339391419625572'],
+    roleWhitelist: ['807826290295570432', '1262566008405622879','1147864509344661644', '1148992217202040942',
+					'1246691890183540777','1073788272452579359',
+					'1113407924409221120'], // epic wonderland staff
     categoryWhitelist: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
@@ -22,14 +27,15 @@ export = {
                         '1192108950049529906',
                         '1225165761920630845',
                         '966458661469839440',
-	    		'808109909266006087',
-                        '825060923768569907'
+	    				'808109909266006087',
+                        '825060923768569907',
+						'1113414355669753907' // epic wonderland staff
                         ],
     async execute(message: Message): Promise<void> {
 	 try{
 		if(message.channel.type !== ChannelType.GuildText) return;
-                // This whole Block checks for the channel owner and if not channel owner
-		 // if its not the channel owner, checks for the staff role
+		// This whole Block checks for the channel owner and if not channel owner
+		 // if it's not the channel owner, checks for the staff role
 		 // if user is a staff member, they can run the command
 		 // if user is a channel owner or a cowner on the channel / mentioned channel,
 		 // then they are authorized. 
@@ -54,49 +60,50 @@ export = {
 		const verifiedRoleId = Object.entries(verifiedRoleList).find(([key, val]) => key === serverId)?.[1];
 
 		
-	        let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+		let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
 		
 		 // object is guildId:RoleId
 
-                const modRoleIdList: { [key: string]: string } = {
+		 const modRoleIdList: { [key: string]: string } = {
                         "1135995107842195550": "1148992217202040942",
                         "801822272113082389": "807826290295570432",
+			 			'1113339391419625572':'1113407924409221120', // epic wonderland staff
                  };
 
 		const roleId = Object.entries(modRoleIdList).find(([key, val]) => key === serverId)?.[1];
 
 
-                if(!checkOwner){
-                        if(!(checkStaff.roles.cache.has(roleId))){
-                                await message.reply('you must be an owner/cowner of this channel to run this command')
-                                return;
+		if(!checkOwner){
+			if(!(checkStaff.roles.cache.has(roleId))){
+				await message.reply('you must be an owner/cowner of this channel to run this command')
+					return;
 
-                        }else if(checkStaff.roles.cache.has(roleId)){
-                                console.log("Channel Info Ran In: ", message.channel.id, "by", message.author.id)
-                        }
-                }
+			}else if(checkStaff.roles.cache.has(roleId)){
+				console.log("Channel Info Ran In: ", message.channel.id, "by", message.author.id)
+			}
+		}
 	   
 	   	// get all channel information 
 
-	    	const alladds = await addedusers(`${channel}`);
+		 const alladds = await addedusers(`${channel}`);
 	    	const allBans = await bannedusers(`${channel}`);
-	    	const channelInfo = await getisland(`${channel}`);
-	    	let addList = ' '
-	    	let bannedList =  ' '
-	    	let cowners = ' '
+			const channelInfo = await getisland(`${channel}`);
+			let addList = ' '
+		 let bannedList =  ' '
+		 let cowners = ' '
             	let eventsState = ' '
-	    	let isHidden = ' '
+		 let isHidden = ' '
 
-	    	let cownersList = [channelInfo.cowner1,
+		 let cownersList = [channelInfo.cowner1,
 					channelInfo.cowner2,
 					channelInfo.cowner3,
 					channelInfo.cowner4,
 					channelInfo.cowner5,
 					channelInfo.cowner6,
 					channelInfo.cowner7]
-	    	const filteredOwners: string[] = cownersList.filter((s): s is string => !!(s));
+		 const filteredOwners: string[] = cownersList.filter((s): s is string => !!(s));
 
-	    	for(let i = 0; i < filteredOwners.length; i++) {
+			for(let i = 0; i < filteredOwners.length; i++) {
 			cowners = await cowners.concat(`\n> ${i+1}. <@!${filteredOwners[i]}>`)
 	    	}
 		if(alladds.length >= 30){
@@ -106,15 +113,16 @@ export = {
 				addList = await addList.concat(`\n> ${i+1}. <@!${alladds[i].user}>`)
                 	}
 		}
-	    	for(let i = 0; i < allBans.length; i++) {
+		for(let i = 0; i < allBans.length; i++) {
 			bannedList = await bannedList.concat(`\n> ${i+1}. <@!${allBans[i].user}>`)
-	    	}
+		}
 
-	    	if(channelInfo.events === 1){
+		if(channelInfo.events === 1){
 			eventsState = "On"
-	    	}else{
+		}else{
 			eventsState = "Off"
-	    	}
+		}
+
 		let bitfield = message.channel.permissionsFor(verifiedRoleId).bitfield
 		let permArray = new PermissionsBitField(bitfield).toArray()
 		
@@ -126,7 +134,7 @@ export = {
 			isHidden = 'Hidden'
 		}
 
-	    	let embed1 = new EmbedBuilder()
+		let embed1 = new EmbedBuilder()
 	   		.setTitle("Channel Manager: Channel Info")
 			.setDescription(`**Channel Owner:** <@!${channelInfo.user}>`)
 	 		.addFields({name:"__Added Users__", value:`${addList}`, inline: true},
@@ -136,8 +144,7 @@ export = {
 			  		{name:"__Channel Visibility__", value: `${isHidden}`, inline: true}
 			)
 			.setColor(`#097969`)
-
-	   	await message.reply({embeds:[embed1]})
+		 await message.reply({embeds:[embed1]})
 	}catch(err)
   	{console.log(err)}
     },

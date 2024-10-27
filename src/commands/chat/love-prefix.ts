@@ -6,8 +6,13 @@ export = {
     name: "love",
     aliases: ["givelove", "Love", "gl", "loves"],
     type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550', '801822272113082389'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777','1143236724718317673','807811542057222176'],
+	// 1113339391419625572 - Epic Wonderland
+	// 801822272113082389 - Epic
+	// 1135995107842195550 - Epic Park
+	guildWhitelist: ['1135995107842195550', '801822272113082389','1113339391419625572'],
+    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777','1143236724718317673',
+					'807811542057222176',
+					'1113407924409221120'], // epic wonderland staff
     cooldown: 30,
     async execute(message: Message): Promise<void> {
 	try{
@@ -23,23 +28,22 @@ export = {
 		}
 
 
-            	if (giveId === message.author.id) {
-                    await message.reply('You can love yourself, just not this way')
-			return;
+		if (giveId === message.author.id) {
+			await message.reply('You can love yourself, just not this way')
+				return;
 		}
-
-            	let check_score = await getpoints(giveId, serverId)
-            	let giver_score = await getpoints(message.author.id, serverId)
-            	let sender = message.author.id
-            	if (!check_score) {
-                	    await addNewscore(`${giveId}`, `${serverId}`, 0, 0, 0, 0, 1, 0)
-                }
-            	if(!giver_score){
-                	    await addNewscore(`${message.author.id}`, `${serverId}`, 0, 0, 0, 0, 1, 0)
-            	}
-            	await updateLove(giveId, serverId)
-           	await updateScore(message.author.id, serverId)
-            	await message.reply({ content:`<@!${giveId}> got love from <@!${message.author.id}>`, allowedMentions: { repliedUser: false }})
+		let check_score = await getpoints(giveId, serverId)
+		let giver_score = await getpoints(message.author.id, serverId)
+		let sender = message.author.id
+		if (!check_score) {
+			await addNewscore(`${giveId}`, `${serverId}`, 0, 0, 0, 0, 1, 0)
+		}
+		if(!giver_score){
+			await addNewscore(`${message.author.id}`, `${serverId}`, 0, 0, 0, 0, 1, 0)
+		}
+		await updateLove(giveId, serverId)
+		await updateScore(message.author.id, serverId)
+		await message.reply({ content:`<@!${giveId}> got love from <@!${message.author.id}>`, allowedMentions: { repliedUser: false }})
 
 	
 	}catch(err) {

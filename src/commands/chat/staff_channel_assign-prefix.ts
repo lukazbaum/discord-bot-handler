@@ -10,13 +10,18 @@ export = {
     name: "assign",
     aliases: ["Assign", "ac","assignchannel", "assignch"],
     type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550', '801822272113082389'],
-    roleWhitelist:["1148992217202040942","807826290295570432", "1073788272452579359"],
+	// 1113339391419625572 - Epic Wonderland
+	// 801822272113082389 - Epic
+	// 1135995107842195550 - Epic Park
+	guildWhitelist: ['1135995107842195550', '801822272113082389','1113339391419625572'],
+    roleWhitelist:["1148992217202040942","807826290295570432", "1073788272452579359",
+					"1113407924409221120"], // epic wonderland staff
     optionalChannelWhitelist:["1142401741866946702","1147233774938107966", "1138531756878864434", "1151411404071518228","1142401741866946702","1158570345100488754"],
-    optionalCategoryWhitelist:["1137072690264551604","1203928376205905960","1152037896841351258"],
+    optionalCategoryWhitelist:["1137072690264551604","1203928376205905960","1152037896841351258",
+								"1113414355669753907"], //epic wonderland staff
     async execute(message: Message): Promise<void> {
 	 try{
-            if(message.channel.type !== ChannelType.GuildText) return;
+		 if(message.channel.type !== ChannelType.GuildText) return;
 	    let stringContent = message.content.toString()
 		if(!stringContent.includes("#")) {
                     await message.reply('please specify a channel name ex. # channelname')
@@ -33,19 +38,19 @@ export = {
 	    let emojiName;
 	    let channelName;
 	    let channelWord;
-            let ownerRole = message.guild.roles.cache.get('1147864509344661644')
-            let modRole = '1148992217202040942'
-            let verifiedRole = '1143236724718317673'
+		let ownerRole = message.guild.roles.cache.get('1147864509344661644')
+		 let modRole = '1148992217202040942'
+		 let verifiedRole = '1143236724718317673'
 	    let memberTarget = message.guild.members.cache.get(owner.id)
 	    let boosterRole = "1142141020218347601"
-            let staffRole = "1148992217202040942"
-            let staffParent = "1140190313915371530"
-            let boosterParent = "1147909067172483162"
-            let skaterPark = "1147909200924643349"
-            let parkPavilion = "1147909282201870406"
-            let adventureTrails = "1147909373180530708"
-            let tropicalLounge = "1147909539413368883"
-            let parkPeaks = "1147909156196593787"
+		 let staffRole = "1148992217202040942"
+		 let staffParent = "1140190313915371530"
+		 let boosterParent = "1147909067172483162"
+		 let skaterPark = "1147909200924643349"
+		 let parkPavilion = "1147909282201870406"
+		 let adventureTrails = "1147909373180530708"
+		 let tropicalLounge = "1147909539413368883"
+		 let parkPeaks = "1147909156196593787"
 	    let myamari =  await amariclient.getUserLevel(message.guild.id, ownerid)
 	    let level = parseInt(`${myamari.level}`)
 	    const regex = emojiRegex();
@@ -209,8 +214,8 @@ export = {
                                 name: `${channelName}`,
                                 type: ChannelType.GuildText,
                                 parent: "1192108950049529906",
-                        })
-		    ownerRole = message.guild.roles.cache.get('1262566008405622879')
+					})
+			ownerRole = message.guild.roles.cache.get('1262566008405622879')
 
                     if(emojiName) {
                         channelWord = String(newName).split(`${emojiName}`)[1].trimStart();

@@ -9,8 +9,12 @@ export = {
     name: "userinfo",
     aliases: ["Userinfo", "ui", "chaninfo", "Chaninfo"],
     type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550', '801822272113082389'], 
-    roleWhitelist:["1148992217202040942","807826290295570432"],
+	// 1113339391419625572 - Epic Wonderland
+	// 801822272113082389 - Epic
+	// 1135995107842195550 - Epic Park
+	guildWhitelist: ['1135995107842195550', '801822272113082389','1113339391419625572'],
+    roleWhitelist:["1148992217202040942","807826290295570432",
+					"1113407924409221120"], // epic wonderland staff
     optionalCategoryWhitelist: ['1140190313915371530',
                         '1147909156196593787',
                         '1147909539413368883',
@@ -20,13 +24,14 @@ export = {
                         '1147909200924643349',
                         '1147909067172483162',
                         '1140190313915371530',
-	                '1203928376205905960',
+	                	'1203928376205905960',
                         '1232728117936914432',
                         '1192106199404003379',
                         '1192108950049529906',
                         '1225165761920630845',
                         '966458661469839440',
-                        '825060923768569907'
+                        '825060923768569907',
+						'1113414355669753907' // epic wonderland staff
 			],
     async execute(message: Message): Promise<void> {
     try{
@@ -76,8 +81,9 @@ export = {
             const verifiedRoleList: { [key: string]: string } = {
                     '1135995107842195550': '1143236724718317673',
                     '801822272113082389': '807811542057222176',
+					'1113339391419625572':'1113407924409221120', // epic wonderland staff
             };
-            const verifiedRoleId = Object.entries(verifiedRoleList).find(([key, val]) => key === serverId)?.[1];
+		const verifiedRoleId = Object.entries(verifiedRoleList).find(([key, val]) => key === serverId)?.[1];
 
 	    const cowner_channels = await getCoChannels(user);
 	    let addList = ' '
@@ -99,7 +105,7 @@ export = {
 	    let ignoredRoles = ["1143223395350229172",
 		    		"1223728995879616573",
 	    			"1142826359178149971",
-				"1142826974172151929",
+					"1142826974172151929",
 	    			"1143223395350229172"]
 
 	    if(roleMap.length > 30) {
@@ -122,14 +128,14 @@ export = {
 
 	    if(channelInfo) {
 	    	alladds = await addedusers(channel);
-            	allBans = await bannedusers(channel);
-	    	let cownersList = [channelInfo.cowner1,
+			allBans = await bannedusers(channel);
+			let cownersList = [channelInfo.cowner1,
 		    		channelInfo.cowner2,
 	    			channelInfo.cowner3,
-				channelInfo.cowner4,
-				channelInfo.cowner5,
-				channelInfo.cowner6,
-				channelInfo.cowner7]
+					channelInfo.cowner4,
+					channelInfo.cowner5,
+					channelInfo.cowner6,
+					channelInfo.cowner7]
 	    	const filteredOwners: string[] = cownersList.filter((s): s is string => !!(s));
 
 	    	for(let i = 0; i < filteredOwners.length; i++) {

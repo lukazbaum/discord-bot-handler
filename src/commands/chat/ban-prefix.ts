@@ -14,8 +14,14 @@ export = {
     name: "ban",
     aliases: ["Ban"],
     type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550', '801822272113082389'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777','807826290295570432','807811542057222176' ],
+    // 1113339391419625572 - Epic Wonderland
+    // 801822272113082389 - Epic
+    // 1135995107842195550 - Epic Park
+    guildWhitelist: ['1135995107842195550', '801822272113082389','1113339391419625572'],
+    roleWhitelist: ['1147864509344661644', '1148992217202040942',
+                    '1246691890183540777','807826290295570432',
+                    '807811542057222176',
+                    '1113407924409221120'], // epic wonderland staff
     categoryWhitelist: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
@@ -23,14 +29,15 @@ export = {
                         '1147909282201870406',
                         '1147909200924643349',
                         '1140190313915371530',
-    			'1203928376205905960',
+    			        '1203928376205905960',
                         '1232728117936914432',
                         '1192106199404003379',
                         '1192108950049529906',
                         '1225165761920630845',
                         '966458661469839440',
-	    		'808109909266006087',
-                        '825060923768569907'],
+	    		        '808109909266006087',
+                        '825060923768569907',
+                        '1113414355669753907'], // 1113414355669753907 epic wonderland staff
 
     async execute(message: Message): Promise<void> {
 	try{
@@ -50,8 +57,9 @@ export = {
                 let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
 
 		const modRoleList: { [key: string]: string } = {
-                        "1135995107842195550": "1148992217202040942",
-                        "801822272113082389": "807826290295570432",
+                        "1135995107842195550": "1148992217202040942", // epic park staff
+                        "801822272113082389": "807826290295570432",  // epic staff
+                        '1113339391419625572':'1113407924409221120', // epic wonderland staff
                         };
 
                 const roleId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];
@@ -93,18 +101,16 @@ export = {
 
 	   	 	// safety check for staff and server level bots  
 	        const unbannableBots: { [key: string]: string } = {
-                        "801822272113082389": "1234731796944650340",
-                        };
+                        "801822272113082389": "1234731796944650340", // epic park
+                        "1113339391419625572":"1113407924409221120" // epic wonderland
+                    };
 
                 const botId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];
-
-
-
 
 	    	if (memberTarget.roles.cache.has(roleId)) {
 			    await message.reply('Nice. You cant ban a staff member')
 		    		return;
-		}else if(cleanid == botId){
+		    }else if(cleanid == botId){
 				await message.reply('you can not ban server bots')
 				return;
 	    	}else if(memberTarget.roles.cache.has("1140520446241034290")){   

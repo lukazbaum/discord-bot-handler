@@ -6,7 +6,9 @@ export = {
     name: "addfav",
     aliases: ["Addfav"],
     type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550', '801822272113082389', '1149713429561622609'],
+	// 1113339391419625572 - Epic Wonderland
+	// 801822272113082389 - Epic
+	// 1135995107842195550 - Epic Park    guildWhitelist: ['1135995107842195550', '801822272113082389', '1149713429561622609','1113339391419625572'],
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
     async execute(message: Message): Promise<void> {
 
