@@ -29,7 +29,8 @@ export = {
                         '966458661469839440',
 	    				'808109909266006087',
                         '825060923768569907',
-						'1113414355669753907' // epic wonderland staff
+						'1113414355669753907', // epic wonderland staff
+						'1113451646031241316' // epic wonderland wonderfy
                         ],
     async execute(message: Message): Promise<void> {
 	 try{

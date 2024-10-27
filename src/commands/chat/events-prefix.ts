@@ -27,7 +27,8 @@ export = {
                         '1225165761920630845',
                         '966458661469839440',
                         '825060923768569907',
-                        '1113414355669753907'], // epic wonderland staff
+                        '1113414355669753907', // epic wonderland staff
+                        '1113451646031241316'], // epic wonderland wonderfy
     async execute(message: Message): Promise<void> {
 	try{
 		let getOwner = await isOwner(message.author.id)
