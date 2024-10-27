@@ -53,7 +53,6 @@ export = {
                         "1135995107842195550": "1148992217202040942", // epic park staff
                         "801822272113082389": "807826290295570432",   // epic staff
 						'1113339391419625572':'1113407924409221120', // epic wonderland staff
-			"
                         };
 
                 const roleId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];
