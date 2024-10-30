@@ -43,12 +43,7 @@ export = {
                         .setCustomId("steal")
                         .setLabel("Steal")
                         .setStyle(ButtonStyle.Primary)
-                        .setEmoji("🤑"),
-                    new ButtonBuilder()
-                        .setCustomId("forfeit")
-                        .setLabel("forfeit")
-                        .setStyle(ButtonStyle.Danger)
-                        .setEmoji("💸️")
+                        .setEmoji("💰"),
                 )
 
             const game= await message.reply({content: "split or steal?", components: [row], });
