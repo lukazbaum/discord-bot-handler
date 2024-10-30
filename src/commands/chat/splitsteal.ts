@@ -7,7 +7,7 @@ import {
     ButtonBuilder,
     ButtonStyle,
     ActionRowBuilder,
-    ComponentType
+    ComponentType, ButtonInteraction
 } from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const {updatePlayer, getPlayer } = require('/home/ubuntu/ep_bot/extras/functions');
@@ -38,12 +38,12 @@ export = {
                         .setCustomId("split")
                         .setLabel("Split")
                         .setStyle(ButtonStyle.Primary)
-                        .setEmoji("💳"),
+                        .setEmoji("💰"),
                     new ButtonBuilder()
                         .setCustomId("steal")
                         .setLabel("Steal")
                         .setStyle(ButtonStyle.Primary)
-                        .setEmoji("💳"),
+                        .setEmoji("💸"),
                 )
 
             const game= await message.reply({content: "split or steal?", components: [row], });
@@ -56,7 +56,7 @@ export = {
                 time: 10_000,
             });
 
-            collector.on('collect', (interaction) => {
+            collector.on('collect', (interaction: ButtonInteraction) => {
                 if ( interaction.customId === "split" ) {
                     interaction.reply({content: "selection made", ephemeral: true});
                     return;
