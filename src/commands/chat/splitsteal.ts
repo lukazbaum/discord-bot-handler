@@ -27,7 +27,7 @@ export = {
         try{
             const mentions = message.mentions.users;
             if ( mentions.size !== 2 ) {
-                    message.reply('You need to mention exactly two users.');
+                    await message.reply('You need to mention exactly two users.');
                     return;
             }
             const [firstPlayer, secondPlayer] = mentions.map((user) => user);
@@ -61,7 +61,8 @@ export = {
 
             collector.on('collect', (interaction: ButtonInteraction) => {
 
-                if (interaction.user.id !== firstPlayer.id || interaction.user.id !== secondPlayer.id) {
+                // @ts-ignore
+                if (interaction.user.id !== firstPlayer || interaction.user.id !== secondPlayer) {
                      return;
                 }
 
