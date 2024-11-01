@@ -32,6 +32,7 @@ export = {
             }
             const [firstPlayer, secondPlayer] = mentions.map((user) => user);
 
+
             const row: any = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
@@ -56,14 +57,24 @@ export = {
                 time: 10_000,
             });
 
+            let selection: Array<string> = []
+
             collector.on('collect', (interaction: ButtonInteraction) => {
+
+                if (interaction.user.id !== firstPlayer.id || interaction.user.id !== secondPlayer.id) {
+                     return;
+                }
+
                 if ( interaction.customId === "split" ) {
                     interaction.reply({content: "selection made", ephemeral: true});
-                    return;
+                    selection.push((String(interaction.user.id)), "split")
+                    console.log(selection)
+
                 }
                 if ( interaction.customId === "steal" ) {
                     interaction.reply({content: "selection made", ephemeral: true});
-                    return;
+                    selection.push((String(interaction.user.id)), "steal")
+                    console.log(selection)
                 }
             })
 
