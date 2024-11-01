@@ -69,12 +69,14 @@ export = {
                     interaction.reply({content: "selection made", ephemeral: true});
                     selection.push((String(interaction.user.id)), "split")
                     console.log(selection)
+                    return;
 
                 }
                 if ( interaction.customId === "steal" ) {
                     interaction.reply({content: "selection made", ephemeral: true});
                     selection.push((String(interaction.user.id)), "steal")
                     console.log(selection)
+                    return;
                 }
             })
 
