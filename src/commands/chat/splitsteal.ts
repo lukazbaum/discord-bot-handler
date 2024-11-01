@@ -50,6 +50,9 @@ export = {
             const game= await message.reply({content: "split or steal?", components: [row], });
 
             const filter = (i)  => i.user.id === firstPlayer.id || i.user.id === secondPlayer.id;
+            console.log(filter)
+            console.log(firstPlayer)
+            console.log(secondPlayer)
 
             const collector = game.createMessageComponentCollector({
                 componentType: ComponentType.Button,
