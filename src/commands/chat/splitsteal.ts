@@ -15,21 +15,36 @@ const { updatePlayer, getPlayer } = require('/home/ubuntu/ep_bot/extras/function
 
 export = {
     name: "ss",
-    aliases: ["splitsteal", "Ss", "split", "steal"],
+    aliases: ["ss-nocoin"],
     type: CommandTypes.PrefixCommand,
     guildWhitelist: ['1135995107842195550', '801822272113082389', '1113339391419625572'],
     roleWhitelist: [
-                    '1148992217202040942', //Epic Park Staff
-                    '807811542057222176', // Epic Staff
-                    '1113407924409221120' // Epic  Wonderland
+        '1148992217202040942', //Epic Park Staff
+        '807811542057222176', // Epic Staff
+        '1113407924409221120' // Epic Wonderland
     ],
     async execute(message: Message): Promise<void> {
         try {
+            // Parse reward from message content, default to 10 if not provided
+            const parsed = message.content
+
+            if(parsed === "help") {
+                await message.reply({ content: "coin defaults to 10Q Supply custom value using a number only. usage: ```ep ss 50```"});
+                return;
+            }
+
+            const reward = parsed && !isNaN(parseInt(parsed, 10)) ? parseInt(parsed, 10) : 10;
+
+            if (isNaN(reward) || reward <= 0) {
+                await message.reply("Please specify a valid numerical coin value in Q.\nExample: `ep ss 10`");
+                return;
+            }
+
             function sleep(ms: number): Promise<void> {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
 
-            const startMessage = await message.channel.send('Split or Steal Time! 20 secs to react to this message to participate');
+            const startMessage = await message.channel.send(`Split or Steal Time! 20 seconds to react to this message to participate. Reward: ${reward}Q`);
             await startMessage.react('👍');
 
             const reactionCollector = startMessage.createReactionCollector({
@@ -57,15 +72,13 @@ export = {
 
                 const selectedUsers = Array.from(users);
 
-                console.log("selected users v4", selectedUsers)
-
                 if (selectedUsers.length < 2) {
                     await message.channel.send('Not enough participants. At least 2 participants are required to start the game.');
                     return;
                 }
 
                 const winners = selectedUsers.sort(() => 0.5 - Math.random()).slice(0, 2);
-                await message.channel.send(`Winners!: <@${winners[0]}> and <@${winners[1]}>`);
+                await message.channel.send(`Winners: <@${winners[0]}> and <@${winners[1]}>`);
 
                 await sleep(1000);
 
@@ -83,7 +96,7 @@ export = {
                             .setEmoji("💸"),
                     );
 
-                const game = await message.reply({ content: "Split or Steal? 20 seconds to choose, one choice only!", components: [row] });
+                const game = await message.reply({ content: `Split or Steal? 20 seconds to choose, one choice only! Reward: ${reward}Q!`, components: [row] });
 
                 const filter = (i: ButtonInteraction) => winners.includes(i.user.id);
                 const collector = game.createMessageComponentCollector({
@@ -117,11 +130,15 @@ export = {
                     }
 
                     if (choice1 === "split" && choice2 === "split") {
-                        await message.channel.send(`[SPLIT] <@${user1}> and <@${user2}> both chose to split! You both win!`);
+                        await message.channel.send(`[SPLIT] <@${user1}> and <@${user2}> both chose to split! You each win ${reward / 2}Q.`);
+                        await message.channel.send(`\`\`\`rpg give <@${user1}> ${reward / 2}Q\`\`\``);
+                        await message.channel.send(`\`\`\`rpg give <@${user2}> ${reward / 2}Q\`\`\``);
                     } else if (choice1 === "split" && choice2 === "steal") {
-                        await message.channel.send(`[STEAL] <@${user2}> chose to steal and takes all the winnings!`);
+                        await message.channel.send(`[STEAL] <@${user2}> chose to steal and takes all ${reward}Q!`);
+                        await message.channel.send(`\`\`\`rpg give <@${user2}> ${reward}Q\`\`\``);
                     } else if (choice1 === "steal" && choice2 === "split") {
-                        await message.channel.send(`<[STEAL] @${user1}> chose to steal and takes all the winnings!`);
+                        await message.channel.send(`[STEAL] <@${user1}> chose to steal and takes all ${reward}Q!`);
+                        await message.channel.send(`\`\`\`rpg give <@${user1}> ${reward}Q\`\`\``);
                     } else if (choice1 === "steal" && choice2 === "steal") {
                         await message.channel.send(`[NO WINNER] <@${user1}> and <@${user2}> both chose to steal! No one wins.`);
                     }
