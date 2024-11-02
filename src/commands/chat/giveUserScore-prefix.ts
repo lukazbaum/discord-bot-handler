@@ -14,10 +14,10 @@ export = {
 	// 1135995107842195550 - Epic Park
 	guildWhitelist: ['1135995107842195550', '801822272113082389','1113339391419625572'],
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777','1143236724718317673',
-					'807811542057222176',
-					'1113407924409221120', //epic wonderland staff
-					'1113451646031241316', // epic wonderland wpicfy
-					],
+		'807811542057222176',
+		'1113407924409221120', //epic wonderland staff
+		'1113451646031241316', // epic wonderland wpicfy
+		],
     cooldown: 10,
     async execute(message: Message): Promise<void> {
 	try{
