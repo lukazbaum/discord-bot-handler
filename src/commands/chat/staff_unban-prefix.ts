@@ -51,17 +51,17 @@ export = {
                                                 return;
 					}
 			}else{
-				message.reply("plus use a valid user id. `pm usb <validid> <reason>`")
+				message.reply("please use a valid user id. `pm usb <validid> <reason>`")
 				return;
 			}
 		}else{
-			message.reply("plus use a valid user id. `pm usb <validid> <reason>`")
+			message.reply("please use a valid user id. `pm usb <validid> <reason>`")
                         return;
 		}
 				
 		let date = new Date().toLocaleString()
 		date = String(date.replace(',', ""))
-		let isBanned = await 
+		//let isBanned = await
 		await updateGuildBan(user, 'unban', reason, message.author.id, String(date))
 		
 		let embed = new EmbedBuilder()

@@ -32,12 +32,12 @@ export = {
 				getUsername = await message.guild.members.cache.get(messageContentSplit[0])
 				console.log("Get username: ", getUsername)
 				if(!(getUsername)){
-                            		await message.reply(`${messageContentSplit[0]} is  not a guild member`)
-                            		return;
-                    		}
+					await message.reply(`${messageContentSplit[0]} is  not a guild member`)
+					return;
+				}
 				user = getUsername.user.id
-                                buildReason = messageContentSplit.slice(1)
-                                reason = String(buildReason).replaceAll(",", " ")
+					buildReason = messageContentSplit.slice(1)
+					reason = String(buildReason).replaceAll(",", " ")
             		}
 		}else if(userName) {
 			user = userName.id
