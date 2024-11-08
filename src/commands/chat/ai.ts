@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, Interaction, Message, MessageReaction, ButtonBuilder, ButtonStyle } from "discord.js";
+import { TextChannel,ChannelType,CommandInteraction, EmbedBuilder, Interaction, Message, MessageReaction, ButtonBuilder, ButtonStyle } from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const { OPENAI_API_KEY } = require('../../../../ep_bot/extras/settings')
 const OpenAI = require("openai");
@@ -22,6 +22,7 @@ export = {
     type: CommandTypes.PrefixCommand,
     async execute(message: Message): Promise<void> {
 	try{
+		if(message.channel.type !== ChannelType.GuildText) return;
 		let progress_bar = await message.channel.send('Progress: =>..');
 	   	const completion = await openai.chat.completions.create({
                 	 model: "gpt-4o",

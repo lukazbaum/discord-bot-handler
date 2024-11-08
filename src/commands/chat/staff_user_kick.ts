@@ -20,11 +20,12 @@ export = {
         let messageContent = message.content.toString().toLowerCase()
         let messageContentSplit = messageContent.split(" ");
         let buildReason;
+	if(message.channel.type !== ChannelType.GuildText) return;
 
         const mentionedUser = message.mentions.users.first();
 
         if (!mentionedUser) {
-            message.channel.send('Please mention a user to kick.');
+            await message.channel.send('Please mention a user to kick.');
             return;
         }
 
@@ -34,7 +35,7 @@ export = {
         reason = String(buildReason).replaceAll(",", " ")
 
         if (!member) {
-            message.channel.send('User not found in this server.');
+            await message.channel.send('User not found in this server.');
             return;
         }
 
@@ -46,7 +47,7 @@ export = {
         date = String(date.replace(',', ""))
 
         await member.kick();
-        message.channel.send(`Kicked ${mentionedUser.tag} successfully.`);
+        await message.channel.send(`Kicked ${mentionedUser.tag} successfully.`);
 
         await guildBan(member, 'kick', reason, message.author.id, String(date))
 
@@ -64,7 +65,8 @@ export = {
 
         } catch (error) {
             console.error(error);
-            message.channel.send('Failed to kick the user. Ensure the bot has the correct permissions.');
+	    if(message.channel.type !== ChannelType.GuildText) return;
+            await message.channel.send('Failed to kick the user. Ensure the bot has the correct permissions.');
         }
     }
 } as PrefixCommandModule;

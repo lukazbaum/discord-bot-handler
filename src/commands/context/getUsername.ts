@@ -6,6 +6,7 @@ export = {
     register: RegisterTypes.Guild,
     data: new ContextMenuCommandBuilder()
         .setName("Get Username")
+	//@ts-ignore
         .setType(ApplicationCommandType.User),
     async execute(interaction: ContextMenuCommandInteraction): Promise<void> {
         const user: User = await interaction.client.users.fetch(interaction.targetId);

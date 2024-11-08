@@ -5,7 +5,10 @@ import { ActionRowBuilder,
 	Message, 
 	MessageReaction, 
 	ButtonBuilder, 
-	ButtonStyle } from "discord.js";
+	ButtonStyle,
+	TextChannel,
+	ChannelType
+} from "discord.js";
 import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const { OPENAI_API_KEY} = require('../../../../ep_bot/extras/settings')
 const OpenAI = require("openai");
@@ -19,6 +22,7 @@ export = {
     type: CommandTypes.PrefixCommand,
     async execute(message: Message): Promise<void> {
 	try{
+		if(message.channel.type !== ChannelType.GuildText) return;
 		let imagecall = message.content.toString()
 		message.channel.sendTyping();
                 const completion = await openai.images.generate({

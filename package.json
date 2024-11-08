@@ -19,8 +19,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@discordjs/formatters": "^0.5.0",
     "discord-pagination-advanced": "^1.1.9",
-    "discord.js": "^14.15.2",
+    "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
     "glob": "^10.3.15",
     "js-is": "^1.0.1",
