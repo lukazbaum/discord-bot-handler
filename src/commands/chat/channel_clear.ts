@@ -19,7 +19,7 @@ export = {
                         '1147909373180530708',
                         '1147909282201870406',
                         '1147909200924643349',
-	    		'1137072690264551604',
+	    		        '1137072690264551604',
                         '1140190313915371530',
                         '1203928376205905960',
                         '1232728117936914432',
@@ -29,7 +29,11 @@ export = {
                         '966458661469839440',
                         '808109909266006087',
                         '825060923768569907',
-                        '1113414355669753907'], // epic wonderland staff
+                        '1113414355669753907',// epic wonderland staff
+                        '1113414451912257536', // epic wonderland booster
+                        '1115072766878691428', // epic wonderland supreme land
+        '1151855336865665024' // epic wonderland supreme land 1
+    ],
     async execute(message: Message): Promise<void> {
          try{
 		if(message.channel.type !== ChannelType.GuildText) return;

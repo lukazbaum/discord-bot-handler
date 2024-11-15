@@ -32,7 +32,6 @@ export = {
                         '966458661469839440',
                         '825060923768569907',
 						'1113414355669753907', // epic wonderland staff
-						'1113451646031241316' // epic wonderland wonderfy
 			],
     async execute(message: Message): Promise<void> {
     try{
@@ -92,12 +91,12 @@ export = {
 	    let roleList = ' '
 	    let cowners = ' '
 	    let chCownerList = ' '
-            let eventsState = ' '
+		let eventsState = ' '
 	    let isHidden = ' '
 	    let alladds;
 	    let allBans;
 	    let embed1;
-	    let myamari = await amariclient.getUserLevel(message.guild.id, `${user}`)
+		let myamari;
 	    const member = message.guild.members.cache.get(user)
 	    let roleMap = member.roles.cache
 	    		   .sort((a, b) => b.position - a.position)
@@ -108,6 +107,10 @@ export = {
 	    			"1142826359178149971",
 					"1142826974172151929",
 	    			"1143223395350229172"]
+
+		if (message.guild.id === "1135995107842195550") {
+			myamari = await amariclient.getUserLevel(message.guild.id, `${user}`)
+		}
 
 	    if(roleMap.length > 30) {
 		    roleList = "**... too many to list**"
@@ -172,7 +175,9 @@ export = {
                 } 
 	    }
 
-		if(channelInfo) {
+		console.log("command ran in: ", message.guild.id)
+
+		if((channelInfo) && (message.guild.id === "1135995107842195550")) {
 	    		 embed1 = new EmbedBuilder()
 	   			.setTitle("Staff User Info View")
 				.setDescription(`** User Info For: ** <@!${user}>
@@ -193,27 +198,62 @@ export = {
 					   {name:"__Cowner On Channels__", value:`${chCownerList}`, inline: true}
 					)
 				.setColor(`#097969`)
-	    	} else {
+	    	} else if((!channelInfo) && (message.guild.id === "1135995107842195550")) {
 		   	 embed1 = new EmbedBuilder()
-                		.setTitle("Staff User Info View")
-                		.setDescription(`** User Info For: ** ${userName}`)
+				 .setTitle("Staff User Info View")
+				 .setDescription(`** User Info For: ** ${userName}`)
 				.addFields(
-					   {name:"__User ID__", value: `${member.id}`, inline: true},
-                                           {name:"__Global Name__", value: `${member.user.globalName}`, inline: true},
-                                           {name:"__Users Tag__", value: `${member.user.tag}`, inline:true},
-                                           {name:"__Booster Since__", value: `${member.premiumSince}`, inline:true},
-					   {name:"__Amari Level__", value: `${myamari.level}`, inline:true},
-                                           {name:"__Date Joined__", value: `${member.joinedAt}`, inline:true},
-                                           {name:"__Joined Discord__", value: `${member.user.createdAt}`, inline:true},
-                                           {name:"__Assigned Roles__", value: `${roleList}`, inline: true},
-					   {name:"__Cowner On Channels__", value:`${chCownerList}`, inline: true}
-                        		)
+					{name:"__User ID__", value: `${member.id}`, inline: true},
+					{name:"__Global Name__", value: `${member.user.globalName}`, inline: true},
+					{name:"__Users Tag__", value: `${member.user.tag}`, inline:true},
+					{name:"__Booster Since__", value: `${member.premiumSince}`, inline:true},
+					{name:"__Amari Level__", value: `${myamari.level}`, inline:true},
+					{name:"__Date Joined__", value: `${member.joinedAt}`, inline:true},
+					{name:"__Joined Discord__", value: `${member.user.createdAt}`, inline:true},
+					{name:"__Assigned Roles__", value: `${roleList}`, inline: true},
+					{name:"__Cowner On Channels__", value:`${chCownerList}`, inline: true}
+				)
 				.setColor(`#097969`)
-	    	}
+	    	} else if((channelInfo) && (message.guild.id !== "1135995107842195550")){
+				embed1 = new EmbedBuilder()
+					.setTitle("Staff User Info View")
+					.setDescription(`** User Info For: ** <@!${user}>
+					         ** User Owns Channel: ** <#${channel}>`)
+					.addFields({name:"__Channel Users__", value:`${addList}`, inline: true},
+						{name:"__Channel Cowners__", value: `${cowners}`, inline: true},
+						{name:"__Channel Banned __", value: `${bannedList}`, inline: true},
+						{name:"__Channel Events__", value: `${eventsState}`, inline: true},
+						{name:"__Channel Visibility__", value: `${isHidden}`, inline: true},
+						{name:"__User ID__", value: `${member.id}`, inline: true},
+						{name:"__Global Name__", value: `${member.user.globalName}`, inline: true},
+						{name:"__Users Tag__", value: `${member.user.tag}`, inline:true},
+						{name:"__Booster Since__", value: `${member.premiumSince}`, inline:true},
+						{name:"__Date Joined__", value: `${member.joinedAt}`, inline:true},
+						{name:"__Joined Discord__", value: `${member.user.createdAt}`, inline:true},
+						{name:"__Assigned Roles__", value: `${roleList}`, inline: true},
+						{name:"__Cowner On Channels__", value:`${chCownerList}`, inline: true}
+					)
+					.setColor(`#097969`)
+		} else if((!channelInfo) && (message.guild.id !== "1135995107842195550")){
+			embed1 = new EmbedBuilder()
+			.setTitle("Staff User Info View")
+			.setDescription(`** User Info For: ** ${userName}`)
+			.addFields(
+				{name:"__User ID__", value: `${member.id}`, inline: true},
+				{name:"__Global Name__", value: `${member.user.globalName}`, inline: true},
+				{name:"__Users Tag__", value: `${member.user.tag}`, inline:true},
+				{name:"__Booster Since__", value: `${member.premiumSince}`, inline:true},
+				{name:"__Date Joined__", value: `${member.joinedAt}`, inline:true},
+				{name:"__Joined Discord__", value: `${member.user.createdAt}`, inline:true},
+				{name:"__Assigned Roles__", value: `${roleList}`, inline: true},
+				{name:"__Cowner On Channels__", value:`${chCownerList}`, inline: true}
+			)
+			.setColor(`#097969`)
+	}
 
 	   	await message.reply({embeds:[embed1]})
 
     }catch(err)
-    {console.log(err)}
-  }
+    {console.log(err) }
+	}
 } as PrefixCommandModule;

@@ -29,9 +29,11 @@ export = {
                         '966458661469839440',
 	    				'808109909266006087',
                         '825060923768569907',
-						'1113414355669753907', // epic wonderland staff
-						'1113451646031241316' // epic wonderland wonderfy
-                        ],
+						'1113414355669753907',// epic wonderland staff
+						'1113414451912257536', // epic wonderland booster
+						'1115072766878691428', // epic wonderland supreme land
+						'1151855336865665024' // epic wonderland supreme land 1
+	],
     async execute(message: Message): Promise<void> {
 	 try{
 		if(message.channel.type !== ChannelType.GuildText) return;
@@ -84,15 +86,14 @@ export = {
 			}
 		}
 	   
-	   	// get all channel information 
-
+	   	// get all channel information
 		 const alladds = await addedusers(`${channel}`);
-	    	const allBans = await bannedusers(`${channel}`);
-			const channelInfo = await getisland(`${channel}`);
-			let addList = ' '
+		 const allBans = await bannedusers(`${channel}`);
+		 const channelInfo = await getisland(`${channel}`);
+		 let addList = ' '
 		 let bannedList =  ' '
 		 let cowners = ' '
-            	let eventsState = ' '
+		 let eventsState = ' '
 		 let isHidden = ' '
 
 		 let cownersList = [channelInfo.cowner1,
@@ -102,14 +103,15 @@ export = {
 					channelInfo.cowner5,
 					channelInfo.cowner6,
 					channelInfo.cowner7]
+
 		 const filteredOwners: string[] = cownersList.filter((s): s is string => !!(s));
 
-			for(let i = 0; i < filteredOwners.length; i++) {
+		 for(let i = 0; i < filteredOwners.length; i++) {
 			cowners = await cowners.concat(`\n> ${i+1}. <@!${filteredOwners[i]}>`)
-	    	}
-		if(alladds.length >= 30){
+		 }
+		 if(alladds.length >= 30){
 			addList = 'Too Many to List'
-		}else{
+		 }else{
 	    		for(let i = 0; i < alladds.length; i++) {
 				addList = await addList.concat(`\n> ${i+1}. <@!${alladds[i].user}>`)
                 	}

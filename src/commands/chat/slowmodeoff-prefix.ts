@@ -19,16 +19,19 @@ export = {
     roleWhitelist: ['1147864509344661644', '1148992217202040942','807811542057222176',
 					'1113407924409221120'], // epic wonderland staff
     categoryWhitelist: ["1140190313915371530", "1147909067172483162", "1147909156196593787",
-    			'1203928376205905960',
+    					'1203928376205905960',
                         '1232728117936914432',
                         '1192106199404003379',
                         '1192108950049529906',
                         '1225165761920630845',
                         '966458661469839440',
-	    		'808109909266006087',
+	    				'808109909266006087',
                         '825060923768569907',
-			'1113414355669753907' // epic wonderland staff
-                        ],
+						'1113414355669753907',// epic wonderland staff
+						'1113414451912257536', // epic wonderland booster
+						'1115072766878691428', // epic wonderland supreme land
+						'1151855336865665024' // epic wonderland supreme land 1
+	],
     async execute(message: Message): Promise<void> {
 	try{
 		if(message.channel.type !== ChannelType.GuildText) return;

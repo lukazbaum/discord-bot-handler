@@ -140,6 +140,10 @@ export = {
                     const user2 = winners[1];
                     const choice1 = selection[user1];
                     const choice2 = selection[user2];
+		    const winnerString1 = `\`\`\`rpg give` + ` <@${user1}>` + ` ${reward}Q\`\`\``
+		    const winnerString1Split = `\`\`\`rpg give` + ` <@${user1}>` + ` ${reward / 2}Q\`\`\``
+            	    const winnerString2Split = `\`\`\`rpg give` + ` <@${user2}>` + ` ${reward / 2}Q\`\`\``
+            	    const winnerString2 = `\`\`\`rpg give` + ` <@${user2}>` + ` ${reward}Q\`\`\``
 
                     if (!choice1 || !choice2) {
 			if(message.channel.type !== ChannelType.GuildText) return;
@@ -150,16 +154,18 @@ export = {
                     if (choice1 === "split" && choice2 === "split") {
 			if(message.channel.type !== ChannelType.GuildText) return;
                         await message.channel.send(`[SPLIT] <@${user1}> and <@${user2}> both chose to split! You each win ${reward / 2}Q.`);
-                        await message.channel.send(`rpg give <@${user1}> ${reward / 2}Q`);
-                        await message.channel.send(`rpg give <@${user2}> ${reward / 2}Q`);
+                        await message.channel.send(winnerString1Split)
+			    console.log(user1)
+			    console.log(user2)
+                        await message.channel.send(winnerString2Split)
                     } else if (choice1 === "split" && choice2 === "steal") {
 			if(message.channel.type !== ChannelType.GuildText) return;
                         await message.channel.send(`[STEAL] <@${user2}> chose to steal and takes all ${reward}Q!`);
-                        await message.channel.send(`rpg give <@${user2}> ${reward}Q`);
+                        await message.channel.send(winnerString2)
                     } else if (choice1 === "steal" && choice2 === "split") {
 			if(message.channel.type !== ChannelType.GuildText) return;
                         await message.channel.send(`[STEAL] <@${user1}> chose to steal and takes all ${reward}Q!`);
-                        await message.channel.send(`rpg give <@${user1}> ${reward}Q`);
+                        await message.channel.send(winnerString1)
                     } else if (choice1 === "steal" && choice2 === "steal") {
 			if(message.channel.type !== ChannelType.GuildText) return;
                         await message.channel.send(`[NO WINNER] <@${user1}> and <@${user2}> both chose to steal! No one wins.`);
