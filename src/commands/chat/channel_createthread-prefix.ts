@@ -6,7 +6,7 @@ export = {
     name: "home",
     aliases: ["takemehome", "tohome", "phonehome", "ethome"],
     type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550', '801822272113082389'],
+    guildWhitelist: ['1135995107842195550', ],
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176'],
     async execute(message: Message): Promise<void> {
 	try{

@@ -18,14 +18,16 @@ export = {
 						{ name: "➡ Channel Favorites List", value: "> favs, chanfav, ch, chfav, fav", inline: false },
 						{ name: "➡ Add Channel Favorites", value: "> addfav, Addfav", inline: false },
 						{ name: "➡ Remove Channel Favorites", value: "> addfav, Addfav", inline: false },
-						{ name: "➡ Use AI Chat", value: "> ai, askai, askme, ask", inline: false },
-						{ name: "➡ Use AI Image Maker", value: "> makeimage, mi", inline: false },
+						{ name: "➡ Use AI Chat (Epic Park Only)", value: "> ai, askai, askme, ask", inline: false },
+						{ name: "➡ Use AI Image Maker (Epic Park Only)", value: "> makeimage, mi", inline: false },
 						{ name: "➡ Server Emojis", value: "> emojis, emojilist, allemojis", inline: false },
 						{ name: "➡ Gratitude Scoreboard", value: "> score, scores, myscore, ms", inline: false },
 						{ name: "➡ Give Love", value: "> love, loves, gl, givelove", inline: false },
 						{ name: "➡ Give Hugs", value: "> hug, Hug, hugs, gh", inline: false },
 						{ name: "➡ Give Thanks", value: "> thanks, thank, thankyou, ty", inline: false },
-						{ name: "➡ Give Bonks", value: "> Bonks, bonk, bonkyou, by", inline: false }
+						{ name: "➡ Give Bonks", value: "> Bonks, bonk, bonkyou, by", inline: false },
+						{ name: "- Join/Leave Server Boosted Arena List", value: "> join or leave", inline: false },
+						{ name: "- List Current Boosted Arena Players", value: "> list, al", inline: false}
 					),
 				new EmbedBuilder()
 					.setTitle("Parkman Help: Channel Management Commands")
@@ -91,6 +93,7 @@ export = {
 					.setColor(`#097969`)
 					.addFields(
 						{ name: "➡ Channel List: lists all channels and their non-pinged owners", value: "> channellist, Channellist, cl", inline: false },
+						{ name: "➡ Channel Audit: lists channels with owners not on the server", value: "> audit, ca, auditchannel", inline: false },
 						{ name: "➡ Channel Role Check: checks a specific role's permission in channel", value: "> rolecheck", inline: false },
 						{ name: "➡ Channel Clear Messages: Bulk deletes a specified amount of messages in a channel", value: "> clear, delete", inline: false },
 						{ name: "➡ Channel Upgrades: moves channel to appropriate area", value: "> staffupgrade, sup, changecat", inline: false },

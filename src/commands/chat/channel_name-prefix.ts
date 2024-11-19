@@ -15,9 +15,9 @@ export = {
     aliases: [],
     type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
-    // 801822272113082389 - Epic
+    //  - Epic
     // 1135995107842195550 - Epic Park
-    guildWhitelist: ['1135995107842195550', '801822272113082389','1113339391419625572'],
+    guildWhitelist: ['1135995107842195550', '1113339391419625572'],
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
                     '1113407924409221120'], // epic wonderland staff
     categoryWhitelist:[	'1147909067172483162',
@@ -63,7 +63,6 @@ export = {
 
         const modRoleIdList: { [key: string]: string } = {
                         "1135995107842195550": "1148992217202040942", //epic park staff
-                        "801822272113082389": "807826290295570432", // epic staff
                         "1113339391419625572":"1113407924409221120", // epic wonderland staff
                  };
 
@@ -104,8 +103,6 @@ export = {
             channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
             if(message.guild.id === '1135995107842195550'){ // epic park
                 channelName = String(channelName).concat(String(emojiName) + '・' + String(channelWord));
-            }else if(message.guild.id === '801822272113082389'){ // epic
-                channelName === String(channelName).concat('『'+String(emojiName)+'』'+String(channelWord));
             }else if(message.guild.id === '1113339391419625572'){ // epic wonderland
                 channelName === String(channelName).concat(+' '+String(emojiName)+' '+' ⸾⸾ '+' '+String(channelWord)+' ⸾⸾ ');
             }
@@ -114,8 +111,6 @@ export = {
             channelWord = String(newName)
             if(message.guild.id === '1135995107842195550'){ // epic park
                 channelName = String(channelName).concat('・' + String(channelWord))
-            }else if(message.guild.id === '801822272113082389'){ // epic
-			        String(channelName).concat('『』'+String(channelWord))
             }else if(message.guild.id === '1113339391419625572'){ // epic wonderland
                     String(channelName).concat(' ⸾⸾ '+String(channelWord)+' ⸾⸾ ')
             }

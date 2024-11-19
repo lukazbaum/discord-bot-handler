@@ -3,17 +3,18 @@ import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 const { getislands } = require('/home/ubuntu/ep_bot/extras/functions');
 
 export = {
-	name: "channellist",
-	aliases: ["Channellist", "cl"],
+	name: "audit",
+	aliases: ["ac", "auditchannels"],
 	type: CommandTypes.PrefixCommand,
-	guildWhitelist: ['1135995107842195550', '1113339391419625572'],
-	roleWhitelist: ["1148992217202040942", "807826290295570432", "1073788272452579359", "1113407924409221120", "1306823330271330345"],
-	optionalChannelWhitelist: ["1142401741866946702", "1147233774938107966", "1138531756878864434", "1151411404071518228", "1142401741866946702", "1158570345100488754"],
+	guildWhitelist: ['1135995107842195550',  '1113339391419625572'],
+	roleWhitelist: ["1148992217202040942", "807826290295570432", "1073788272452579359", "1113407924409221120","1306823330271330345"],
+	optionalChannelWhitelist: ["1142401741866946702", "1147233774938107966", "1138531756878864434", "1151411404071518228", "1142401741866946702", "1158570345100488754", "1298446582399897621"],
 	optionalCategoryWhitelist: ["1137072690264551604", "1203928376205905960", "1152037896841351258", "1113414355669753907"],
 
 	async execute(message: Message): Promise<void> {
 		try {
 			if (message.channel.type !== ChannelType.GuildText) return;
+
 			const allChannels = await getislands();
 			const serverId = message.guild.id;
 
@@ -28,37 +29,46 @@ export = {
 				return;
 			}
 
-			const channels = allChannels.filter(
-				(ch: any) => `${ch.server}` === serverSelect && `${ch.user}` !== '1151325182351392818'
+			// Array of known user IDs to skip
+			const knownUserIdsToSkip = ['1151325182351392818', '1234731796944650340'];
+
+			// Fetch all guild members
+			const guildMembers = await message.guild.members.fetch();
+			const activeMemberIds = guildMembers.map(member => member.id);
+
+			// Filter channels to only include those whose owners are no longer in the guild and not in knownUserIdsToSkip
+			const inactiveUsers = allChannels.filter(
+				(ch: any) =>
+					`${ch.server}` === serverSelect &&
+					!activeMemberIds.includes(`${ch.user}`) &&
+					!knownUserIdsToSkip.includes(`${ch.user}`)
 			);
 
-			if (!channels.length) {
-				await message.reply("No channels found for this server.");
+			if (!inactiveUsers.length) {
+				await message.reply("No inactive users found with channel ownership.");
 				return;
 			}
-
-			// setup pagination
 
 			const PAGE_SIZE = 15;
 			let page = 0;
 
 			const createEmbed = (page: number) => {
-				const paginatedChannels = channels.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+				const paginatedUsers = inactiveUsers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 				const embed = new EmbedBuilder()
-					.setTitle("Server Channel List")
+					.setTitle("Non-Server Users with Channel Ownership")
 					.setDescription(
-						paginatedChannels
+						paginatedUsers
 							.map((ch: any, index: number) => `> ${index + 1 + page * PAGE_SIZE}. <@!${ch.user}> owns: <#${ch.channel}>`)
 							.join("\n")
 					)
-					.setFooter({ text: `Page ${page + 1} of ${Math.ceil(channels.length / PAGE_SIZE)}` });
+					.setFooter({ text: `Page ${page + 1} of ${Math.ceil(inactiveUsers.length / PAGE_SIZE)}` });
 
 				return embed;
 			};
 
 			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 				new ButtonBuilder().setCustomId('prev').setLabel('◀️').setStyle(ButtonStyle.Primary).setDisabled(true),
-				new ButtonBuilder().setCustomId('next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled(channels.length <= PAGE_SIZE)
+				new ButtonBuilder().setCustomId('next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled(inactiveUsers.length <= PAGE_SIZE)
 			);
 
 			const msg = await message.channel.send({
@@ -73,7 +83,7 @@ export = {
 
 				if (interaction.customId === 'prev' && page > 0) {
 					page--;
-				} else if (interaction.customId === 'next' && (page + 1) * PAGE_SIZE < channels.length) {
+				} else if (interaction.customId === 'next' && (page + 1) * PAGE_SIZE < inactiveUsers.length) {
 					page++;
 				}
 
@@ -82,7 +92,7 @@ export = {
 					components: [
 						new ActionRowBuilder<ButtonBuilder>().addComponents(
 							new ButtonBuilder().setCustomId('prev').setLabel('◀️').setStyle(ButtonStyle.Primary).setDisabled(page === 0),
-							new ButtonBuilder().setCustomId('next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled((page + 1) * PAGE_SIZE >= channels.length)
+							new ButtonBuilder().setCustomId('next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled((page + 1) * PAGE_SIZE >= inactiveUsers.length)
 						)
 					]
 				});
@@ -95,7 +105,7 @@ export = {
 			});
 		} catch (err) {
 			console.error(err);
-			await message.reply("An error occurred while fetching the channel list.");
+			await message.reply("An error occurred while fetching the inactive user list.");
 		}
 	}
 } as PrefixCommandModule;
