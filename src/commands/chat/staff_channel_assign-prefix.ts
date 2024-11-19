@@ -98,7 +98,7 @@ export = {
 	    }
 
 	   let channelExists =  await message.guild.channels.cache.find(channel => channel.id === `${channelName}`)
-           let channelIHAZ = 0
+		 let channelIHAZ = 0
 
 	   if(channelExists){
 		   channelIHAZ = 1
@@ -237,7 +237,7 @@ export = {
                                                 );
                    await progress_bar.edit('==========>.')
 
-                   if(await createisland(`${owner.id}`, `${channel.id}`) === 'Created!') {
+                   if(await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
                         let channelOwner = message.guild.members.cache.get(`${owner.id}`)
                         await enableevents(`${channel.id}`)
                         await channelOwner.roles.add(ownerRole)
@@ -246,7 +246,67 @@ export = {
                         await message.reply("Something happened adding user to the database, contact a dev")
                         return;
 		   }
-	    }
+		}else if((channelIHAZ === 0) && (message.guild.id === "1113339391419625572")) {
+			channel = await message.guild.channels.create({
+				name: `${channelName}`,
+				type: ChannelType.GuildText,
+				parent: "1151855336865665024",
+			})
+			ownerRole = message.guild.roles.cache.get('1306823581870854174')
+
+			if (emojiName) {
+				channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
+				channelName = " "
+				channelName = String(channelName).concat(String(emojiName) + ' ⸾⸾' + String(channelWord)) + '⸾⸾ ';
+				await channel.edit({name: channelName})
+			} else {
+				channelWord = String(newName).split(',')[1].trimStart();
+				channelName = " "
+				channelName = String(channelName).concat(' ⸾⸾' + String(channelWord)) + '⸾⸾ '
+				await channel.edit({name: channelName})
+			}
+			await progress_bar.edit('========>...')
+			await channel.lockPermissions()
+			await channel.permissionOverwrites.edit(
+				`${owner.id}`,
+				{
+					SendMessages: true,
+					ViewChannel: true
+				}
+			);
+			await progress_bar.edit('==========>.')
+
+			if (await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
+				let channelOwner = message.guild.members.cache.get(`${owner.id}`)
+				await enableevents(`${channel.id}`)
+				await channelOwner.roles.add(ownerRole)
+
+			} else {
+				await message.reply("Something happened adding user to the database, contact a dev")
+				return;
+			}
+		}else if((channelIHAZ === 1) && (message.guild.id ==="1113339391419625572") ) {
+			channel = await message.guild.channels.cache.find(channel => channel.id === `${channelName}`) as TextChannel;
+			ownerRole = message.guild.roles.cache.get('1306823581870854174')
+			await progress_bar.edit('========>...')
+			await channel.lockPermissions()
+			await channel.permissionOverwrites.edit(
+				`${owner.id}`,
+				{
+					SendMessages: true,
+					ViewChannel: true
+				}
+			);
+			await progress_bar.edit('==========>.')
+			if (await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
+				let channelOwner = message.guild.members.cache.get(`${owner.id}`)
+				await enableevents(`${channel.id}`)
+				await channelOwner.roles.add(ownerRole)
+			} else {
+				await message.reply("Something happened adding user to the database, contact a dev")
+				return;
+			}
+		}
 
 	    
            let embed1 = new EmbedBuilder()
