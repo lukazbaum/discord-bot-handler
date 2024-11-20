@@ -44,7 +44,33 @@ export = {
 					!knownUserIdsToSkip.includes(`${ch.user}`)
 			);
 
-			if (!inactiveUsers.length) {
+			let filteredInactiveUsers = inactiveUsers;
+
+			if (serverId === '1135995107842195550') {
+				// We need to filter out channels that are in category '1219009472593399909'
+				filteredInactiveUsers = await Promise.all(
+					inactiveUsers.map(async (ch: any) => {
+						try {
+							const channel = await message.guild.channels.fetch(ch.channel);
+							if (!channel) return null;
+							if (channel.parentId === '1219009472593399909') {
+								// Skip this channel
+								return null;
+							} else {
+								return ch;
+							}
+						} catch (err) {
+							console.error(`Failed to fetch channel ${ch.channel}:`, err);
+							return null;
+						}
+					})
+				);
+
+				// Remove null entries
+				filteredInactiveUsers = filteredInactiveUsers.filter(ch => ch !== null);
+			}
+
+			if (!filteredInactiveUsers.length) {
 				await message.reply("No inactive users found with channel ownership.");
 				return;
 			}
@@ -53,7 +79,7 @@ export = {
 			let page = 0;
 
 			const createEmbed = (page: number) => {
-				const paginatedUsers = inactiveUsers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+				const paginatedUsers = filteredInactiveUsers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 				const embed = new EmbedBuilder()
 					.setTitle("Non-Server Users with Channel Ownership")
 					.setDescription(
@@ -61,14 +87,14 @@ export = {
 							.map((ch: any, index: number) => `> ${index + 1 + page * PAGE_SIZE}. <@!${ch.user}> owns: <#${ch.channel}>`)
 							.join("\n")
 					)
-					.setFooter({ text: `Page ${page + 1} of ${Math.ceil(inactiveUsers.length / PAGE_SIZE)}` });
+					.setFooter({ text: `Page ${page + 1} of ${Math.ceil(filteredInactiveUsers.length / PAGE_SIZE)}` });
 
 				return embed;
 			};
 
 			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 				new ButtonBuilder().setCustomId('prev').setLabel('◀️').setStyle(ButtonStyle.Primary).setDisabled(true),
-				new ButtonBuilder().setCustomId('next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled(inactiveUsers.length <= PAGE_SIZE)
+				new ButtonBuilder().setCustomId('next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled(filteredInactiveUsers.length <= PAGE_SIZE)
 			);
 
 			const msg = await message.channel.send({
@@ -83,7 +109,7 @@ export = {
 
 				if (interaction.customId === 'prev' && page > 0) {
 					page--;
-				} else if (interaction.customId === 'next' && (page + 1) * PAGE_SIZE < inactiveUsers.length) {
+				} else if (interaction.customId === 'next' && (page + 1) * PAGE_SIZE < filteredInactiveUsers.length) {
 					page++;
 				}
 
@@ -92,7 +118,7 @@ export = {
 					components: [
 						new ActionRowBuilder<ButtonBuilder>().addComponents(
 							new ButtonBuilder().setCustomId('prev').setLabel('◀️').setStyle(ButtonStyle.Primary).setDisabled(page === 0),
-							new ButtonBuilder().setCustomId('next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled((page + 1) * PAGE_SIZE >= inactiveUsers.length)
+							new ButtonBuilder().setCustomId('next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled((page + 1) * PAGE_SIZE >= filteredInactiveUsers.length)
 						)
 					]
 				});
