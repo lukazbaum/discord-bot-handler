@@ -40,7 +40,7 @@ export = {
                     const bannedUser = banlist[i].user;
                     const bannedMember = await interaction.guild.members.fetch(bannedUser).catch(() => null);
                     if (bannedMember) {
-                        channel.permissionOverwrites.delete(bannedMember);
+                        await channel.permissionOverwrites.delete(bannedMember);
                     } else {
                         console.log(`Banned user with ID ${bannedUser} does not exist in the guild.`);
                     }
@@ -52,7 +52,7 @@ export = {
                     const addedUser = addedlist[i].user;
                     const addedMember = await interaction.guild.members.fetch(addedUser).catch(() => null);
                     if (addedMember) {
-                        channel.permissionOverwrites.delete(addedMember);
+                        await channel.permissionOverwrites.delete(addedMember);
                     } else {
                         console.log(`Added user with ID ${addedUser} does not exist in the guild.`);
                     }
@@ -79,22 +79,32 @@ export = {
 
             await interaction.update({
                 embeds: [new EmbedBuilder()
-                    .setTitle("Staff Channel Manager: Quarantine Channel")
-                    .setDescription(`The Channel <#${channelId}>, owned by <@!${user}>, has been successfully quarantined. Use **ep recover #CHANNEL NAME** to recover the channel.`)
-                    .setColor('#097969')],
+                  .setTitle("Staff Channel Manager: Quarantine Channel")
+                  .setDescription(`The Channel <#${channelId}>, owned by <@!${user}>, has been successfully quarantined. Use **ep recover #CHANNEL NAME** to recover the channel.`)
+                  .setColor('#097969')],
                 components: []
             });
 
-            let embed2 = new EmbedBuilder()
-                .setTitle("Channel Manager: Channel Quarantine")
-                .setDescription(`<@!${user}> is no longer the owner of channel: <#${channelId}>`)
-                .addFields(
-                    { name: "**--Channel Sent to Quarantine--**", value: new Date().toLocaleString(), inline: true },
-                    { name: "**--Channel Quarantined By--**", value: `${getMessageContent.author}`, inline: true },
-                );
+            // Fetch all channels to ensure the 'quarantine-logs' channel is in cache
+            await interaction.guild.channels.fetch();
 
-            var qlog = await interaction.guild.channels.cache.find(channel => channel.name === `quarantine-logs`) as TextChannel;
+            var qlog = interaction.guild.channels.cache.find(channel => channel.name === `quarantine-logs`) as TextChannel;
+
+            if (!qlog) {
+                console.error('quarantine-logs channel not found.');
+                return;
+            }
+
+            let embed2 = new EmbedBuilder()
+              .setTitle("Channel Manager: Channel Quarantine")
+              .setDescription(`<@!${user}> is no longer the owner of channel: <#${channelId}>`)
+              .addFields(
+                { name: "**--Channel Sent to Quarantine--**", value: new Date().toLocaleString(), inline: true },
+                { name: "**--Channel Quarantined By--**", value: `${getMessageContent.author}`, inline: true },
+              );
+
             qlog.send({ embeds: [embed2] });
+
         } catch (err) {
             console.log(err);
         }
