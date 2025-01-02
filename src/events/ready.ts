@@ -1,5 +1,5 @@
-import { ActivityType, Events, PresenceUpdateStatus } from 'discord.js';
 import { Event, ExtendedClient } from '../handler';
+import { ActivityType, Events, PresenceUpdateStatus } from 'discord.js';
 
 export default new Event({
   name: Events.ClientReady,
