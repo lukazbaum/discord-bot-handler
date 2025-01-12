@@ -1,5 +1,5 @@
 import { Modal } from '../../handler';
-import { ModalSubmitFields, ModalSubmitInteraction } from 'discord.js';
+import { MessageFlags, ModalSubmitFields, ModalSubmitInteraction } from 'discord.js';
 
 export default new Modal({
   customId: 'askModal',
@@ -10,7 +10,7 @@ export default new Modal({
 
     await interaction.reply({
       content: `Your favorite color is **${favoriteColor}** and you enjoy **${hobbies}**!`,
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
   },
 });

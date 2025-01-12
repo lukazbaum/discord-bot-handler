@@ -14,15 +14,15 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "^22.10.1",
-    "prettier": "^3.4.1",
+    "@types/node": "^22.10.5",
+    "prettier": "^3.4.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
-    "bufferutil": "^4.0.8",
-    "discord.js": "^14.16.3",
-    "dotenv": "^16.4.5",
+    "bufferutil": "^4.0.9",
+    "discord.js": "^14.17.3",
+    "dotenv": "^16.4.7",
     "utf-8-validate": "^6.0.5"
   }
 }

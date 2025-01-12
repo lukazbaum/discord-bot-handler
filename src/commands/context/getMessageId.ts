@@ -4,6 +4,7 @@ import {
   ContextMenuCommandBuilder,
   ContextMenuCommandInteraction,
   type ContextMenuCommandType,
+  MessageFlags,
 } from 'discord.js';
 
 export default new ContextMenu({
@@ -14,6 +15,6 @@ export default new ContextMenu({
     .setType(ApplicationCommandType.Message as ContextMenuCommandType),
 
   async execute(interaction: ContextMenuCommandInteraction): Promise<void> {
-    await interaction.reply({ content: `Message ID: ${interaction.targetId}`, ephemeral: true });
+    await interaction.reply({ content: `Message ID: ${interaction.targetId}`, flags: [MessageFlags.Ephemeral] });
   },
 });

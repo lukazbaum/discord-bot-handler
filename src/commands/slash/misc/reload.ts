@@ -1,11 +1,6 @@
 import { client } from '../../../index';
 import { RegisterType, SlashCommand } from '../../../handler';
-import {
-  type ChatInputCommandInteraction,
-  Colors,
-  EmbedBuilder,
-  SlashCommandBuilder,
-} from 'discord.js';
+import { type ChatInputCommandInteraction, Colors, EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
 
 export default new SlashCommand({
   restrictedToOwner: true,
@@ -33,6 +28,6 @@ export default new SlashCommand({
           .setColor(Colors.Red);
     }
 
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+    await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
   },
 });

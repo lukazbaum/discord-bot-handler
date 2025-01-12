@@ -12,8 +12,10 @@ import {
   ButtonStyle,
   CommandInteraction,
   EmbedBuilder,
+  InteractionCallbackResponse,
   Message,
   MessageComponentInteraction,
+  MessageFlags,
   type MessagePayloadOption,
 } from 'discord.js';
 
@@ -38,10 +40,10 @@ export class EmbedPaginator {
 
     let messageOptions: MessagePayloadOption = {
       content,
-      ephemeral: ephemeral ?? false,
+      flags: ephemeral ? [MessageFlags.Ephemeral] : [],
       embeds: [this.getPageEmbed()],
       components: this.getPageComponents(),
-      fetchReply: true,
+      withResponse: true,
     };
 
     if (!messageOptions.content) {
@@ -68,7 +70,7 @@ export class EmbedPaginator {
 
   private getPageEmbed(): EmbedBuilder {
     const page: EmbedBuilder | PaginatorPage = this.settings.pages[this.currentPageIndex];
-    const embed: EmbedBuilder = (page as PaginatorPage)?.embed ?? page as EmbedBuilder;
+    const embed: EmbedBuilder = (page as PaginatorPage)?.embed ?? (page as EmbedBuilder);
 
     if (this.settings.autoPageDisplay) {
       embed.setFooter({ text: `Page ${this.currentPageIndex + 1}/${this.maxPageIndex}` });
@@ -130,7 +132,12 @@ export class EmbedPaginator {
     return row;
   }
 
-  private async collectButtonInteractions(message: Message): Promise<void> {
+  private async collectButtonInteractions(context: Message | InteractionCallbackResponse): Promise<void> {
+    const message: Message =
+      context instanceof InteractionCallbackResponse && context.resource?.message
+        ? context.resource.message
+        : (context as Message);
+
     const authorId: string = message.author.id;
 
     const filter = (interaction: MessageComponentInteraction): boolean =>

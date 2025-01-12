@@ -4,6 +4,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   type ChatInputCommandInteraction,
+  MessageFlags,
   SlashCommandBuilder,
 } from 'discord.js';
 
@@ -33,7 +34,7 @@ export default new SlashCommand({
     await interaction.reply({
       content: 'Here are some interactive buttons. Try them out!',
       components: [row],
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
   },
 });

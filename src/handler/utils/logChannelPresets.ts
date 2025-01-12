@@ -1,4 +1,4 @@
-import { type ContextMenuCommandInteraction, EmbedBuilder, type Interaction, Message } from 'discord.js';
+import { type ContextMenuCommandInteraction, EmbedBuilder, type Interaction, Message, MessageFlags } from 'discord.js';
 
 export function getLogChannelPresetEmbed(
   context: Interaction | ContextMenuCommandInteraction | Message,
@@ -23,8 +23,11 @@ export function getLogChannelPresetEmbed(
     .setThumbnail(authorIconURL)
     .setTimestamp();
 
-  const isEphemeralInteraction: boolean | null =
-    !(context instanceof Message) && 'ephemeral' in context && context.ephemeral;
+  const isEphemeralInteraction: boolean =
+    !(context instanceof Message) &&
+    'flags' in context &&
+    typeof context.flags === 'number' &&
+    (context.flags & MessageFlags.Ephemeral) === MessageFlags.Ephemeral;
 
   if (messageURL && !isEphemeralInteraction) {
     logEmbed.setURL(messageURL);

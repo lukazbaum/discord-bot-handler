@@ -15,6 +15,7 @@ import {
   EmbedBuilder,
   Interaction,
   Message,
+  MessageFlags,
 } from 'discord.js';
 
 export class CommandHandler {
@@ -112,7 +113,7 @@ export class CommandHandler {
 
     await (context.reply?.({
       embeds: [replyEmbed],
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     }) || context.channel.send({ embeds: [replyEmbed] }));
     return false;
   }
@@ -124,7 +125,7 @@ export class CommandHandler {
   ): Promise<void> {
     try {
       const logChannelConfig: LogChannelConfig | undefined = config.logChannelConfig;
-      if (!logChannelConfig) return;
+      if (!logChannelConfig || logChannelConfig.channelId.length !> 0) return;
 
       const channel: Channel | null = await client.channels.fetch(logChannelConfig.channelId);
       if (!channel) return;

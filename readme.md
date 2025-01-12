@@ -264,7 +264,7 @@ export default new ContextMenu({
     .setType(ApplicationCommandType.Message as ContextMenuCommandType),
 
   async execute(interaction: ContextMenuCommandInteraction): Promise<void> {
-    await interaction.reply({ content: `Message ID: ${interaction.targetId}`, ephemeral: true });
+    await interaction.reply({ content: `Message ID: ${interaction.targetId}`, flags: [MessageFlags.Ephemeral] });
   },
 });
   ```
@@ -364,7 +364,7 @@ Unique IDs allow for more dynamic interaction handling by appending specific ide
 async execute(interaction: ButtonInteraction, uniqueId: string | null): Promise<void> {
   await interaction.reply({
     content: `You have pressed the **${uniqueId}** button.`,
-    ephemeral: true,
+    flags: [MessageFlags.Ephemeral],
   });
 }
 ```
@@ -407,7 +407,7 @@ export default new Button({
   async execute(interaction: ButtonInteraction, uniqueId: string | null): Promise<void> {
     await interaction.reply({
       content: `You have pressed the **${uniqueId}** button.`,
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
   },
 });
@@ -504,7 +504,7 @@ export default new Modal({
 
     await interaction.reply({
       content: `Your favorite color is **${favoriteColor}** and you enjoy **${hobbies}**!`,
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
   },
 });
