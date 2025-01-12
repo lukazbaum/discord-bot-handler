@@ -23,9 +23,14 @@ export default new SlashCommand({
       await client.reloadCommands();
       await client.reloadComponents();
 
-      embed.setTitle('Reload Successful').setColor(Colors.Green);
+      embed
+          .setTitle('Reload Successful')
+          .setColor(Colors.Green);
     } catch (err) {
-      embed.setTitle('Reload Failed').setDescription('An error occurred while reloading.').setColor(Colors.Red);
+      embed
+          .setTitle('Reload Failed')
+          .setDescription('An error occurred while reloading.')
+          .setColor(Colors.Red);
     }
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
