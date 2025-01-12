@@ -4,7 +4,6 @@ import { type AutocompleteInteraction, type ChatInputCommandInteraction, SlashCo
 export default new SlashCommand({
   registerType: RegisterType.Guild,
 
-  // @ts-ignore
   data: new SlashCommandBuilder()
     .setName('autocomplete')
     .setDescription('Explore the autocomplete feature!')
@@ -14,7 +13,7 @@ export default new SlashCommand({
         .setDescription('Choose a topic from the suggestions')
         .setAutocomplete(true)
         .setRequired(true),
-    ),
+    ) as SlashCommandBuilder,
 
   async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
     const focusedValue: string = interaction.options.getFocused().toLowerCase();
