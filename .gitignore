@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *.old
 *.config
 tsconfig*
@@ -14,3 +15,29 @@ tsconfig.json
 .idea/
 .git/
 console.txt
+*.sql
+=======
+# Node.js related
+node_modules/
+
+# TypeScript build output
+dist/
+
+# Editor/IDE specific
+.vscode/
+.idea/
+
+# Environment variables
+.env
+
+# Dependency lock files
+package-lock.json
+yarn.lock
+bun.lockb
+
+
+# Logs
+logs/
+npm-debug.log*
+yarn-error.log
+>>>>>>> 1ba7b721051224c5ba87ccd88f479c8eccdc8e84

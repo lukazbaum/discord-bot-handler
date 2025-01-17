@@ -1,180 +1,65 @@
+import { GatewayIntentBits } from 'discord.js';
+
+export const AutomaticIntents: any = 0;
+
 /**
  * @see https://discord.com/developers/docs/topics/gateway#list-of-intents List of all Intents
  */
-export enum Intent {
-    /**
-     * Required for event:
-     * - GuildCreate
-     * - GuildUpdate
-     * - GuildDelete
-     * - GuildRoleCreate
-     * - GuildRoleUpdate
-     * - GuildRoleDelete
-     * - ChannelCreate
-     * - ChannelUpdate
-     * - ChannelDelete
-     * - ChannelPinsUpdate
-     * - ThreadCreate
-     * - ThreadUpdate
-     * - ThreadDelete
-     * - ThreadListSync
-     * - ThreadMemberUpdate
-     * - ThreadMembersUpdate (contains different data depending on which intents are used)
-     * - StageInstanceCreate
-     * - StageInstanceUpdate
-     * - StageInstanceDelete
-     */
-    Guilds = 1,
-
-    /**
-     * Required for event:
-     * - GuildMemberAdd
-     * - GuildMemberUpdate
-     * - GuildMemberRemove
-     * - ThreadMembersUpdate (contains different data depending on which intents are used)
-     */
-    GuildMembers = 2,
-
-    /**
-     * Required for event:
-     * - GuildAuditLogEntryCreate
-     * - GuildBanAdd
-     * - GuildBanRemove
-     */
-    GuildModeration = 4,
-
-    /**
-     * Required for event:
-     * - GuildEmojisUpdate
-     * - GuildStickersUpdate
-     */
-    GuildEmojisAndStickers = 8,
-
-    /**
-     * Required for event:
-     * - GuildIntegrationsUpdate
-     * - IntegrationCreate
-     * - IntegrationUpdate
-     * - IntegrationDelete
-     */
-    GuildIntegrations = 16,
-
-    /**
-     * Required for event:
-     * - WebhooksUpdate
-     */
-    GuildWebhooks = 32,
-
-    /**
-     * Required for event:
-     * - InviteCreate
-     * - InviteDelete
-     */
-    GuildInvites = 64,
-
-    /**
-     * Required for event:
-     * - VoiceStateUpdate
-     */
-    GuildVoiceStates = 128,
-
-    /**
-     * Required for event:
-     * - PresenceUpdate
-     */
-    GuildPresences = 256,
-
-    /**
-     * Required for event:
-     * - MessageCreate
-     * - MessageUpdate
-     * - MessageDelete
-     * - MessageDeleteBulk
-     */
-    GuildMessages = 512,
-
-    /**
-     * Required for event:
-     * - MessageReactionAdd
-     * - MessageReactionRemove
-     * - MessageReactionRemoveAll
-     * - MessageReactionRemoveEmoji
-     */
-    GuildMessageReactions = 1024,
-
-    /**
-     * Required for event:
-     * - TypingStart
-     */
-    GuildMessageTyping = 2048,
-
-    /**
-     * Required for event:
-     * - MessageCreate
-     * - MessageUpdate
-     * - MessageDelete
-     * - ChannelPinsUpdate
-     */
-    DirectMessages = 4096,
-
-    /**
-     * Required for event:
-     * - MessageReactionAdd
-     * - MessageReactionRemove
-     * - MessageReactionRemoveAll
-     * - MessageReactionRemoveEmoji
-     */
-    DirectMessageReactions = 8192,
-
-    /**
-     * Required for event:
-     * - TypingStart
-     */
-    DirectMessageTyping = 16384,
-
-    /**
-     * MessageContent does not represent individual events, but rather affects what data is present for events
-     * that could contain message content fields. More information is in the message content intent section.
-     */
-    MessageContent = 32768,
-
-    /**
-     * Required for event:
-     * - GuildScheduledEventCreate
-     * - GuildScheduledEventUpdate
-     * - GuildScheduledEventDelete
-     * - GuildScheduledEventUserAdd
-     * - GuildScheduledEventUserRemove
-     */
-    GuildScheduledEvents = 65536,
-
-    /**
-     * Required for event:
-     * - AutoModerationRuleCreate
-     * - AutoModerationRuleUpdate
-     * - AutoModerationRuleDelete
-     */
-    AutoModerationConfiguration = 1048576,
-
-    /**
-     * Required for event:
-     * - AutoModerationActionExecution
-     */
-    AutoModerationExecution = 2097152,
-
-    /**
-     * Required for event:
-     * - MessagePollVoteAdd
-     * - MessagePollVoteRemove
-     */
-    GuildMessagePolls = 16777216,
-
-    /**
-     * Required for event:
-     * - MessagePollVoteAdd
-     * - MessagePollVoteRemove
-     */
-    DirectMessagePolls = 33554432
-}
-
-export const AutomaticIntents: never[] = [];
+export const EventIntentMapping: Record<string, Array<GatewayIntentBits>> = {
+  guildCreate: [GatewayIntentBits.Guilds],
+  guildUpdate: [GatewayIntentBits.Guilds],
+  guildDelete: [GatewayIntentBits.Guilds],
+  guildRoleCreate: [GatewayIntentBits.Guilds],
+  guildRoleUpdate: [GatewayIntentBits.Guilds],
+  guildRoleDelete: [GatewayIntentBits.Guilds],
+  channelCreate: [GatewayIntentBits.Guilds],
+  channelUpdate: [GatewayIntentBits.Guilds],
+  channelDelete: [GatewayIntentBits.Guilds],
+  channelPinsUpdate: [GatewayIntentBits.Guilds],
+  threadCreate: [GatewayIntentBits.Guilds],
+  threadUpdate: [GatewayIntentBits.Guilds],
+  threadDelete: [GatewayIntentBits.Guilds],
+  threadListSync: [GatewayIntentBits.Guilds],
+  threadMemberUpdate: [GatewayIntentBits.Guilds],
+  threadMembersUpdate: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+  stageInstanceCreate: [GatewayIntentBits.Guilds],
+  stageInstanceUpdate: [GatewayIntentBits.Guilds],
+  stageInstanceDelete: [GatewayIntentBits.Guilds],
+  guildMemberAdd: [GatewayIntentBits.GuildMembers],
+  guildMemberUpdate: [GatewayIntentBits.GuildMembers],
+  guildMemberRemove: [GatewayIntentBits.GuildMembers],
+  guildAuditLogEntryCreate: [GatewayIntentBits.GuildModeration],
+  guildBanAdd: [GatewayIntentBits.GuildModeration],
+  guildBanRemove: [GatewayIntentBits.GuildModeration],
+  guildEmojisUpdate: [GatewayIntentBits.GuildEmojisAndStickers],
+  guildStickersUpdate: [GatewayIntentBits.GuildEmojisAndStickers],
+  guildIntegrationsUpdate: [GatewayIntentBits.GuildIntegrations],
+  integrationCreate: [GatewayIntentBits.GuildIntegrations],
+  integrationUpdate: [GatewayIntentBits.GuildIntegrations],
+  integrationDelete: [GatewayIntentBits.GuildIntegrations],
+  webhooksUpdate: [GatewayIntentBits.GuildWebhooks],
+  inviteCreate: [GatewayIntentBits.GuildInvites],
+  inviteDelete: [GatewayIntentBits.GuildInvites],
+  voiceStateUpdate: [GatewayIntentBits.GuildVoiceStates],
+  presenceUpdate: [GatewayIntentBits.GuildPresences],
+  messageCreate: [GatewayIntentBits.GuildMessages],
+  messageUpdate: [GatewayIntentBits.GuildMessages],
+  messageDelete: [GatewayIntentBits.GuildMessages],
+  messageDeleteBulk: [GatewayIntentBits.GuildMessages],
+  messageReactionAdd: [GatewayIntentBits.GuildMessageReactions],
+  messageReactionRemove: [GatewayIntentBits.GuildMessageReactions],
+  messageReactionRemoveAll: [GatewayIntentBits.GuildMessageReactions],
+  messageReactionRemoveEmoji: [GatewayIntentBits.GuildMessageReactions],
+  typingStart: [GatewayIntentBits.DirectMessageTyping],
+  guildScheduledEventCreate: [GatewayIntentBits.GuildScheduledEvents],
+  guildScheduledEventUpdate: [GatewayIntentBits.GuildScheduledEvents],
+  guildScheduledEventDelete: [GatewayIntentBits.GuildScheduledEvents],
+  guildScheduledEventUserAdd: [GatewayIntentBits.GuildScheduledEvents],
+  guildScheduledEventUserRemove: [GatewayIntentBits.GuildScheduledEvents],
+  autoModerationRuleCreate: [GatewayIntentBits.AutoModerationConfiguration],
+  autoModerationRuleUpdate: [GatewayIntentBits.AutoModerationConfiguration],
+  autoModerationRuleDelete: [GatewayIntentBits.AutoModerationConfiguration],
+  autoModerationActionExecution: [GatewayIntentBits.AutoModerationExecution],
+  messagePollVoteAdd: [GatewayIntentBits.GuildMessagePolls, GatewayIntentBits.DirectMessagePolls],
+  messagePollVoteRemove: [GatewayIntentBits.GuildMessagePolls, GatewayIntentBits.DirectMessagePolls],
+};
