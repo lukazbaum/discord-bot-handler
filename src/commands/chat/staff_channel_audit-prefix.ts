@@ -6,21 +6,39 @@ export = {
 	name: "audit",
 	aliases: ["ac", "auditchannels"],
 	type: CommandTypes.PrefixCommand,
-	guildWhitelist: ['1135995107842195550',  '1113339391419625572'],
-	roleWhitelist: ["1148992217202040942", "807826290295570432", "1073788272452579359", "1113407924409221120","1306823330271330345"],
-	optionalChannelWhitelist: ["1142401741866946702", "1147233774938107966", "1138531756878864434", "1151411404071518228", "1142401741866946702", "1158570345100488754", "1298446582399897621"],
-	optionalCategoryWhitelist: ["1137072690264551604", "1203928376205905960", "1152037896841351258", "1113414355669753907"],
+	// 1113339391419625572 - Epic Wonderland
+	// 1135995107842195550 - Epic Park
+	// 839731097473908767 - Blackstone
+	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	roleWhitelist: ["1148992217202040942", "807826290295570432", "1073788272452579359",
+					"1113407924409221120","1306823330271330345",
+					'845499229429956628', // Blackstone Staff
+					'1113407924409221120', // epic wonderland staff
+		],
+	optionalChannelWhitelist: ["1142401741866946702", "1147233774938107966", "1138531756878864434",
+								"1151411404071518228", "1142401741866946702", "1158570345100488754",
+								"1298446582399897621",
+								"839731098690650117",
+								"846989480748777492" //blackstone staff
+		],
+
+	optionalCategoryWhitelist: ["1137072690264551604", "1203928376205905960", "1152037896841351258",
+								"1113414355669753907",
+								"839731098456293420", // BLACKSTONE STAFF COMMANDS
+		],
+
 
 	async execute(message: Message): Promise<void> {
 		try {
 			if (message.channel.type !== ChannelType.GuildText) return;
 
 			const allChannels = await getislands();
-			const serverId = message.guild.id;
+			const serverId = message.channel.guildId
 
 			const serverList: { [key: string]: string } = {
 				'1135995107842195550': '1135995107842195550',
-				'1113339391419625572': '1113339391419625572'
+				'1113339391419625572': '1113339391419625572',
+				'839731097473908767' : '839731097473908767'
 			};
 
 			const serverSelect = Object.entries(serverList).find(([key]) => key === serverId)?.[1];
@@ -37,6 +55,7 @@ export = {
 			const activeMemberIds = guildMembers.map(member => member.id);
 
 			// Filter channels to only include those whose owners are no longer in the guild and not in knownUserIdsToSkip
+
 			const inactiveUsers = allChannels.filter(
 				(ch: any) =>
 					`${ch.server}` === serverSelect &&

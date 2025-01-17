@@ -7,12 +7,16 @@ export = {
     aliases: ["channelinfo", "chinfo", "Info"],
     type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
-	// 801822272113082389 - Epic
 	// 1135995107842195550 - Epic Park
-	guildWhitelist: ['1135995107842195550', '1113339391419625572'],
+	// 839731097473908767 - Blackstone
+	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
     roleWhitelist: ['807826290295570432', '1262566008405622879','1147864509344661644', '1148992217202040942',
-					'1246691890183540777','1073788272452579359',
-					'1113407924409221120'], // epic wonderland staff
+		'1246691890183540777','1073788272452579359',
+		'1113407924409221120', // epic wonderland staff
+		'1113451646031241316', // epic wonderland users
+			'845499229429956628', // Blackstone Staff
+			'839731097633423389' // Blackstone Users
+			],
     categoryWhitelist: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
@@ -32,7 +36,14 @@ export = {
 						'1113414355669753907',// epic wonderland staff
 						'1113414451912257536', // epic wonderland booster
 						'1115072766878691428', // epic wonderland supreme land
-						'1151855336865665024' // epic wonderland supreme land 1
+						'1151855336865665024', // epic wonderland supreme land 1
+						'1320055421561471048', // epic wonderland supreme land 2
+						'839731102281105409', // Blacstone Knights Hall
+						'839731101885923345', // Blackstone wizards tower
+						'839731101622075415', // Blacstone Dragon Cave
+						'872692223488184350', // Blackstone Nitro Islands
+						'1019301054120210482', // Blackstone Donors
+						'967657150769942578', // Blackstone Staff
 	],
     async execute(message: Message): Promise<void> {
 	 try{
@@ -58,6 +69,8 @@ export = {
 
 		const verifiedRoleList: { [key: string]: string } = {
 			'1135995107842195550': '1143236724718317673',
+			'1113339391419625572':'1113451646031241316',
+			'839731097473908767' : '839731097633423389',
 		};
 		const verifiedRoleId = Object.entries(verifiedRoleList).find(([key, val]) => key === serverId)?.[1];
 
@@ -67,9 +80,9 @@ export = {
 		 // object is guildId:RoleId
 
 		 const modRoleIdList: { [key: string]: string } = {
-                        "1135995107842195550": "1148992217202040942",
-                        "801822272113082389": "807826290295570432",
-			 			'1113339391419625572':'1113407924409221120', // epic wonderland staff
+			 "1135995107842195550": "1148992217202040942", // epic park staff
+			 '1113339391419625572':'1113407924409221120', // epic wonderland staff
+			 "839731097473908767": "845499229429956628", // blackstone staff royal guards
                  };
 
 		const roleId = Object.entries(modRoleIdList).find(([key, val]) => key === serverId)?.[1];

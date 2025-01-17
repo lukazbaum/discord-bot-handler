@@ -10,7 +10,15 @@ import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
 export = {
 	name: "rolecheck",
 	type: CommandTypes.PrefixCommand,
-	roleWhitelist: ["1148992217202040942"],
+	// 1113339391419625572 - Epic Wonderland
+	// 1135995107842195550 - Epic Park
+	// 839731097473908767 - Blackstone
+	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	roleWhitelist: ["1148992217202040942",
+		'1113407924409221120', // epic wonderland staff
+		'845499229429956628', // Blackstone Staff
+		],
+
 	optionalCategoryWhitelist: [
 		"1147909067172483162",
 		"1147909156196593787",
@@ -19,6 +27,9 @@ export = {
 		"1147909282201870406",
 		"1147909200924643349",
 		"1140190313915371530",
+		'1113414355669753907',// epic wonderland staff
+		'967657150769942578', // Blackstone Staff
+
 	],
 	optionalChannelWhitelist: [
 		"1147233774938107966",

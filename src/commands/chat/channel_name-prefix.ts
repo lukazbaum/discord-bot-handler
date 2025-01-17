@@ -15,11 +15,14 @@ export = {
     aliases: [],
     type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
-    //  - Epic
     // 1135995107842195550 - Epic Park
-    guildWhitelist: ['1135995107842195550', '1113339391419625572'],
+    // 839731097473908767 - Blackstone
+    guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
-                    '1113407924409221120'], // epic wonderland staff
+                    '1113407924409221120', // epic wonderland staff
+                    '845499229429956628', // Blackstone Staff
+                    '839731097633423389' // Blackstone Users
+        ],
     categoryWhitelist:[	'1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
@@ -27,18 +30,25 @@ export = {
                         '1147909282201870406',
                         '1147909200924643349',
                         '1140190313915371530',
-    			        '1203928376205905960',
+    		            '1203928376205905960',
                         '1232728117936914432',
                         '1192106199404003379',
                         '1192108950049529906',
                         '1225165761920630845',
                         '966458661469839440',
-	    		        '808109909266006087',
+	    	            '808109909266006087',
                         '825060923768569907',
                         '1113414355669753907',// epic wonderland staff
                         '1113414451912257536', // epic wonderland booster
                         '1115072766878691428', // epic wonderland supreme land
-                        '1151855336865665024' // epic wonderland supreme land 1
+                        '1151855336865665024', // epic wonderland supreme land 1
+	    		        '1320055421561471048', // epic wonderland supreme land 2
+                        '839731102281105409', // Blacstone Knights Hall
+                        '839731101885923345', // Blackstone wizards tower
+                        '839731101622075415', // Blacstone Dragon Cave
+                        '872692223488184350', // Blackstone Nitro Islands
+                        '1019301054120210482', // Blackstone Donors
+                        '967657150769942578', // Blackstone Staff
     ],
     cooldown: 30,
     async execute(message: Message): Promise<void> {
@@ -62,9 +72,10 @@ export = {
 		  // object is guildId:RoleId
 
         const modRoleIdList: { [key: string]: string } = {
-                        "1135995107842195550": "1148992217202040942", //epic park staff
-                        "1113339391419625572":"1113407924409221120", // epic wonderland staff
-                 };
+            "1135995107842195550": "1148992217202040942", // epic park staff
+            '1113339391419625572':'1113407924409221120', // epic wonderland staff
+            "839731097473908767": "845499229429956628", // blackstone staff royal guards
+        };
 
         const roleId = Object.entries(modRoleIdList).find(([key, val]) => key === serverId)?.[1];
 
@@ -75,7 +86,7 @@ export = {
                     return;
 
             }else if(checkStaff.roles.cache.has(roleId)){
-                console.log("Channel Info Ran In: ", message.channel.id, "by", message.author.id)
+                console.log("Channel Name Ran In: ", message.channel.id, "by", message.author.id)
             }
         }
 
@@ -103,18 +114,23 @@ export = {
             channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
             if(message.guild.id === '1135995107842195550'){ // epic park
                 channelName = String(channelName).concat(String(emojiName) + '・' + String(channelWord));
-            }else if(message.guild.id === '1113339391419625572'){ // epic wonderland
-                channelName === String(channelName).concat(+' '+String(emojiName)+' '+' ⸾⸾ '+' '+String(channelWord)+' ⸾⸾ ');
-            }
-            await message.channel.edit({name: channelName})
+                }else if(message.guild.id === '1113339391419625572'){ // epic wonderland
+                  channelName === String(channelName).concat(+' '+String(emojiName)+' '+' ⸾⸾ '+' '+String(channelWord)+' ⸾⸾ ');
+                } else if(message.guild.id === '839731097473908767') { // blackstone
+                  channelName === String(channelName).concat(String(emojiName) + '・' + String(channelWord));
+                }
+                await message.channel.edit({name: channelName})
+
         } else {
             channelWord = String(newName)
-            if(message.guild.id === '1135995107842195550'){ // epic park
+              if(message.guild.id === '1135995107842195550'){ // epic park
                 channelName = String(channelName).concat('・' + String(channelWord))
-            }else if(message.guild.id === '1113339391419625572'){ // epic wonderland
-                    String(channelName).concat(' ⸾⸾ '+String(channelWord)+' ⸾⸾ ')
-            }
-            await message.channel.edit({name: channelName})
+              }else if(message.guild.id === '1113339391419625572'){ // epic wonderland
+                    channelName = String(channelName).concat(' ⸾⸾ '+String(channelWord)+' ⸾⸾ ')
+              }else if(message.guild.id === '839731097473908767') { //blackstone
+                  channelName = String(channelName).concat('・' + String(channelWord))
+              }
+              await message.channel.edit({name: channelName})
         }
 	  	
 		let embed = new EmbedBuilder()

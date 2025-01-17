@@ -10,11 +10,13 @@ export = {
     aliases: ["Userinfo", "ui", "chaninfo", "Chaninfo"],
     type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
-	// 801822272113082389 - Epic
 	// 1135995107842195550 - Epic Park
-	guildWhitelist: ['1135995107842195550', '1113339391419625572'],
+	// 839731097473908767 - Blackstone
+	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
     roleWhitelist:["1148992217202040942","807826290295570432",
-					"1113407924409221120"], // epic wonderland staff
+					"1113407924409221120", // epic wonderland staff
+					'845499229429956628', // Blackstone Staff
+		],
     optionalCategoryWhitelist: ['1140190313915371530',
                         '1147909156196593787',
                         '1147909539413368883',
@@ -32,6 +34,7 @@ export = {
                         '966458661469839440',
                         '825060923768569907',
 						'1113414355669753907', // epic wonderland staff
+						'839731098456293420', // BLACKSTONE STAFF COMMANDS
 			],
     async execute(message: Message): Promise<void> {
     try{
@@ -80,7 +83,9 @@ export = {
 
             const verifiedRoleList: { [key: string]: string } = {
                     '1135995107842195550': '1143236724718317673',
-					'1113339391419625572':'1113407924409221120', // epic wonderland staff
+      				'1113339391419625572':'1113407924409221120', // epic wonderland users
+					'839731097633423389' :'839731097473908767' // blackstone users
+
             };
 		const verifiedRoleId = Object.entries(verifiedRoleList).find(([key, val]) => key === serverId)?.[1];
 

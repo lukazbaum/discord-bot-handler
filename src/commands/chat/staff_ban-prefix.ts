@@ -8,10 +8,12 @@ export = {
     aliases: ["bs", "serverban", "sb"],
     type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
-	// 801822272113082389 - Epic
 	// 1135995107842195550 - Epic Park
-	guildWhitelist: ['1135995107842195550', '1113339391419625572'],
-    roleWhitelist:["1148992217202040942","1113407924409221120"],
+	// 839731097473908767 - Blackstone
+	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    roleWhitelist:["1148992217202040942","1113407924409221120",
+		'845499229429956628', // Blackstone Staff
+	],
     async execute(message: Message): Promise<void> {
 	try{
 		if(message.channel.type !== ChannelType.GuildText) return;
@@ -23,6 +25,8 @@ export = {
 		let getUsername;
 		let reason;
 		let buildReason;
+		let serverId = message.channel.guildId
+
 		function isNumber(value) {
                 	return !isNaN(value);
                 }
@@ -44,7 +48,22 @@ export = {
 			buildReason = messageContentSplit.slice(1)
                         reason = String(buildReason).replaceAll(",", " ")
 		}
-		
+
+		const modRoleList: { [key: string]: string } = {
+			"1135995107842195550": "1148992217202040942", // epic park staff
+			'1113339391419625572':'1113407924409221120', // epic wonderland staff
+			"839731097473908767": "845499229429956628", // blackstone staff royal guards
+		};
+
+		const roleId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];
+		let checkStaff = await  message.guild.members.cache.get(message.author.id)
+
+		if(checkStaff.roles.cache.has(roleId)){
+			console.log("Server Ban User Ran In: ", message.channel.id, "by", message.author.id)
+		} else {
+			await message.reply('only moderators can bad users at the server level')
+		}
+
 		let checkUser = await message.guild.members.cache.get(user)
 		if(checkUser.roles.cache.has("1140520446241034290")) {
 			await message.reply("you can not ban server bots")
@@ -69,11 +88,19 @@ export = {
 					**Reason**: ${reason}	
 					**Date:** ${String(date)}
 					**Set By: ** ${message.author.username}
-					**Messages Deleted**: 7 Days Worth of Messages Deleted`) 
+					**Messages Deleted**: 7 Days Worth of Messages Deleted`)
 
-		var banlog = await message.guild.channels.cache.find(channel => channel.id === `1160751610771820554`) as TextChannel;
+		const banChannel: { [key: string]: string } = {
+			"1135995107842195550": "1160751610771820554", // epic park
+			'1113339391419625572':'1115941478007582740', // epic wonderland staff
+			"839731097473908767": "839731097754533897", // blackstone warn logs
+		};
+
+		const getBanChannel = Object.entries(banChannel).find(([key, val]) => key === serverId)?.[1];
+
+		const banlog = await message.guild.channels.cache.find(channel => channel.id === getBanChannel) as TextChannel;
                 banlog.send({embeds: [embed]})
-        	await message.reply({embeds: [embed]})
+        		await message.reply({embeds: [embed]})
 
 	}catch(err)
 	    {console.log(err)}

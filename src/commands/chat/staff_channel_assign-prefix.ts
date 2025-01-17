@@ -11,14 +11,22 @@ export = {
     aliases: ["Assign", "ac","assignchannel", "assignch"],
     type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
-	// 801822272113082389 - Epic
 	// 1135995107842195550 - Epic Park
-	guildWhitelist: ['1135995107842195550', ,'1113339391419625572'],
+	// 839731097473908767 - Blackstone
+	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
     roleWhitelist:["1148992217202040942","807826290295570432", "1073788272452579359",
-					"1113407924409221120"], // epic wonderland staff
-    optionalChannelWhitelist:["1142401741866946702","1147233774938107966", "1138531756878864434", "1151411404071518228","1142401741866946702","1158570345100488754"],
+					"1113407924409221120", // epic wonderland staff
+					'845499229429956628', // Blackstone Staff
+		],
+    optionalChannelWhitelist:["1142401741866946702","1147233774938107966", "1138531756878864434",
+								"1151411404071518228","1142401741866946702","1158570345100488754",
+								"839731098690650117", // backstone assign
+								"1024861424549376040", // my personal channel in blackstone
+		],
     optionalCategoryWhitelist:["1137072690264551604","1203928376205905960","1152037896841351258",
-								"1113414355669753907"], //epic wonderland staff
+								"1113414355669753907", //epic wonderland staff
+								"1113414355669753907", // blackstone staff
+		],
     async execute(message: Message): Promise<void> {
 	 try{
 		 if(message.channel.type !== ChannelType.GuildText) return;
@@ -235,6 +243,66 @@ export = {
 		}else if((channelIHAZ === 1) && (message.guild.id ==="1113339391419625572") ) {
 			channel = await message.guild.channels.cache.find(channel => channel.id === `${channelName}`) as TextChannel;
 			ownerRole = message.guild.roles.cache.get('1306823581870854174')
+			await progress_bar.edit('========>...')
+			await channel.lockPermissions()
+			await channel.permissionOverwrites.edit(
+				`${owner.id}`,
+				{
+					SendMessages: true,
+					ViewChannel: true
+				}
+			);
+			await progress_bar.edit('==========>.')
+			if (await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
+				let channelOwner = message.guild.members.cache.get(`${owner.id}`)
+				await enableevents(`${channel.id}`)
+				await channelOwner.roles.add(ownerRole)
+			} else {
+				await message.reply("Something happened adding user to the database, contact a dev")
+				return;
+			}
+		}else if((channelIHAZ === 0) && (message.guild.id === "839731097473908767")) {
+			channel = await message.guild.channels.create({
+				name: `${channelName}`,
+				type: ChannelType.GuildText,
+				parent: "839731102813913107",
+			})
+			ownerRole = message.guild.roles.cache.get('892026418937077760')
+
+			if (emojiName) {
+				channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
+				channelName = " "
+				channelName = String(channelName).concat(String(emojiName) + ' ||' + String(channelWord));
+				await channel.edit({name: channelName})
+			} else {
+				channelWord = String(newName).split(',')[1].trimStart();
+				channelName = " "
+				channelName = String(channelName).concat(' ||' + String(channelWord))
+				await channel.edit({name: channelName})
+			}
+			await progress_bar.edit('========>...')
+			await channel.lockPermissions()
+			await channel.permissionOverwrites.edit(
+				`${owner.id}`,
+				{
+					SendMessages: true,
+					ViewChannel: true
+				}
+			);
+			await progress_bar.edit('==========>.')
+
+			if (await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
+				let channelOwner = message.guild.members.cache.get(`${owner.id}`)
+				await enableevents(`${channel.id}`)
+				await channelOwner.roles.add(ownerRole)
+
+			} else {
+				await message.reply("Something happened adding user to the database, contact a dev")
+				return;
+			}
+		}else if((channelIHAZ === 1) && (message.guild.id ==="839731097473908767") ) {
+			channel = await message.guild.channels.cache.find(channel => channel.id === `${channelName}`) as TextChannel;
+			ownerRole = message.guild.roles.cache.get('892026418937077760')
 			await progress_bar.edit('========>...')
 			await channel.lockPermissions()
 			await channel.permissionOverwrites.edit(

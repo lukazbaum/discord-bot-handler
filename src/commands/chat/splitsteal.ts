@@ -20,10 +20,13 @@ export = {
     name: "ss",
     aliases: ["ss-nocoin"],
     type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550',  '1113339391419625572'],
+    // 1113339391419625572 - Epic Wonderland
+    // 1135995107842195550 - Epic Park
+    // 839731097473908767 - Blackstone
+    guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
     roleWhitelist: [
         '1148992217202040942', //Epic Park Staff
-        '807811542057222176', // Epic Staff
+        '967657150769942578', // Blackstone Staff
         '1113407924409221120' // Epic Wonderland
     ],
     async execute(message: Message): Promise<void> {

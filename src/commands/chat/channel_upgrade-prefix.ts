@@ -17,7 +17,9 @@ export = {
                         '1147909373180530708',
                         '1147909282201870406',
                         '1147909200924643349',
-                        '1140190313915371530'],
+                        '1140190313915371530',
+    			'1320055421561471048' // epic wonderland supreme land 2
+	    	],
     async execute(message: Message): Promise<void> {
          try{
 		if(message.channel.type !== ChannelType.GuildText) return;

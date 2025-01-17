@@ -7,12 +7,16 @@ export = {
     aliases: ["Remfav", 'remchan'],
     type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
-	// 801822272113082389 - Epic
 	// 1135995107842195550 - Epic Park
-	guildWhitelist: ['1135995107842195550', '1113339391419625572'],
-    roleWhitelist: ['1143236724718317673','1147864509344661644', '1148992217202040942','1143236724718317673',
+	// 839731097473908767 - Blackstone
+	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    	roleWhitelist: ['1143236724718317673','1147864509344661644', '1148992217202040942','1143236724718317673',
 					'807811542057222176',
-					'1113407924409221120'], // epic wonderland staff
+					'1113407924409221120', // epic wonderland staff
+					'1113451646031241316', // epic wonderland users
+					'845499229429956628', // Blackstone Staff
+					'839731097633423389' // Blackstone Users
+				],
     async execute(message: Message): Promise<void> {
 	try{
 	    if (!message.mentions.channels.map(m => m).length) {

@@ -6,12 +6,16 @@ export = {
     aliases: ["pinn", "Pin"],
     type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
-    // 801822272113082389 - Epic
     // 1135995107842195550 - Epic Park
-    guildWhitelist: ['1135995107842195550', '1113339391419625572'],
+    // 839731097473908767 - Blackstone
+    guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
     roleWhitelist: ['1143236724718317673','1147864509344661644', '1148992217202040942','1147864509344661644',
                     '807811542057222176',
-                    '1113407924409221120'], // epic wonderland staff
+                    '1113407924409221120', // epic wonderland staff
+	    	         '1113451646031241316', // epic wonderland users
+                    '845499229429956628', // Blackstone Staff
+                    '839731097633423389' // Blackstone Users
+        ],
     categoryWhitelist: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
@@ -31,7 +35,14 @@ export = {
                         '1113414355669753907',// epic wonderland staff
                         '1113414451912257536', // epic wonderland booster
                         '1115072766878691428', // epic wonderland supreme land
-                        '1151855336865665024' // epic wonderland supreme land 1
+                        '1151855336865665024', // epic wonderland supreme land 1
+	    		        '1320055421561471048', // epic wonderland supreme land 2
+                        '839731102281105409', // Blacstone Knights Hall
+                        '839731101885923345', // Blackstone wizards tower
+                        '839731101622075415', // Blacstone Dragon Cave
+                        '872692223488184350', // Blackstone Nitro Islands
+                        '1019301054120210482', // Blackstone Donors
+                        '967657150769942578', // Blackstone Staff
     ],
     async execute(message: Message): Promise<void> {
 	 try{
@@ -49,9 +60,9 @@ export = {
          let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
                 // object is guildId:RoleId
          const modRoleList: { [key: string]: string } = {
-             "1135995107842195550": "1148992217202040942", // epic park
-             "801822272113082389": "807826290295570432", // epic
-             "1113339391419625572":"1113407924409221120", // epic wonderland staff
+             "1135995107842195550": "1148992217202040942", // epic park staff
+             '1113339391419625572':'1113407924409221120', // epic wonderland staff
+             "839731097473908767": "845499229429956628", // blackstone staff royal guards
          };
 
          const roleId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];

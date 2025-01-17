@@ -6,11 +6,14 @@ export = {
     aliases: ["emojilist", "allemojis"],
     type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
-    // 801822272113082389 - Epic
     // 1135995107842195550 - Epic Park
-    guildWhitelist: ['1135995107842195550', '1113339391419625572'],
+    // 839731097473908767 - Blackstone
+    guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
     roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
-                    '1113407924409221120'],//epic wonderland staff
+                    '1113407924409221120',//epic wonderland staff
+                    '1019301054120210482', // Blackstone Donors
+                    '967657150769942578', // Blackstone Staff
+      ],
     async execute(message: typeof Message): Promise<void> {
 	try{
         async function chunkArray(array, size) {
