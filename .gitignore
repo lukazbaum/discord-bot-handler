@@ -11,3 +11,6 @@ util/
 config.ts
 tsconfig.json
 *.swp
+.idea/
+.git/
+console.txt
