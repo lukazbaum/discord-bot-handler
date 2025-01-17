@@ -1,0 +1,93 @@
+{
+  "839731097473908767": {
+    "category": {
+      "839731102281105409": {
+        "description": "Blacstone Knights Hall",
+        "commands": {
+          "default": ["pin/unpin", "add/ban user", "lock/unlock", "hide/unhide", "events", "channelinfo", "clear"],
+          "roles": {
+            "845499229429956628": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck"]
+          }
+        }
+      },
+      "872692223488184350": {
+        "description": "Blackstone Nitro Islands",
+        "commands": {
+          "default": ["pin/unpin", "add/ban user", "lock/unlock", "hide/unhide", "events", "channelinfo", "clear", "add/remo cowner", "slowmode", "desc", "name"],
+          "roles": {
+            "845499229429956628": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck"]
+          }
+        }
+      },
+      "1019301054120210482": {
+        "description": "Blackstone Donor",
+        "commands": {
+          "default": ["pin/unpin", "add/ban user", "lock/unlock", "hide/unhide", "events", "channelinfo", "clear", "add/remo cowner", "slowmode", "desc", "name"],
+          "roles": {
+            "845499229429956628": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck"]
+          }
+        }
+      },
+      "839731101885923345": {
+        "description": "Blackstone Wizards Tower",
+        "commands": {
+          "default": ["pin/unpin", "add/ban user", "hide/unhide", "events", "channelinfo", "clear", "add/remo cowner"],
+          "roles": {
+            "845499229429956628": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck"]
+          }
+        }
+      },
+      "839731101622075415": {
+        "description": "Blackstone Dragon Cave",
+        "commands": {
+          "default": ["pin/unpin", "add/ban user", "lock/unlock", "hide/unhide", "events", "channelinfo", "clear", "add/remo cowner", "slowmode", "desc", "name"],
+          "roles": {
+            "845499229429956628": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck"]
+          }
+        }
+      },
+      "967657150769942578": {
+        "description": "Blackstone Staff",
+        "commands": {
+          "default": ["pin/unpin", "add/ban user", "lock/unlock", "hide/unhide", "events", "channelinfo", "clear", "add/remo cowner", "slowmode", "desc", "name"],
+          "roles": {
+            "845499229429956628": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck"]
+          }
+        }
+      },
+      "*": {
+        "description": "Default Commands for any channel",
+        "commands": {
+          "default": ["help", "commands", "bonk", "love", "hugs", "thanks", "score", "fav"],
+          "roles": {
+            "845499229429956628": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck"]
+          }
+        }
+      }
+    }
+  },
+  "1135995107842195550": {
+    "category": {
+      "1140190313915371530": {
+        "description": "Epic Park Staff Channels",
+        "commands": {
+          "default": ["embedcheck", "arena commands", "pin/unpin", "add/ban user", "lock/unlock", "hide/unhide", "events", "channelinfo", "clear", "add/remo cowner", "slowmode", "desc", "name", "emojilist"],
+          "roles": {
+            "11423438292786872850": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck", "upgrade"],
+            "1136168655172947988": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck", "quarantine", "recover", "upgrade"]
+          }
+        }
+      },
+      "*": {
+        "description": "Default Commands for any channel",
+        "commands": {
+          "default": ["help", "commands", "ep ai/mi", "bonk", "love", "hugs", "thanks", "score", "fav"],
+          "roles": {
+            "11423438292786872850": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck", "upgrade"],
+            "1136168655172947988": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck", "quarantine", "recover", "upgrade"]
+          }
+        }
+      }
+    }
+  }
+}
