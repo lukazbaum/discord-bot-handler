@@ -1,6 +1,6 @@
 import { ChannelType, Message,  EmbedBuilder,} from "discord.js";
 import { PrefixCommand } from '../../handler';
-const {isOwner, adduser, addedusers, removeban} = require('../../../util/functions');
+const {isOwner, adduser, addedusers, removeban} = require('/home/ubuntu/ep_bot/extras/functions');
 
 export default new PrefixCommand({
     name: "adduser",

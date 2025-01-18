@@ -1,19 +1,17 @@
-import { EmbedBuilder, ButtonInteraction, GuildChannel, ChannelType} from "discord.js";
+import { EmbedBuilder, ButtonInteraction, ChannelType} from "discord.js";
+import { Button } from '../../handler';
 
-type ButtonExecutor = (interaction: ButtonInteraction, uniqueId: string | null) => Promise<void>;
-
-export = {
-    id: "2_sec",
-    type: ComponentTypes.Button,
-    async execute(interaction: ButtonInteraction): Promise<void>{
-	    if (!interaction.channel) return;
-            if (interaction.channel.type !== ChannelType.GuildText) return;
-	    await interaction.channel.setRateLimitPerUser(2)
-	    await interaction.update({
-		    embeds: [ new EmbedBuilder()
-			    .setTitle("Slowmode On")
-		   	    .setDescription("2 Second Slowmode Enabled\n*to disable use ep slowoff*") ],
-  		    components: []
-	})
-    }
-} as ComponentModule;
+export default new Button({
+	customId: "2_sec",
+	async execute(interaction: ButtonInteraction): Promise<void> {
+		if (!interaction.channel) return;
+		if (interaction.channel.type !== ChannelType.GuildText) return;
+		await interaction.channel.setRateLimitPerUser(2)
+		await interaction.update({
+			embeds: [new EmbedBuilder()
+				.setTitle("Slowmode On")
+				.setDescription("2 Second Slowmode Enabled\n*to disable use ep slowoff*")],
+			components: []
+		})
+	}
+});

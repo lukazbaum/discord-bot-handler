@@ -1,9 +1,9 @@
-import {ButtonInteraction, GuildChannel, ChannelType, EmbedBuilder} from "discord.js";
-import { ComponentModule, ComponentTypes } from "../../handler/types/Component";
+import {ButtonInteraction, ChannelType, EmbedBuilder} from "discord.js";
+import { Button } from '../../handler';
 
-export = {
-    id: "5_sec",
-    type: ComponentTypes.Button,
+export default new Button({
+    customId: "5_sec",
+
     async execute(interaction: ButtonInteraction): Promise<void>{
 	    if (!interaction.channel) return;
             if (interaction.channel.type !== ChannelType.GuildText) return;
@@ -15,4 +15,4 @@ export = {
                     components: []
         })
     }
-} as ComponentModule;
+});

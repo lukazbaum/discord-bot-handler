@@ -1,10 +1,9 @@
-import { ButtonInteraction, TextChannel, GuildChannel, ChannelType, PermissionsBitField, EmbedBuilder, MessageMentions, ChannelManager} from "discord.js";
-import { ComponentModule, ComponentTypes } from "../../handler/types/Component";
+import { ButtonInteraction, TextChannel, ChannelType, EmbedBuilder} from "discord.js";
+import { Button } from '../../handler';
 const {removecowners, adduser, addedusers, getisland} = require('/home/ubuntu/ep_bot/extras/functions');
 
-export = {
-    id: "remove_co",
-    type: ComponentTypes.Button,
+export default new Button({
+    customId: "remove_co",
     async execute(interaction: ButtonInteraction): Promise<void>{
 	try{
 		if(!interaction.channel) return;
@@ -64,4 +63,4 @@ export = {
         {console.log(err)}
 
     }
-} as ComponentModule;
+});

@@ -5,9 +5,9 @@
     "rootDir": "./src/",
     "outDir": "./dist/",
     "strict": true,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "strictPropertyInitialization": false,
+    "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
     "sourceMap": true,
@@ -18,13 +18,11 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "removeComments": true,
-    "noImplicitAny": false,
-    "sourceMap": false,
     "typeRoots": ["node_modules/@types", "./handler/types/ProcessEnv.d.ts"],
     "baseUrl": "./",
     "lib": ["esnext", "dom"]
   },
   "files": ["src/index.ts"],
   "include": ["./**/*.ts"],
-  "exclude": ["node_modules", "dist", "src/**/.*"]
+  "exclude": ["node_modules", "dist"]
 }

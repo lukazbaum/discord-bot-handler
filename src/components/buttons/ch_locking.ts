@@ -1,9 +1,9 @@
 import { ButtonInteraction, GuildChannel, ChannelType, EmbedBuilder} from "discord.js";
-import { ComponentModule, ComponentTypes } from "../../handler/types/Component";
+import { Button } from '../../handler';
 const {getisland} = require('/home/ubuntu/ep_bot/extras/functions');
-export = {
-    id: "channel_lock",
-    type: ComponentTypes.Button,
+
+export default new Button({
+    customId: "channel_lock",
     async execute(interaction: ButtonInteraction): Promise<void>{
 	 try{
 	    if(!interaction.channel) return;
@@ -32,4 +32,4 @@ export = {
 	}catch(err)
         {console.log(err)}
     }
-} as ComponentModule;
+});

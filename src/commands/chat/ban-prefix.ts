@@ -3,7 +3,7 @@ import {
 	Message,
 	EmbedBuilder,} from "discord.js";
 import { PrefixCommand } from '../../handler';
-const {getisland, banuser, bannedusers, removeuser, isOwner} = require('../../../util/functions');
+const {getisland, banuser, bannedusers, removeuser, isOwner} = require('/home/ubuntu/ep_bot/extras/functions');
 
 export default new PrefixCommand({
     name: "ban",

@@ -1,22 +1,14 @@
 import {
-    Message,
     TextChannel,
     ChannelType,
-    Guild,
-    PermissionsBitField,
     ButtonInteraction,
-    GuildChannel,
     EmbedBuilder
 } from "discord.js";
-import {
-    ComponentModule,
-    ComponentTypes,
-} from "../../handler/types/Component";
+import { Button } from '../../handler';
 const { getisland, bannedusers, addedusers } = require('/home/ubuntu/ep_bot/extras/functions');
 
-export = {
-    id: "confirm_qc",
-    type: ComponentTypes.Button,
+export default new Button({
+    customId: "confirm_qc",
     async execute(interaction: ButtonInteraction): Promise<void> {
         if (!interaction.channel) return;
         if (interaction.channel.type !== ChannelType.GuildText) return;
@@ -109,4 +101,4 @@ export = {
             console.log(err);
         }
     }
-} as ComponentModule;
+});
