@@ -1,7 +1,7 @@
-const { Client, GuildChannel, GuildMember, ChannelType, ChannelManager, EmbedBuilder } = require('discord.js');
+const {EmbedBuilder } = require('discord.js');
 import { Message as DiscordMessage } from 'discord.js';
 import { TextChannel as DiscordChannel } from 'discord.js';
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { PrefixCommand } from '../../handler';
 const { getcowners, getisland, isOwner } = require('/home/ubuntu/ep_bot/extras/functions');
 const fs = require('fs');
 
@@ -30,15 +30,14 @@ const commandFile: CommandFile = JSON.parse(
     fs.readFileSync('/home/ubuntu/new_parkman/src/commands/chat/commands.json', 'utf-8')
 );
 
-export = {
+export default new PrefixCommand({
     name: "commands",
     aliases: ["cm", "mycommand", "cmd", "cmds"],
-    type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
     // 1135995107842195550 - Epic Park
     // 839731097473908767 - Blackstone
-    guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist: [
+    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    allowedRoles: [
         '1147864509344661644', // Epic Park Channel Owner
         '1136168655172947988', // epic park admins
         '1142343829278687285', // epic park moderators
@@ -138,4 +137,4 @@ export = {
             await message.reply("An error occurred while retrieving commands.");
         }
     },
-} as PrefixCommandModule;
+});

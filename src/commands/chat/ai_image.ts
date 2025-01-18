@@ -1,25 +1,21 @@
-import { ActionRowBuilder, 
-	CommandInteraction, 
-	EmbedBuilder, 
-	Interaction, 
-	Message, 
-	MessageReaction, 
+import { ActionRowBuilder,
+	EmbedBuilder,
+	Message,
 	ButtonBuilder, 
 	ButtonStyle,
-	TextChannel,
 	ChannelType
 } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { PrefixCommand } from '../../handler';
 const { OPENAI_API_KEY} = require('../../../../ep_bot/extras/settings')
 const OpenAI = require("openai");
 const openai = new OpenAI({
           apiKey: OPENAI_API_KEY,
             });
 
-export = {
+export default new PrefixCommand({
     name: "makeimage",
     aliases: ["mi"],
-    type: CommandTypes.PrefixCommand,
+	allowedGuilds: ['1135995107842195550'],
     async execute(message: Message): Promise<void> {
 	try{
 		if(message.channel.type !== ChannelType.GuildText) return;
@@ -63,5 +59,5 @@ export = {
             console.log(err)}
 
 	}
-} as PrefixCommandModule;
+});
 

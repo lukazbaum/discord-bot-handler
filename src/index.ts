@@ -28,28 +28,10 @@ export const client: ExtendedClient = new ExtendedClient({
 });
 
 (async (): Promise<void> => {
-<<<<<<< HEAD
-    // You can modify the "events", "components" and "commands" folder name in the config.ts file.
-    // All directories can have subfolders, subfolders in subfolders and even no subfolders.
-    await client.registerEvents();
-    await client.registerComponents();
-    await client.registerCommands({
 
-        // Whether to deploy your Slash Commands to the Discord API (refreshes command.data)
-        // Not needed when just updating the execute function.
-        // Keep in mind that guild commands (deploy: false) will be deployed instantly
-        // and global commands (deploy: true) can take up to one hour.
-        deploy: false 
-    });
-    // Existing commands can be deleted with their id and RegisterType like this:
-    // await client.deleteCommand("1239882465229668414", RegisterTypes.Guild)
-    // await client.deleteCommands(["1239882465229668414", "1239882465229668414"], RegisterTypes.Guild)
-    // await client.deleteAllCommands(RegisterTypes.Guild)
-    await client.connect(process.env.CLIENT_TOKEN);
-=======
   await client.login(process.env.CLIENT_TOKEN);
   // You can delete commands like this:
   // await client.deleteCommand(RegisterType, 'command_id_here');
   // await client.deleteCommands(RegisterType, ['command_id_1', 'command_id_2']);
->>>>>>> 1ba7b721051224c5ba87ccd88f479c8eccdc8e84
+
 })();

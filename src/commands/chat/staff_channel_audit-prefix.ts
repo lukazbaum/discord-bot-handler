@@ -1,28 +1,27 @@
-import { GuildChannel, GuildMember, ChannelType, Message, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { ChannelType, Message, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { PrefixCommand } from '../../handler';
 const { getislands } = require('/home/ubuntu/ep_bot/extras/functions');
 
-export = {
+export default new PrefixCommand({
 	name: "audit",
 	aliases: ["ac", "auditchannels"],
-	type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
 	// 1135995107842195550 - Epic Park
 	// 839731097473908767 - Blackstone
-	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-	roleWhitelist: ["1148992217202040942", "807826290295570432", "1073788272452579359",
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	allowedRoles: ["1148992217202040942", "807826290295570432", "1073788272452579359",
 					"1113407924409221120","1306823330271330345",
 					'845499229429956628', // Blackstone Staff
 					'1113407924409221120', // epic wonderland staff
 		],
-	optionalChannelWhitelist: ["1142401741866946702", "1147233774938107966", "1138531756878864434",
+	optionalAllowedChannels: ["1142401741866946702", "1147233774938107966", "1138531756878864434",
 								"1151411404071518228", "1142401741866946702", "1158570345100488754",
 								"1298446582399897621",
 								"839731098690650117",
 								"846989480748777492" //blackstone staff
 		],
 
-	optionalCategoryWhitelist: ["1137072690264551604", "1203928376205905960", "1152037896841351258",
+	optionalAllowedCategories: ["1137072690264551604", "1203928376205905960", "1152037896841351258",
 								"1113414355669753907",
 								"839731098456293420", // BLACKSTONE STAFF COMMANDS
 		],
@@ -153,4 +152,4 @@ export = {
 			await message.reply("An error occurred while fetching the inactive user list.");
 		}
 	}
-} as PrefixCommandModule;
+});

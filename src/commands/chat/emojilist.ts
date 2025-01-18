@@ -1,15 +1,14 @@
 const { Message, EmbedBuilder } = require('discord.js');
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { PrefixCommand } from '../../handler';
 
-export = {
+export default new PrefixCommand({
     name: "emojis",
     aliases: ["emojilist", "allemojis"],
-    type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
     // 1135995107842195550 - Epic Park
     // 839731097473908767 - Blackstone
-    guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
+    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    allowedRoles: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
                     '1113407924409221120',//epic wonderland staff
                     '1019301054120210482', // Blackstone Donors
                     '967657150769942578', // Blackstone Staff
@@ -63,8 +62,7 @@ export = {
 
         var redo;
         await chunked.forEach(async chunk => {
-            if (chunk.join(' ').length > 2000) redo = true;
-            else redo = false;
+            redo = chunk.join(' ').length > 2000;
         });
 
         if (redo) {
@@ -77,4 +75,4 @@ export = {
 	}catch(err)
         {console.log(err)}
     },
-} as PrefixCommandModule;
+});

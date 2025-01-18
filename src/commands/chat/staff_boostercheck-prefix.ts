@@ -1,13 +1,12 @@
-import {  Role, BitField, PermissionsBitField, GuildChannel, GuildMember,  ChannelType, Message, ChannelManager,  EmbedBuilder} from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import {  ChannelType, Message, EmbedBuilder} from "discord.js";
+import { PrefixCommand } from '../../handler';
 const {getCoChannels, getcowners, checkisland, bannedusers, addedusers, getisland } = require('/home/ubuntu/ep_bot/extras/functions');
 
-export = {
+export default new PrefixCommand({
     name: "boostercheck",
     aliases: ["bc", "boosts"],
-    type: CommandTypes.PrefixCommand,
-    roleWhitelist:["1148992217202040942"],
-    CategoryWhitelist: ["1137072690264551604","1140190313915371530"],
+	allowedRoles:["1148992217202040942"],
+	allowedCategories: ["1137072690264551604","1140190313915371530"],
     async execute(message: Message): Promise<void> {
     try{
 	    if(message.channel.type !== ChannelType.GuildText) return;
@@ -85,4 +84,4 @@ export = {
     }catch(err)
     {console.log(err)}
   }
-} as PrefixCommandModule;
+});

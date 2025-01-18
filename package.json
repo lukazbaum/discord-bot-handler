@@ -1,22 +1,7 @@
 {
   "name": "discordjs-command-handler",
-<<<<<<< HEAD
-  "version": "1.0.0",
-  "description": "A comprehensive TypeScript command handler for Discord.js, featuring slash commands, prefix commands, message events, automatic intents, and more.",
-  "main": "src/index.ts",
-  "scripts": {
-    "clean-windows": "if exist dist rd /s /q dist",
-    "clean-linux": "rm -rf dist",
-    "compile": "npm run clean-linux && tsc",
-    "start": "node dist/index.js",
-    "watch": "tsc -w",
-    "cs": "npm run compile && npm run start"
-  },
-  "keywords": [],
-=======
   "version": "3.0.0",
   "description": "A feature-rich Discord Bot Handler designed to simplify bot development with support for commands, components, events, and modern Discord features.",
->>>>>>> 1ba7b721051224c5ba87ccd88f479c8eccdc8e84
   "author": "Lukas Baum",
   "license": "MIT",
   "main": "src/index.ts",
@@ -26,11 +11,6 @@
     "start:build": "node dist/index.js",
     "format": "prettier --write \"src/**/*.ts\"",
     "build": "tsc"
-  },
-  "devDependencies": {
-<<<<<<< HEAD
-    "@types/node": "^22.9.0",
-    "typescript": "^5.6.3"
   },
   "dependencies": {
     "@discordjs/formatters": "^0.5.0",
@@ -42,19 +22,10 @@
     "mysql": "^2.18.1",
     "opencollective": "^1.0.3",
     "opencollective-postinstall": "^2.0.3",
-    "ramda": "^0.30.1"
-=======
+    "ramda": "^0.30.1",
     "@types/bun": "latest",
     "@types/node": "^22.10.5",
     "prettier": "^3.4.2",
-    "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
-  },
-  "dependencies": {
-    "bufferutil": "^4.0.9",
-    "discord.js": "^14.17.3",
-    "dotenv": "^16.4.7",
-    "utf-8-validate": "^6.0.5"
->>>>>>> 1ba7b721051224c5ba87ccd88f479c8eccdc8e84
-  }
+}
 }

@@ -1,25 +1,23 @@
 import {
 	Message,
 	ChannelType,
-	Role,
-	PermissionsBitField,
 	EmbedBuilder,
 } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import {PrefixCommand} from "../../handler";
 
-export = {
+export default new PrefixCommand({
 	name: "rolecheck",
-	type: CommandTypes.PrefixCommand,
+
 	// 1113339391419625572 - Epic Wonderland
 	// 1135995107842195550 - Epic Park
 	// 839731097473908767 - Blackstone
-	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-	roleWhitelist: ["1148992217202040942",
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	allowedRoles: ["1148992217202040942",
 		'1113407924409221120', // epic wonderland staff
 		'845499229429956628', // Blackstone Staff
 		],
 
-	optionalCategoryWhitelist: [
+	optionalAllowedCategories: [
 		"1147909067172483162",
 		"1147909156196593787",
 		"1147909539413368883",
@@ -31,7 +29,7 @@ export = {
 		'967657150769942578', // Blackstone Staff
 
 	],
-	optionalChannelWhitelist: [
+	optionalAllowedChannels: [
 		"1147233774938107966",
 		"1138531756878864434",
 		"1151411404071518228",
@@ -97,4 +95,4 @@ export = {
 			console.log(err);
 		}
 	},
-} as PrefixCommandModule;
+});

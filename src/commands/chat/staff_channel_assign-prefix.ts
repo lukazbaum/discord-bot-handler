@@ -1,29 +1,28 @@
-import {  Message, TextChannel, GuildChannelManager, ChannelType, Guild, PermissionsBitField, EmbedBuilder}  from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import {  Message, TextChannel, ChannelType, EmbedBuilder}  from "discord.js";
+import { PrefixCommand } from '../../handler';
 const { updateOwner, getisland,  enableevents, createisland, checkisland} = require('/home/ubuntu/ep_bot/extras/functions');
 const emojiRegex = require('emoji-regex');
 const { amarikey } = require('../../../../ep_bot/extras/settings')
 const { AmariBot } = require("amaribot.js");
 const amariclient = new AmariBot(amarikey);
 
-export = {
+export default new PrefixCommand({
     name: "assign",
     aliases: ["Assign", "ac","assignchannel", "assignch"],
-    type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
 	// 1135995107842195550 - Epic Park
 	// 839731097473908767 - Blackstone
-	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist:["1148992217202040942","807826290295570432", "1073788272452579359",
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	allowedRoles:["1148992217202040942","807826290295570432", "1073788272452579359",
 					"1113407924409221120", // epic wonderland staff
 					'845499229429956628', // Blackstone Staff
 		],
-    optionalChannelWhitelist:["1142401741866946702","1147233774938107966", "1138531756878864434",
+	optionalAllowedChannels:["1142401741866946702","1147233774938107966", "1138531756878864434",
 								"1151411404071518228","1142401741866946702","1158570345100488754",
 								"839731098690650117", // backstone assign
 								"1024861424549376040", // my personal channel in blackstone
 		],
-    optionalCategoryWhitelist:["1137072690264551604","1203928376205905960","1152037896841351258",
+	optionalAllowedCategories:["1137072690264551604","1203928376205905960","1152037896841351258",
 								"1113414355669753907", //epic wonderland staff
 								"1113414355669753907", // blackstone staff
 		],
@@ -347,4 +346,4 @@ export = {
 	    }
 
     }
-} as PrefixCommandModule;
+});

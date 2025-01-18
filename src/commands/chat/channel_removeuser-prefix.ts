@@ -1,19 +1,18 @@
-import { GuildChannel, GuildMember,  ChannelType, Message, ChannelManager,  EmbedBuilder,  MessageMentions} from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { ChannelType, Message,EmbedBuilder,} from "discord.js";
+import { PrefixCommand } from '../../handler';
 const {isOwner, removeuser, removecowners, getisland, addedusers} = require('/home/ubuntu/ep_bot/extras/functions');
 
-export = {
+export default new PrefixCommand({
     name: "removeuser",
     aliases: ["Removeuser", "remuser", "rem"],
-    type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
     // 801822272113082389 - Epic
     // 1135995107842195550 - Epic Park
-    guildWhitelist: ['1135995107842195550', '1113339391419625572'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777', '807811542057222176',
+    allowedGuilds: ['1135995107842195550', '1113339391419625572'],
+    allowedRoles: ['1147864509344661644', '1148992217202040942','1246691890183540777', '807811542057222176',
                     '1113407924409221120', // epic wonderland staff],
 	    		'1113451646031241316'], // epic wonderland users
-    categoryWhitelist: ['1147909067172483162',
+    allowedCategories: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
                         '1147909373180530708',
@@ -140,4 +139,4 @@ export = {
 	}catch(err)
   	{console.log(err)}
     },
-} as PrefixCommandModule;
+});

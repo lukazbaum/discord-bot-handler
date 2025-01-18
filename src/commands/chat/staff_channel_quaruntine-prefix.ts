@@ -1,15 +1,14 @@
 import {  Message, ButtonStyle, ButtonBuilder, ActionRowBuilder, GuildChannelManager, EmbedBuilder}  from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { PrefixCommand } from '../../handler';
 const { getisland } = require('/home/ubuntu/ep_bot/extras/functions');
 
-export = {
+export default new PrefixCommand({
     name: "quaruntine",
     aliases: ["Quaruntine", "qch"],
-    type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550'],
-    roleWhitelist:["1148992217202040942"],
-    optionalCategoryWhitelist:["1140190313915371530"],
-    optionalChannelWhitelist:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
+	allowedGuilds: ['1135995107842195550'],
+	allowedRoles:["1148992217202040942"],
+	optionalAllowedCategories:["1140190313915371530"],
+	optionalAllowedChannels:["1147233774938107966", "1138531756878864434", "1151411404071518228"],
     async execute(message: Message): Promise<void> {
 	    try{ 
 		if(message.mentions.channels.map(m => m).length){
@@ -48,4 +47,4 @@ export = {
 	    }catch(err)
 	    {console.log(err)}
     }
-}  as PrefixCommandModule;
+});

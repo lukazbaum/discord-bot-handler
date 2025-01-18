@@ -1,5 +1,5 @@
-import { TextChannel, ChannelType, Message, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, MessageActionRowComponentBuilder, ComponentType } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { ChannelType, Message, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, MessageActionRowComponentBuilder, ComponentType } from "discord.js";
+import {PrefixCommand} from "../../handler";
 const { OPENAI_API_KEY } = require('../../../../ep_bot/extras/settings');
 const OpenAI = require("openai");
 
@@ -7,11 +7,11 @@ const openai = new OpenAI({
 	apiKey: OPENAI_API_KEY,
 });
 
-export = {
+export default new PrefixCommand({
 	name: "askai",
 	aliases: ["ai", "askme", "ask"],
-	categoryWhitelist: ['1147909067172483162', '1147909156196593787', '1147909539413368883', '1147909373180530708', '1147909282201870406', '1147909200924643349', '1137026511921229905', '1152913513598173214', '1140512246141812806', '1140190313915371530'],
-	type: CommandTypes.PrefixCommand,
+	allowedGuilds: ['1135995107842195550'],
+	allowedCategories: ['1147909067172483162', '1147909156196593787', '1147909539413368883', '1147909373180530708', '1147909282201870406', '1147909200924643349', '1137026511921229905', '1152913513598173214', '1140512246141812806', '1140190313915371530'],
 	async execute(message: Message): Promise<void> {
 		try {
 			if (message.channel.type !== ChannelType.GuildText) return;
@@ -130,4 +130,4 @@ export = {
 			}
 		}
 	}
-} as PrefixCommandModule;
+});

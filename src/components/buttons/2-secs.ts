@@ -1,5 +1,6 @@
 import { EmbedBuilder, ButtonInteraction, GuildChannel, ChannelType} from "discord.js";
-import { ComponentModule, ComponentTypes } from "../../handler/types/Component";
+
+type ButtonExecutor = (interaction: ButtonInteraction, uniqueId: string | null) => Promise<void>;
 
 export = {
     id: "2_sec",

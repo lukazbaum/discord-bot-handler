@@ -1,30 +1,22 @@
 import {
-    CommandInteraction,
-    EmbedBuilder,
-    Interaction,
     Message,
-    MessageReaction,
     ButtonBuilder,
     ButtonStyle,
     ActionRowBuilder,
     ComponentType, ButtonInteraction,
-    ReactionCollector,
-    TextChannel,
-    ChannelType
-} from "discord.js";
+    ChannelType} from "discord.js";
 import {blockQuote, bold, italic, quote, spoiler, strikethrough, underline, subtext} from "@discordjs/formatters";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { PrefixCommand } from '../../handler';
 const { updatePlayer, getPlayer } = require('/home/ubuntu/ep_bot/extras/functions');
 
-export = {
+export default new PrefixCommand({
     name: "ss",
     aliases: ["ss-nocoin"],
-    type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
     // 1135995107842195550 - Epic Park
     // 839731097473908767 - Blackstone
-    guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist: [
+    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    allowedRoles: [
         '1148992217202040942', //Epic Park Staff
         '967657150769942578', // Blackstone Staff
         '1113407924409221120' // Epic Wonderland
@@ -179,4 +171,4 @@ export = {
             console.error(err);
         }
     }
-} as PrefixCommandModule;
+});

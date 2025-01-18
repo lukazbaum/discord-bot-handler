@@ -1,10 +1,9 @@
 import { Message, EmbedBuilder, ActionRowBuilder, MessageActionRowComponentBuilder, SelectMenuBuilder, SelectMenuInteraction, ComponentType } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { PrefixCommand } from '../../handler';
 
-export = {
+export default new PrefixCommand({
 	name: "help",
 	aliases: ["halp", "parkmanhelp", "Help"],
-	type: CommandTypes.PrefixCommand,
 	async execute(message: Message): Promise<void> {
 		try {
 			const userPages = [
@@ -169,4 +168,4 @@ export = {
 			console.log(err);
 		}
 	}
-} as PrefixCommandModule;
+});

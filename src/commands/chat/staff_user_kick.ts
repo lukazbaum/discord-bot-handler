@@ -1,17 +1,16 @@
-import { TextChannel, Message, ChannelType, ChannelManager, Role, GuildChannel, GuildMember, BitField, PermissionsBitField, EmbedBuilder } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { TextChannel, Message, ChannelType, EmbedBuilder } from "discord.js";
+import { PrefixCommand } from '../../handler';
 const { guildBan } = require('/home/ubuntu/ep_bot/extras/functions');
 
 
-export = {
+export default new PrefixCommand({
     name: "kickuser",
     aliases: ["ku", "kick"],
-    type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
     // 1135995107842195550 - Epic Park
     // 839731097473908767 - Blackstone
-    guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist:["1148992217202040942", // epic park staff
+    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    allowedRoles:["1148992217202040942", // epic park staff
                     "1113407924409221120", // epic staff
                     '845499229429956628', // Blackstone Staff
     ],
@@ -80,4 +79,4 @@ export = {
             await message.channel.send('Failed to kick the user. Ensure the bot has the correct permissions.');
         }
     }
-} as PrefixCommandModule;
+});

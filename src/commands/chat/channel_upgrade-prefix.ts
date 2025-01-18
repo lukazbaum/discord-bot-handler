@@ -1,17 +1,16 @@
-import {  Message, TextChannel, GuildChannelManager, ChannelType, Guild, PermissionsBitField, EmbedBuilder}  from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import {  Message, TextChannel, ChannelType, EmbedBuilder}  from "discord.js";
+import { PrefixCommand } from '../../handler';
 const { isOwner, getisland, addedusers, bannedusers } = require('/home/ubuntu/ep_bot/extras/functions');
 const { amarikey } = require('../../../../ep_bot/extras/settings')
 const { AmariBot } = require("amaribot.js");
 const amariclient = new AmariBot(amarikey);
 
-export = {
+export default new PrefixCommand({
     name: "upgrade",
     aliases: ["Upgrade", "up"],
-    type: CommandTypes.PrefixCommand,
-    guildWhitelist: ['1135995107842195550'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644'],
-    categoryWhitelist: ['1147909067172483162',
+    allowedGuilds: ['1135995107842195550'],
+    allowedRoles: ['1147864509344661644', '1148992217202040942','1147864509344661644'],
+    allowedCategories: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
                         '1147909373180530708',
@@ -189,5 +188,5 @@ export = {
 	    	{console.error(err)}
 
     	}
-} as PrefixCommandModule;
+});
 

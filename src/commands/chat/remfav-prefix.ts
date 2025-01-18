@@ -1,16 +1,15 @@
-import { Message, MessageMentions } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { Message } from "discord.js";
+import { PrefixCommand } from '../../handler';
 const {checkfav, remfav} = require('/home/ubuntu/ep_bot/extras/functions');
 
-export = {
+export default new PrefixCommand({
     name: "remfav",
     aliases: ["Remfav", 'remchan'],
-    type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
 	// 1135995107842195550 - Epic Park
 	// 839731097473908767 - Blackstone
-	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    	roleWhitelist: ['1143236724718317673','1147864509344661644', '1148992217202040942','1143236724718317673',
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	allowedRoles: ['1143236724718317673','1147864509344661644', '1148992217202040942','1143236724718317673',
 					'807811542057222176',
 					'1113407924409221120', // epic wonderland staff
 					'1113451646031241316', // epic wonderland users
@@ -39,4 +38,4 @@ export = {
   	{console.log(err)}
 
     },
-} as PrefixCommandModule;
+});

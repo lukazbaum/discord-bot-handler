@@ -1,17 +1,16 @@
 // @ts-nocheck
-import { Message, ChannelType, MessageManager, MessageCollector } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { Message, ChannelType} from "discord.js";
+import { PrefixCommand } from '../../handler';
 const {getisland, isOwner} = require('/home/ubuntu/ep_bot/extras/functions');
 
-export = {
+export default new PrefixCommand({
     name: "unpin",
     aliases: ["Unpin", "removepin"],
-    type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
     // 1135995107842195550 - Epic Park
     // 839731097473908767 - Blackstone
-    guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist: ['1143236724718317673',
+    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    allowedRoles: ['1143236724718317673',
 	    		'1147864509344661644', 
 	    		'1148992217202040942',
 	    		'1147864509344661644',
@@ -21,7 +20,7 @@ export = {
                 '845499229429956628', // Blackstone Staff
                 '839731097633423389' // Blackstone Users
         ],
-    categoryWhitelist: ['1147909067172483162',
+    allowedCategories: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
                         '1147909373180530708',
@@ -40,9 +39,9 @@ export = {
                         '1113414451912257536', // epic wonderland booster
                         '1115072766878691428', // epic wonderland supreme land
                         '1151855336865665024', // epic wonderland supreme land 1
-                        '839731102281105409', // Blacstone Knights Hall
+                        '839731102281105409', // Blackstone Knights Hall
                         '839731101885923345', // Blackstone wizards tower
-                        '839731101622075415', // Blacstone Dragon Cave
+                        '839731101622075415', // Blackstone Dragon Cave
                         '872692223488184350', // Blackstone Nitro Islands
                         '1019301054120210482', // Blackstone Donors
                         '967657150769942578', // Blackstone Staff
@@ -98,4 +97,4 @@ export = {
 	}catch(err)
        {console.log(err)}
     }
-} as PrefixCommandModule;
+});

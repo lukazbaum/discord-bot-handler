@@ -1,22 +1,21 @@
-import { Guild, GuildChannel, ChannelType, TextChannel, Message } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
-const { getisland,  disableevents, isOwner} = require("/home/ubuntu/ep_bot/extras/functions");
+import { ChannelType,Message } from "discord.js";
+import { PrefixCommand } from '../../handler';
+const { getisland, disableevents, isOwner} = require("/home/ubuntu/ep_bot/extras/functions");
 
-export = {
+export default new PrefixCommand({
     name: "noevents",
     aliases: ["disableevents", "de", "disableevent"],
-    type: CommandTypes.PrefixCommand,
     // 1113339391419625572 - Epic Wonderland
     // 1135995107842195550 - Epic Park
     // 839731097473908767 - Blackstone
-    guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
+    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    allowedRoles: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
                     '1113407924409221120', // epic wonderland staff
 	    	        '1113451646031241316', // epic wonderland users
                     '845499229429956628', // Blackstone Staff
                     '839731097633423389' // Blackstone Users
         ],
-    categoryWhitelist: ['1147909067172483162',
+    allowedCategories: ['1147909067172483162',
                         '1147909156196593787',
                         '1147909539413368883',
                         '1147909373180530708',
@@ -91,4 +90,4 @@ export = {
 	}catch(err)
   	{console.log(err)}
     }
-} as PrefixCommandModule;
+});

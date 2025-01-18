@@ -1,31 +1,26 @@
 import {ActionRowBuilder,
 	ButtonBuilder, 
 	ButtonStyle,
-	ChannelManager, 
-	EmbedBuilder, 
-	Channel, 
+	EmbedBuilder,
 	ChannelType,
-	Message, 
-	MessageManager, 
-	MessageCollector } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+	Message} from "discord.js";
+import {PrefixCommand} from "../../handler";
 const {getisland, isOwner} = require('/home/ubuntu/ep_bot/extras/functions');
 
-export = {
+export default new PrefixCommand({
     name: "slowmode",
     aliases: ["smon", "Slowmodeon", "slowon"],
-    type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
 	// 1135995107842195550 - Epic Park
 	// 839731097473908767 - Blackstone
-	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','807811542057222176',
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	allowedRoles: ['1147864509344661644', '1148992217202040942','807811542057222176',
 			'1113407924409221120', //epic wonderland staff
 			'1113451646031241316', // epic wonderland users
 			'845499229429956628', // Blackstone Staff
 			'839731097633423389' // Blackstone Users
 			],
-    categoryWhitelist: ["1140190313915371530", "1147909067172483162", "1147909156196593787",
+	allowedCategories: ["1140190313915371530", "1147909067172483162", "1147909156196593787",
                         '1203928376205905960',
                         '1232728117936914432',
                         '1192106199404003379',
@@ -129,4 +124,4 @@ export = {
 	}catch(err)
   	{console.log(err)}
     }
-} as PrefixCommandModule;
+});

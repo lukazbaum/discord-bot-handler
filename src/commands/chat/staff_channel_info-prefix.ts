@@ -1,23 +1,22 @@
 import {  Role, BitField, PermissionsBitField, GuildChannel, GuildMember,  ChannelType, Message, ChannelManager,  EmbedBuilder} from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { PrefixCommand } from '../../handler';
 const {getCoChannels, getcowners, checkisland, bannedusers, addedusers, getisland } = require('/home/ubuntu/ep_bot/extras/functions');
 const { amarikey } = require('/home/ubuntu/ep_bot/extras/settings')
 const { AmariBot } = require("amaribot.js");
 const amariclient = new AmariBot(amarikey);
 
-export = {
+export default new PrefixCommand({
     name: "userinfo",
     aliases: ["Userinfo", "ui", "chaninfo", "Chaninfo"],
-    type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
 	// 1135995107842195550 - Epic Park
 	// 839731097473908767 - Blackstone
-	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist:["1148992217202040942","807826290295570432",
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	allowedRoles:["1148992217202040942","807826290295570432",
 					"1113407924409221120", // epic wonderland staff
 					'845499229429956628', // Blackstone Staff
 		],
-    optionalCategoryWhitelist: ['1140190313915371530',
+	allowedCategories: ['1140190313915371530',
                         '1147909156196593787',
                         '1147909539413368883',
                         '1147909373180530708',
@@ -260,4 +259,4 @@ export = {
     }catch(err)
     {console.log(err) }
 	}
-} as PrefixCommandModule;
+});

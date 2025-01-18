@@ -1,17 +1,16 @@
-import { TextChannel, Message, ChannelType, ChannelManager, Role, GuildChannel, GuildMember, BitField, PermissionsBitField, EmbedBuilder } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import { TextChannel, Message, ChannelType, EmbedBuilder } from "discord.js";
+import { PrefixCommand } from '../../handler';
 const { guildBan, updateGuildBan } = require('/home/ubuntu/ep_bot/extras/functions');
 
 
-export = {
+export default new PrefixCommand({
     name: "removeserverban",
     aliases: ["ub", "rsb", "ubuser", "usb", "sub"],
-    type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
 	// 1135995107842195550 - Epic Park
 	// 839731097473908767 - Blackstone
-	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist:["1148992217202040942","1113414355669753907", "1113407924409221120",
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	allowedRoles:["1148992217202040942","1113414355669753907", "1113407924409221120",
 					'845499229429956628', // Blackstone Staff,
 		],
     async execute(message: Message): Promise<void> {
@@ -95,4 +94,4 @@ export = {
 	    {console.log(err)}
 
     }
-} as PrefixCommandModule;
+});

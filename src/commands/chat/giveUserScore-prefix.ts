@@ -1,26 +1,25 @@
-import { CommandInteraction, EmbedBuilder, Interaction, Message, MessageReaction, ButtonBuilder, ButtonStyle } from "discord.js";
-import { CommandTypes, PrefixCommandModule } from "../../handler/types/Command";
+import {EmbedBuilder, Message } from "discord.js";
+import { PrefixCommand } from '../../handler';
 const { getpoints, getTop3, addNewscore } = require('/home/ubuntu/ep_bot/extras/functions'); 
 const { amarikey } = require('/home/ubuntu/ep_bot/extras/settings')
 const { AmariBot } = require("amaribot.js");
 const amariclient = new AmariBot(amarikey);
 
-export = {
+export default new PrefixCommand({
     name: "score",
     aliases: ["Scores", "myscore", "ms"],
-    type: CommandTypes.PrefixCommand,
 	// 1113339391419625572 - Epic Wonderland
 	// 1135995107842195550 - Epic Park
 	// 839731097473908767 - Blackstone
-	guildWhitelist: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-    roleWhitelist: ['1147864509344661644', '1148992217202040942','1246691890183540777','1143236724718317673',
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	allowedRoles: ['1147864509344661644', '1148992217202040942','1246691890183540777','1143236724718317673',
 		'807811542057222176',
 		'1113407924409221120', //epic wonderland staff
 		'1113451646031241316', // epic wonderland wpicfy
 			'845499229429956628', // Blackstone Staff
 			'839731097633423389' // Blackstone Users
 		],
-    cooldown: 10,
+	userCooldown: 10,
     async execute(message: Message): Promise<void> {
 	try{
 		if (message.author.bot) return;
@@ -107,5 +106,5 @@ export = {
         	console.log(err)}
 
 	}
-} as PrefixCommandModule;
+});
 
