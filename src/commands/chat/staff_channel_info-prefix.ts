@@ -25,15 +25,16 @@ export default new PrefixCommand({
                         '1147909200924643349',
                         '1147909067172483162',
                         '1140190313915371530',
-	                	'1203928376205905960',
+	                			'1203928376205905960',
                         '1232728117936914432',
                         '1192106199404003379',
                         '1192108950049529906',
                         '1225165761920630845',
                         '966458661469839440',
                         '825060923768569907',
-						'1113414355669753907', // epic wonderland staff
-						'839731098456293420', // BLACKSTONE STAFF COMMANDS
+												'1219009472593399909', //epic park quaruntine
+												'1113414355669753907', // epic wonderland staff
+												'839731098456293420', // BLACKSTONE STAFF COMMANDS
 			],
     async execute(message: Message): Promise<void> {
     try{

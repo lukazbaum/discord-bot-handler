@@ -1,155 +1,173 @@
-import { ChannelType, Message, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { PrefixCommand } from '../../handler';
+import {
+	ChannelType,
+	Message,
+	EmbedBuilder,
+	Client,
+	TextChannel,
+	NewsChannel,
+	GuildBasedChannel,
+	BaseGuildTextChannel,
+} from "discord.js";
+import { PrefixCommand } from "../../handler";
 const { getislands } = require('/home/ubuntu/ep_bot/extras/functions');
+
+// Queue to track audit requests
+const auditQueue: string[] = [];
+let isProcessing = false; // Global lock for queue processing
+
+async function processQueue(client: Client, requester: Message): Promise<void> {
+	if (isProcessing) {
+		console.log("Queue processing already in progress.");
+		return;
+	}
+
+	if (auditQueue.length === 0) {
+		console.log("Audit queue is empty. Nothing to process.");
+		return;
+	}
+
+	isProcessing = true; // Set lock
+	const guildId = auditQueue[0]; // Get the current guild from the queue
+	console.log(`Processing audit for guild: ${guildId}`);
+
+	try {
+		const guild = await client.guilds.fetch(guildId);
+
+		// Send initial message
+		if (!isValidSendChannel(requester.channel)) {
+			console.error("Requester channel does not support messages.");
+			return;
+		}
+		const initialMessage = await requester.channel.send({
+			content: `🔍 Starting the audit for **${guild.name}**...`,
+		});
+
+		// Fetch all channels and filter for the current guild
+		const allChannels = await getislands();
+		const serverChannels = allChannels.filter((ch: any) => `${ch.server}` === guildId);
+
+		console.log("Filtered Channels for This Server:", serverChannels);
+
+		// Known user IDs to skip
+		const knownUserIdsToSkip = ['1151325182351392818', '1234731796944650340'];
+		const inactiveUsers: any[] = [];
+
+		console.log("Starting validation of users...");
+		for (const ch of serverChannels) {
+			try {
+				await guild.members.fetch(ch.user); // User exists
+			} catch {
+				// Handle user not found
+				if (!knownUserIdsToSkip.includes(ch.user)) {
+					inactiveUsers.push(ch);
+				}
+			}
+		}
+
+		// Prepare the embed based on the results
+		const embed = new EmbedBuilder()
+			.setTitle("Audit Results")
+			.setFooter({ text: `Guild: ${guild.name}` });
+
+		if (!inactiveUsers.length) {
+			console.log(`No inactive users found for guild: ${guildId}`);
+			embed.setDescription("✅ No inactive users found with channel ownership.");
+		} else {
+			console.log("Inactive users found, preparing to send the embed...");
+			embed.setDescription(
+				inactiveUsers
+					.map(
+						(ch: any, index: number) =>
+							`> ${index + 1}. <@!${ch.user}> owns: <#${ch.channel}>`
+					)
+					.join("\n")
+			);
+		}
+
+		// Update the initial message with the embed
+		await initialMessage.edit({
+			content: `✅ Audit completed for **${guild.name}**.`,
+			embeds: [embed],
+		});
+
+		auditQueue.shift(); // Remove the current guild from the queue
+		console.log(`Guild ${guildId} removed from queue.`);
+	} catch (err) {
+		console.error(`Error during audit execution for guild: ${guildId}`, err);
+
+		if (isValidSendChannel(requester.channel)) {
+			await requester.channel.send(`❌ An error occurred while auditing **${guildId}**.`);
+		}
+	} finally {
+		isProcessing = false; // Release lock
+		if (auditQueue.length > 0) {
+			await processQueue(client, requester); // Process the next item
+		} else {
+			console.log("Queue processing completed.");
+		}
+	}
+}
+
+// Helper function to check if a channel is a valid Guild-based text channel
+function isValidSendChannel(channel: any): channel is TextChannel | NewsChannel {
+	return (
+		channel.type === ChannelType.GuildText ||
+		channel.type === ChannelType.GuildAnnouncement
+	);
+}
 
 export default new PrefixCommand({
 	name: "audit",
 	aliases: ["ac", "auditchannels"],
-	// 1113339391419625572 - Epic Wonderland
-	// 1135995107842195550 - Epic Park
-	// 839731097473908767 - Blackstone
-	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-	allowedRoles: ["1148992217202040942", "807826290295570432", "1073788272452579359",
-					"1113407924409221120","1306823330271330345",
-					'845499229429956628', // Blackstone Staff
-					'1113407924409221120', // epic wonderland staff
-		],
-	optionalAllowedChannels: ["1142401741866946702", "1147233774938107966", "1138531756878864434",
-								"1151411404071518228", "1142401741866946702", "1158570345100488754",
-								"1298446582399897621",
-								"839731098690650117",
-								"846989480748777492" //blackstone staff
-		],
-
-	optionalAllowedCategories: ["1137072690264551604", "1203928376205905960", "1152037896841351258",
-								"1113414355669753907",
-								"839731098456293420", // BLACKSTONE STAFF COMMANDS
-		],
-
-
+	allowedGuilds: ['1135995107842195550', '1113339391419625572', '839731097473908767'],
+	allowedRoles: [
+		"1148992217202040942", "807826290295570432", "1073788272452579359",
+		"1113407924409221120", "1306823330271330345",
+		'845499229429956628', '1113407924409221120'
+	],
+	optionalAllowedChannels: [
+		"1142401741866946702", "1147233774938107966", "1138531756878864434",
+		"1151411404071518228", "1158570345100488754",
+		"1298446582399897621", "839731098690650117",
+		"846989480748777492"
+	],
+	optionalAllowedCategories: [
+		"1137072690264551604", "1203928376205905960", "1152037896841351258",
+		"1113414355669753907", "839731098456293420"
+	],
 	async execute(message: Message): Promise<void> {
-		try {
-			if (message.channel.type !== ChannelType.GuildText) return;
+		const guildId = message.guildId;
+		if (!guildId) {
+			await message.reply("This command can only be run in a server.");
+			return;
+		}
 
-			const allChannels = await getislands();
-			const serverId = message.channel.guildId
+		// Channel and role-based permissions check
+		const channelParentId = (message.channel.type === ChannelType.GuildText || message.channel.type === ChannelType.GuildAnnouncement)
+			? message.channel.parentId
+			: null;
 
-			const serverList: { [key: string]: string } = {
-				'1135995107842195550': '1135995107842195550',
-				'1113339391419625572': '1113339391419625572',
-				'839731097473908767' : '839731097473908767'
-			};
-
-			const serverSelect = Object.entries(serverList).find(([key]) => key === serverId)?.[1];
-			if (!serverSelect) {
-				await message.reply("This server is not in the whitelist.");
+		if (
+			this.allowedGuilds.includes(guildId) &&
+			message.member?.roles.cache.some(role => this.allowedRoles.includes(role.id)) &&
+			(
+				this.optionalAllowedChannels.includes(message.channel.id) ||
+				this.optionalAllowedCategories.includes(channelParentId ?? "")
+			)
+		) {
+			if (auditQueue.includes(guildId)) {
+				await message.reply("An audit is already queued for this server. Please wait until it is processed.");
 				return;
 			}
 
-			// Array of known user IDs to skip
-			const knownUserIdsToSkip = ['1151325182351392818', '1234731796944650340'];
+			auditQueue.push(guildId);
+			console.log(`Guild ${guildId} added to audit queue.`);
 
-			// Fetch all guild members
-			const guildMembers = await message.guild.members.fetch();
-			const activeMemberIds = guildMembers.map(member => member.id);
-
-			// Filter channels to only include those whose owners are no longer in the guild and not in knownUserIdsToSkip
-
-			const inactiveUsers = allChannels.filter(
-				(ch: any) =>
-					`${ch.server}` === serverSelect &&
-					!activeMemberIds.includes(`${ch.user}`) &&
-					!knownUserIdsToSkip.includes(`${ch.user}`)
-			);
-
-			let filteredInactiveUsers = inactiveUsers;
-
-			if (serverId === '1135995107842195550') {
-				// We need to filter out channels that are in category '1219009472593399909'
-				filteredInactiveUsers = await Promise.all(
-					inactiveUsers.map(async (ch: any) => {
-						try {
-							const channel = await message.guild.channels.fetch(ch.channel);
-							if (!channel) return null;
-							if (channel.parentId === '1219009472593399909') {
-								// Skip this channel
-								return null;
-							} else {
-								return ch;
-							}
-						} catch (err) {
-							console.error(`Failed to fetch channel ${ch.channel}:`, err);
-							return null;
-						}
-					})
-				);
-
-				// Remove null entries
-				filteredInactiveUsers = filteredInactiveUsers.filter(ch => ch !== null);
+			if (auditQueue.length === 1) {
+				await processQueue(message.client, message); // Start processing if this is the only guild in the queue
 			}
-
-			if (!filteredInactiveUsers.length) {
-				await message.reply("No inactive users found with channel ownership.");
-				return;
-			}
-
-			const PAGE_SIZE = 15;
-			let page = 0;
-
-			const createEmbed = (page: number) => {
-				const paginatedUsers = filteredInactiveUsers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-				const embed = new EmbedBuilder()
-					.setTitle("Non-Server Users with Channel Ownership")
-					.setDescription(
-						paginatedUsers
-							.map((ch: any, index: number) => `> ${index + 1 + page * PAGE_SIZE}. <@!${ch.user}> owns: <#${ch.channel}>`)
-							.join("\n")
-					)
-					.setFooter({ text: `Page ${page + 1} of ${Math.ceil(filteredInactiveUsers.length / PAGE_SIZE)}` });
-
-				return embed;
-			};
-
-			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder().setCustomId('prev').setLabel('◀️').setStyle(ButtonStyle.Primary).setDisabled(true),
-				new ButtonBuilder().setCustomId('next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled(filteredInactiveUsers.length <= PAGE_SIZE)
-			);
-
-			const msg = await message.channel.send({
-				embeds: [createEmbed(page)],
-				components: [row]
-			});
-
-			const collector = msg.createMessageComponentCollector({ time: 60000 });
-
-			collector.on('collect', async (interaction) => {
-				if (!interaction.isButton()) return;
-
-				if (interaction.customId === 'prev' && page > 0) {
-					page--;
-				} else if (interaction.customId === 'next' && (page + 1) * PAGE_SIZE < filteredInactiveUsers.length) {
-					page++;
-				}
-
-				await interaction.update({
-					embeds: [createEmbed(page)],
-					components: [
-						new ActionRowBuilder<ButtonBuilder>().addComponents(
-							new ButtonBuilder().setCustomId('prev').setLabel('◀️').setStyle(ButtonStyle.Primary).setDisabled(page === 0),
-							new ButtonBuilder().setCustomId('next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled((page + 1) * PAGE_SIZE >= filteredInactiveUsers.length)
-						)
-					]
-				});
-			});
-
-			collector.on('end', async () => {
-				await msg.edit({
-					components: []
-				}).catch(console.error);
-			});
-		} catch (err) {
-			console.error(err);
-			await message.reply("An error occurred while fetching the inactive user list.");
+		} else {
+			await message.reply("You do not have the required permissions or this channel is not allowed.");
 		}
 	}
 });

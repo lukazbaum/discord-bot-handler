@@ -14,18 +14,18 @@
   },
   "dependencies": {
     "@discordjs/formatters": "^0.5.0",
+    "@types/bun": "latest",
+    "@types/node": "^22.10.5",
     "discord-pagination-advanced": "^1.1.9",
-    "discord.js": "^14.16.3",
+    "discord.js": "^14.17.3",
     "dotenv": "^16.4.5",
     "glob": "^11.0.0",
     "js-is": "^1.0.1",
     "mysql": "^2.18.1",
     "opencollective": "^1.0.3",
     "opencollective-postinstall": "^2.0.3",
-    "ramda": "^0.30.1",
-    "@types/bun": "latest",
-    "@types/node": "^22.10.5",
     "prettier": "^3.4.2",
+    "ramda": "^0.30.1",
     "typescript": "^5.7.3"
-}
+  }
 }

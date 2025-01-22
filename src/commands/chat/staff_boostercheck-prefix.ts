@@ -1,87 +1,90 @@
-import {  ChannelType, Message, EmbedBuilder} from "discord.js";
-import { PrefixCommand } from '../../handler';
-const {getCoChannels, getcowners, checkisland, bannedusers, addedusers, getisland } = require('/home/ubuntu/ep_bot/extras/functions');
+import { ChannelType, Message, EmbedBuilder } from "discord.js";
+import { PrefixCommand } from "../../handler";
+const { checkisland, getisland } = require("/home/ubuntu/ep_bot/extras/functions");
 
 export default new PrefixCommand({
-    name: "boostercheck",
-    aliases: ["bc", "boosts"],
-	allowedRoles:["1148992217202040942"],
-	allowedCategories: ["1137072690264551604","1140190313915371530"],
-    async execute(message: Message): Promise<void> {
-    try{
-	    if(message.channel.type !== ChannelType.GuildText) return;
+	name: "boostercheck",
+	aliases: ["bc", "boosts"],
+	allowedRoles: ["1148992217202040942"],
+	allowedCategories: ["1137072690264551604", "1140190313915371530"],
+	async execute(message: Message): Promise<void> {
+		if (message.channel.type !== ChannelType.GuildText) return;
 
+		try {
+			const boosterRoleId = "1142141020218347601";
+			const boosterCategoryId = "1147909067172483162";
+			const excludedChannelId = "1246550644479885312"; // Excluded channel ID
 
-	    let boosterUsers = [ ]
-	    let boosterChannels = [ ]
-	    let noChannelBoosters = ' '    
-	    let channelsList = ''
-	    let channelsToMove = ''
-	    let serverId = message.guild.id
-	    
-	    // get all users with the "booster role" and their registered channels
+			// Send an ephemeral-like message to notify the user
+			const notificationMessage = await message.reply({
+				content: "🔄 Generating the booster list. Please wait...",
+			});
 
-	    let getUsers = message.guild.roles.cache.get('1142141020218347601').members.map(m=>m.user.tag);
-	    for(let i = 0; i < getUsers.length; i++) {
-		    let userTag = getUsers[i] 
-		    const member = message.guild.members.cache.find(member => member.user.tag === userTag);
-		    const getChannel = await checkisland(member.user.id, serverId)
-		    boosterUsers.push([member.user.id, getChannel.channel])
+			const boosterUsers = [];
+			const noChannelBoosters = [];
+			const boosterMembers = message.guild.roles.cache.get(boosterRoleId)?.members.map(m => m.user) || [];
 
-	    }
+			for (const user of boosterMembers) {
+				const userChannel = await checkisland(user.id, message.guild.id);
+				boosterUsers.push({ userId: user.id, channel: userChannel?.channel });
 
-	    // get all channels under the booster category 
-	    let categoryChannels = message.guild.channels.cache.filter((channel) => {
-  			if (channel.parentId === "1147909067172483162"){
-				let channelID = channel.id
-				boosterChannels.push(channelID)
-				channelsList = channelsList.concat(`\n> <#${channelID}>`)
+				if (!userChannel?.channel) {
+					noChannelBoosters.push(`<@!${user.id}>`);
+				}
 			}
-		});
 
+			const boosterChannels = [];
+			const channelsWithoutBoosters = [];
+			let channelsList = "";
 
-	    // nmake a list of Users that boost but dont have a channel
+			const categoryChannels = message.guild.channels.cache.filter(channel =>
+				channel.parentId === boosterCategoryId && channel.id !== excludedChannelId
+			);
 
-	    for(let i = 0; i < boosterUsers.length; i++){
-		    if(typeof(boosterUsers[i][1]) === "undefined"){
-			    noChannelBoosters = noChannelBoosters.concat(`\n> <@!${boosterUsers[i][0]}>`)
+			for (const channel of categoryChannels.values()) {
+				boosterChannels.push(channel.id);
+				channelsList += `\n> <#${channel.id}>`;
 
-		    }
-	    } 
+				const channelData = await getisland(channel.id);
+				const ownerId = channelData?.user;
 
-	   //  make a list of channels where id is not a booster
-	   for(let i = 0; i < boosterChannels.length; i++) {
-		    	let getChannelUsers = await getisland(boosterChannels[i]) 
-			let user = getChannelUsers.user
-			if(user) {
-				let userInfo = message.guild.members.cache.get(user)
-				if(!(userInfo.roles.cache.some(role => role.id === '1142141020218347601')) &&
-					(getChannelUsers.channel !== '1246550644479885312')){
-					channelsToMove = channelsToMove.concat(`\n> <#${getChannelUsers.channel}>`)
+				if (!ownerId) {
+					channelsWithoutBoosters.push(`<#${channel.id}>`);
+					continue;
 				}
 
+				const ownerMember = await message.guild.members.fetch(ownerId).catch(() => null);
+				if (!ownerMember || !ownerMember.roles.cache.has(boosterRoleId)) {
+					channelsWithoutBoosters.push(`<#${channel.id}>`);
+				}
 			}
-	   }
-	   // in case of zero violations 
-	   if(channelsToMove.length <= 0){
-		   channelsToMove = channelsToMove.concat(`\n> No Violation`)
-	   }
-	   let getUserDiscordInfo = message.author.id
-	   console.log(getUserDiscordInfo)
-	   
-	   let embed = new EmbedBuilder()
-	    	.setTitle("Staff Channel Manager:  Booster Channels ")
-                .setDescription(`Boosters and Their Channels
-				Move channels to the right category using ep upgrade`)
-                .addFields({name:"__Channels In Booster Category with No Boost__", value:`${channelsToMove}`, inline: true},
-			   {name:"__Users Who Boost With No Channel__", value:`${noChannelBoosters}`, inline: true},
-			   {name:"__All Booster Channels__", value: `${channelsList}`, inline: false} 
-		)
-	        .setColor(`#097969`)
 
-	await message.reply({embeds:[embed]})
+			const noChannelList = noChannelBoosters.length
+				? noChannelBoosters.join("\n")
+				: "> All boosters have channels";
 
-    }catch(err)
-    {console.log(err)}
-  }
+			const orphanChannelsList = channelsWithoutBoosters.length
+				? channelsWithoutBoosters.join("\n")
+				: "> All channels have valid boosters";
+
+			const allChannelsList = channelsList || "> No channels found in booster category";
+
+			const embed = new EmbedBuilder()
+				.setTitle("Staff Channel Manager: Booster Channels")
+				.setDescription("Boosters and Their Channels. Use `ep upgrade` to resolve issues.")
+				.addFields(
+					{ name: "__Channels Without Boosters__", value: orphanChannelsList, inline: true },
+					{ name: "__Boosters Without Channels__", value: noChannelList, inline: true },
+					{ name: "__All Booster Channels__", value: allChannelsList, inline: false }
+				)
+				.setColor("#097969");
+
+			// Delete the initial notification and send the final embed
+			await notificationMessage.delete();
+			await message.reply({ embeds: [embed] });
+		} catch (err) {
+			console.error(err);
+			await message.reply("An error occurred while processing the command. Please check logs.");
+		}
+	},
 });
