@@ -1,77 +1,123 @@
-import {
-	Message,
-	ButtonStyle,
-	ButtonBuilder,
-	ActionRowBuilder,
-	EmbedBuilder,
-} from 'discord.js';
+import { ChannelType, Message,  EmbedBuilder,} from "discord.js";
 import { PrefixCommand } from '../../handler';
-import { resolveUserOrRole } from '../../handler/utils/resolveUserOrRole';
-const { getisland } = require('/home/ubuntu/ep_bot/extras/functions');
+const {isOwner, adduser, addedusers, removeban} = require('/home/ubuntu/ep_bot/extras/functions');
 
 export default new PrefixCommand({
-	name: "recover",
-	aliases: ["Recover", "rch", "rc"],
-	allowedGuilds: ['1135995107842195550'],
-	allowedRoles: ["1148992217202040942"],
-	optionalAllowedCategories: ["1140190313915371530"],
-	optionalAllowedChannels: ["1147233774938107966", "1138531756878864434", "1151411404071518228"],
+	name: "adduser",
+	aliases:  ["useradd","addusers", "Adduser", "au"],
+	// 1113339391419625572 - Epic Wonderland
+	// 1135995107842195550 - Epic Park
+	// 839731097473908767 - Blackstone
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	allowedRoles: ['1147864509344661644', '1148992217202040942', '1246691890183540777','1246691890183540777',
+		'807826290295570432',
+		'1073788272452579359',
+		'807826290295570432',
+		'1262566008405622879',
+		'1113407924409221120', // epic wonderland staff
+		'845499229429956628', // Blackstone Staff
+		'839731097633423389' // Blackstone Users
+	],
+	allowedCategories: ['1147909067172483162',
+		'1147909156196593787',
+		'1147909539413368883',
+		'1147909373180530708',
+		'1147909282201870406',
+		'1147909200924643349',
+		'1140190313915371530',
+		'1203928376205905960',
+		'1232728117936914432',
+		'1192106199404003379',
+		'1192108950049529906',
+		'1225165761920630845',
+		'966458661469839440',
+		'808109909266006087',
+		'825060923768569907',
+		'1113414355669753907',// epic wonderland staff
+		'1113414451912257536', // epic wonderland booster
+		'1115072766878691428', // epic wonderland supreme land
+		'1151855336865665024', // epic wonderland supreme land 1
+		'839731102281105409', // Blacstone Knights Hall
+		'839731101885923345', // Blackstone wizards tower
+		'839731101622075415', // Blacstone Dragon Cave
+		'872692223488184350', // Blackstone Nitro Islands
+		'1019301054120210482', // Blackstone Donors
+		'967657150769942578', // Blackstone Staff
+	],
 	async execute(message: Message): Promise<void> {
 		try {
-			// Ensure the command was run in a guild
-			if (!message.guild) {
-				await message.reply("This command can only be used in a server.");
-				return;
+			if (message.channel.type !== ChannelType.GuildText) return;
+
+			const initialReply = await message.reply("Processing your request...");
+
+			let getOwner = await isOwner(message.author.id);
+			let checkStaff = await message.guild.members.cache.get(message.author.id);
+			let channel = message.channel.id;
+			let serverId = message.guild.id;
+
+			let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel);
+
+			const modRoleList: { [key: string]: string } = {
+				"1135995107842195550": "1148992217202040942",
+				"1113339391419625572": "1113407924409221120",
+				"839731097473908767": "845499229429956628",
+			};
+
+			const roleId = Object.entries(modRoleList).find(([key]) => key === serverId)?.[1];
+
+			if (!checkOwner) {
+				if (!checkStaff.roles.cache.has(roleId)) {
+					await initialReply.edit("You must be an owner/cowner of this channel to run this command.");
+					return;
+				}
 			}
 
-			// Check if a channel was mentioned
-			if (!message.mentions.channels.size) {
-				await message.reply("You must specify a valid channel including the #.");
-				return;
+			let messageContent = message.content.toLowerCase();
+			let messageContentSplit = messageContent.split(" ");
+			let userName = message.mentions.users.first();
+			let id;
+
+			if (!userName) {
+				if (Number.isInteger(Number(messageContentSplit[0]))) {
+					id = messageContentSplit[0];
+				} else {
+					await initialReply.edit("Please specify a valid user ID or username.");
+					return;
+				}
+			} else {
+				id = userName.id;
 			}
 
-			const getMessageContent = message.content;
-			const channelTemp = getMessageContent.split('#');
-			const channelId = channelTemp[1].replace(">", "").trim();
+			const checkAdds = await addedusers(message.channel.id);
+			let cleanid = id.replace(/\D/g, '');
+			const isAdded = checkAdds && checkAdds.some((added) => added.user === cleanid);
 
-			// Validate the channel
-			const channelInfo = await getisland(channelId);
-			if (!channelInfo) {
-				await message.reply('Channel is not assigned.');
+			if (isAdded) {
+				await initialReply.edit("User is already added.");
 				return;
+			} else {
+				await adduser(cleanid, message.channel.id);
+				await removeban(cleanid, message.channel.id);
+				await message.channel.permissionOverwrites.edit(cleanid, {
+					ViewChannel: true,
+					SendMessages: true,
+				});
 			}
 
-			// Resolve and validate user/role
-			const validUserOrRole = await resolveUserOrRole(message.guild, message.author.id);
-			if (!validUserOrRole) {
-				await message.reply("You do not have the necessary permissions or roles to use this command.");
-				return;
+			let addlist = "";
+			const alladds = await addedusers(message.channel.id);
+			for (let i = 0; i < alladds.length; i++) {
+				addlist += `\n> ${i + 1}. <@!${alladds[i].user}>`;
 			}
 
-			// Proceed with creating confirmation embed
-			const confirmEmbed = new EmbedBuilder()
-				.setTitle("Staff Channel Manager: Quarantine Channel")
-				.setDescription(`Recovering a channel restores added and banned users. Ensure to place the channel in the correct category afterward.`)
-				.setColor('#097969');
+			const embed1 = new EmbedBuilder()
+				.setTitle("Channel Manager: Add Channel User")
+				.setDescription(`__Current List of Added Users__\n${addlist}\n\n*To ban a user, use command ep ban*`)
+				.setColor(`#097969`);
 
-			const row = new ActionRowBuilder<ButtonBuilder>()
-				.addComponents(
-					new ButtonBuilder()
-						.setCustomId("confirm_rc")
-						.setLabel("Confirm")
-						.setStyle(ButtonStyle.Primary)
-						.setEmoji("✅"),
-					new ButtonBuilder()
-						.setCustomId("cancel")
-						.setLabel("Cancel")
-						.setStyle(ButtonStyle.Danger)
-						.setEmoji("✖️")
-				);
-
-			await message.reply({ embeds: [confirmEmbed], components: [row] });
-
+			await initialReply.edit({ content: null, embeds: [embed1] });
 		} catch (err) {
 			console.error(err);
 		}
-	}
+	},
 });
