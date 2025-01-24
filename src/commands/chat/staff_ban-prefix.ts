@@ -1,108 +1,108 @@
-import { TextChannel, Message, ChannelType,EmbedBuilder } from "discord.js";
+import { TextChannel, Message, ChannelType, EmbedBuilder } from "discord.js";
 import { PrefixCommand } from '../../handler';
 const { guildBan } = require('/home/ubuntu/ep_bot/extras/functions');
 
-
 export default new PrefixCommand({
-    name: "banserver",
-    aliases: ["bs", "serverban", "sb"],
-	// 1113339391419625572 - Epic Wonderland
-	// 1135995107842195550 - Epic Park
-	// 839731097473908767 - Blackstone
-	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
-	allowedRoles:["1148992217202040942","1113407924409221120",
-		'845499229429956628', // Blackstone Staff
+	name: "banserver",
+	aliases: ["bs", "serverban", "sb"],
+	allowedGuilds: ['1135995107842195550', '1113339391419625572', '839731097473908767'],
+	allowedRoles: [
+		"1148992217202040942", // Epic Park Staff
+		"1113407924409221120", // Epic Wonderland Staff
+		'845499229429956628',  // Blackstone Staff
 	],
-    async execute(message: Message): Promise<void> {
-	try{
-		if(message.channel.type !== ChannelType.GuildText) return;
+	async execute(message: Message): Promise<void> {
+		try {
+			if (message.channel.type !== ChannelType.GuildText) return;
 
-		let messageContent = message.content.toString().toLowerCase()
-		let messageContentSplit = messageContent.split(" ");
-		let userName = message.mentions.users.first()
-		let user;
-		let getUsername;
-		let reason;
-		let buildReason;
-		let serverId = message.channel.guildId
+			const messageContent = message.content.split(" ");
+			const userInput = messageContent[2]; // First argument after the command
+			const reason = messageContent.slice(3).join(" ") || "No reason supplied"; // Everything after user input
+			const serverId = message.guild?.id;
 
-		function isNumber(value) {
-                	return !isNaN(value);
-                }
-		console.log("content info: ", messageContentSplit[0])
-		if(!userName) {
-			if(isNumber(messageContentSplit[0])){
-				getUsername = await message.guild.members.cache.get(messageContentSplit[0])
-				console.log("Get username: ", getUsername)
-				if(!(getUsername)){
-					await message.reply(`${messageContentSplit[0]} is  not a guild member`)
+			let userId: string | undefined;
+
+			// Helper to check if the input is a valid numerical ID
+			function isValidId(value: string): boolean {
+				return /^\d+$/.test(value);
+			}
+
+			// Determine the user ID based on input
+			if (message.mentions.users.size > 0) {
+				userId = message.mentions.users.first()?.id;
+			} else if (isValidId(userInput)) {
+				userId = userInput; // User input is a valid numerical ID
+			} else {
+				await message.reply("Please provide a valid user mention or numerical user ID.");
+				return;
+			}
+
+			const modRoleList: { [key: string]: string } = {
+				"1135995107842195550": "1148992217202040942", // Epic Park Staff
+				"1113339391419625572": "1113407924409221120", // Epic Wonderland Staff
+				"839731097473908767": "845499229429956628",  // Blackstone Staff
+			};
+
+			const roleId = modRoleList[serverId!];
+			const executor = await message.guild?.members.fetch(message.author.id).catch(() => null);
+
+			if (!executor?.roles.cache.has(roleId)) {
+				await message.reply("Only moderators can ban users at the server level.");
+				return;
+			}
+
+			// Attempt to fetch the member
+			const targetMember = await message.guild?.members.fetch(userId).catch(() => null);
+
+			if (targetMember) {
+				// If the user is in the guild, check for bot or self-ban
+				if (targetMember.roles.cache.has("1140520446241034290")) {
+					await message.reply("You cannot ban server bots.");
 					return;
 				}
-				user = getUsername.user.id
-					buildReason = messageContentSplit.slice(1)
-					reason = String(buildReason).replaceAll(",", " ")
-            		}
-		}else if(userName) {
-			user = userName.id
-			buildReason = messageContentSplit.slice(1)
-                        reason = String(buildReason).replaceAll(",", " ")
+				if (userId === message.author.id) {
+					await message.reply("You cannot ban yourself.");
+					return;
+				}
+			} else {
+				// If the user is not in the guild, inform the moderator
+				await message.reply(`The user with ID \`${userId}\` is not currently in the guild but will be banned upon attempting to join.`);
+			}
+
+			const date = new Date().toLocaleString();
+
+			// Ban the user by ID
+			await guildBan(userId, 'ban', reason, message.author.id, date);
+			await message.guild?.bans.create(userId, {
+				deleteMessageSeconds: 60 * 60 * 24 * 7,
+				reason: reason,
+			});
+
+			const embed = new EmbedBuilder()
+				.setTitle("Staff Manager: Server Ban")
+				.setDescription(`**Action**: Server Ban
+                **User**: <@${userId}>
+                **Reason**: ${reason}
+                **Date**: ${date}
+                **Set By**: ${message.author.username}
+                **Messages Deleted**: 7 Days Worth of Messages Deleted`);
+
+			const banChannelList: { [key: string]: string } = {
+				"1135995107842195550": "1160751610771820554", // Epic Park
+				"1113339391419625572": "1115941478007582740", // Epic Wonderland Staff
+				"839731097473908767": "839731097754533897",  // Blackstone Warn Logs
+			};
+
+			const banChannelId = banChannelList[serverId!];
+			const banChannel = message.guild?.channels.cache.get(banChannelId) as TextChannel;
+
+			if (banChannel) {
+				await banChannel.send({ embeds: [embed] });
+			}
+			await message.reply({ embeds: [embed] });
+		} catch (err) {
+			console.error(err);
+			await message.reply("An error occurred while processing the command.");
 		}
-
-		const modRoleList: { [key: string]: string } = {
-			"1135995107842195550": "1148992217202040942", // epic park staff
-			'1113339391419625572':'1113407924409221120', // epic wonderland staff
-			"839731097473908767": "845499229429956628", // blackstone staff royal guards
-		};
-
-		const roleId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];
-		let checkStaff = await  message.guild.members.cache.get(message.author.id)
-
-		if(checkStaff.roles.cache.has(roleId)){
-			console.log("Server Ban User Ran In: ", message.channel.id, "by", message.author.id)
-		} else {
-			await message.reply('only moderators can bad users at the server level')
-		}
-
-		let checkUser = await message.guild.members.cache.get(user)
-		if(checkUser.roles.cache.has("1140520446241034290")) {
-			await message.reply("you can not ban server bots")
-			return;
-		}else if(user === message.author.id){
-			await message.reply("you cant ban yourself.")
-			return;
-		}
-		if(reason.length === 0){
-                        reason = "no reason supplied"
-                }
-
-		let date = new Date().toLocaleString()
-		date = String(date.replace(',', ""))
-		await guildBan(user, 'ban', reason, message.author.id, String(date))
-		await message.guild.bans.create(`${user}`,{ deleteMessageSeconds: 60 * 60 * 24 * 7, reason: `${reason}` })
-		
-		let embed = new EmbedBuilder()
-			.setTitle("Staff Manager: Server Ban")
-			.setDescription(`**Action**: Server Ban
-					**User**: ${user}
-					**Reason**: ${reason}	
-					**Date:** ${String(date)}
-					**Set By: ** ${message.author.username}
-					**Messages Deleted**: 7 Days Worth of Messages Deleted`)
-
-		const banChannel: { [key: string]: string } = {
-			"1135995107842195550": "1160751610771820554", // epic park
-			'1113339391419625572':'1115941478007582740', // epic wonderland staff
-			"839731097473908767": "839731097754533897", // blackstone warn logs
-		};
-
-		const getBanChannel = Object.entries(banChannel).find(([key, val]) => key === serverId)?.[1];
-
-		const banlog = await message.guild.channels.cache.find(channel => channel.id === getBanChannel) as TextChannel;
-                banlog.send({embeds: [embed]})
-        		await message.reply({embeds: [embed]})
-
-	}catch(err)
-	    {console.log(err)}
-
-    }
+	},
 });
