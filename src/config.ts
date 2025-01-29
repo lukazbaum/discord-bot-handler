@@ -7,8 +7,15 @@ import {
   type MessageReplyOptions,
 } from 'discord.js';
 
+// allows custom prefixes for bot per server
+const serverPrefixes: Record<string, string> = {
+  'GUILDID: 'PREFIX',  
+  'GUILDID2: 'PREFIX2',
+};
+
 const defaultConfig: Config = {
-  prefix: '!',
+  getPrefix: (guildId: string) => serverPrefixes[guildId] || '<DEFAULT PREFIX>',
+
   ownerId: 'YOUR_USER_ID',
   eventsFolder: 'events',
   commandsFolder: 'commands',
