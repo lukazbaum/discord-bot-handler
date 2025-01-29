@@ -18,13 +18,13 @@ export const client: ExtendedClient = new ExtendedClient({
     // For example, to disable Prefix Commands:
     // disabledFeatures: [Features.PrefixCommands]
     // By default, no features are disabled (empty array).
-    disabledFeatures: [],
+    disabledFeatures: [Features.SlashCommands],
 
     // Whether to deploy your Slash Commands to the Discord API (refreshes command.data)
     // Not needed when just updating the execute function.
     // Keep in mind that guild commands will be deployed instantly
     // and global commands can take up to one hour.
-    uploadCommands: true,
+    uploadCommands: false,
 });
 
 (async (): Promise<void> => {

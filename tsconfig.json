@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "type": "module",
     "noImplicitAny": false,
     "target": "ESNext",
     "module": "commonjs",

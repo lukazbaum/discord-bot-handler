@@ -4,7 +4,7 @@
       "839731102281105409": {
         "description": "Blacstone Knights Hall",
         "commands": {
-          "default": ["pin/unpin", "add/ban user", "lock/unlock", "hide/unhide", "events", "channelinfo", "clear"],
+          "default": ["pin/unpin", "add/ban user", "lock/unlock", "hide/unhide", "events", "channelinfo", "clear","add/remo cowner", "slowmode", "desc", "name"],
           "roles": {
             "845499229429956628": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck"]
           }
@@ -31,7 +31,7 @@
       "839731101885923345": {
         "description": "Blackstone Wizards Tower",
         "commands": {
-          "default": ["pin/unpin", "add/ban user", "hide/unhide", "events", "channelinfo", "clear", "add/remo cowner"],
+          "default": ["pin/unpin", "add/ban user", "hide/unhide", "events", "channelinfo", "clear", "desc", "name"],
           "roles": {
             "845499229429956628": ["server ban", "kick", "userinfo", "assign/unassign", "audit", "channellist", "rolecheck"]
           }

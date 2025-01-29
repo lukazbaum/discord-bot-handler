@@ -7,8 +7,14 @@ import {
   type MessageReplyOptions,
 } from 'discord.js';
 
+const serverPrefixes: Record<string, string> = {
+  '1135995107842195550': 'ep',  // Epic Park
+  '1113339391419625572': 'ep',  // Epic Wonderland
+  '839731097473908767': 'bs',   // Blackstone
+};
+
 const defaultConfig: Config = {
-  prefix: 'ep',
+  getPrefix: (guildId: string) => serverPrefixes[guildId] || 'ep',
   ownerId: '936693149114449921',
   eventsFolder: 'events',
   commandsFolder: 'commands',

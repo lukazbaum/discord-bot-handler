@@ -7,7 +7,8 @@ import type {
 } from 'discord.js';
 
 export interface Config {
-  prefix: string;
+  getPrefix?: (guildId: string) => string;
+  prefix?: string;
   ownerId?: string;
   eventsFolder: string;
   commandsFolder: string;

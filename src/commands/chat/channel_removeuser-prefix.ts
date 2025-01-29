@@ -18,20 +18,28 @@ export default new PrefixCommand({
                         '1147909373180530708',
                         '1147909282201870406',
                         '1147909200924643349',
-                      '1140190313915371530', 
-  	                '1203928376205905960',
+                        '1140190313915371530',
+                        '1203928376205905960',
                         '1232728117936914432',
                         '1192106199404003379',
                         '1192108950049529906',
                         '1225165761920630845',
                         '966458661469839440',
-	    	        '808109909266006087',
+	    	                '808109909266006087',
                         '825060923768569907',
                         '1113414355669753907',// epic wonderland staff
                         '1113414451912257536', // epic wonderland booster
                         '1115072766878691428', // epic wonderland supreme land
                         '1151855336865665024', // epic wonderland supreme land 1
-	    		'1320055421561471048' // epic wonderland supreme land 2
+	    		              '1320055421561471048', // epic wonderland supreme land 2,
+                        '839731102813913107', // Blackstone Squires Corner
+                        '839731102281105409', // Blackstone Knights Hall
+                        '839731101885923345', // Blackstone wizards tower
+                        '839731101622075415', // Blackstone Dragon Cave
+                        '872692223488184350', // Blackstone Nitro Islands
+                        '839731101391781906', // Blackstone Kingdom Elite
+                        '1019301054120210482', // Blackstone Donors
+                        '967657150769942578', // Blackstone Staff
     ],
     async execute(message: Message): Promise<void> {
 	try{

@@ -39,10 +39,12 @@ export default new PrefixCommand({
                         '1113414451912257536', // epic wonderland booster
                         '1115072766878691428', // epic wonderland supreme land
                         '1151855336865665024', // epic wonderland supreme land 1
+                        '839731102813913107', // Blackstone Squires Corner
                         '839731102281105409', // Blackstone Knights Hall
                         '839731101885923345', // Blackstone wizards tower
                         '839731101622075415', // Blackstone Dragon Cave
                         '872692223488184350', // Blackstone Nitro Islands
+                        '839731101391781906', // Blackstone Kingdom Elite
                         '1019301054120210482', // Blackstone Donors
                         '967657150769942578', // Blackstone Staff
     ],

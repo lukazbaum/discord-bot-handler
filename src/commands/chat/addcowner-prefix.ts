@@ -40,6 +40,8 @@ export default new PrefixCommand({
 			'872692223488184350', // Blackstone Nitro Islands
 			'1019301054120210482', // Blackstone Donors
 			'967657150769942578', // Blackstone Staff
+			'839731101622075415', // Blackstone Dragon Caves
+			'839731101391781906', // Blackstone Kingdoms Elite
 	],
 	async execute(message: Message): Promise<void> {
 	 try{

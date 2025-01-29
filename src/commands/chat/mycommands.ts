@@ -32,7 +32,7 @@ const commandFile: CommandFile = JSON.parse(
 
 export default new PrefixCommand({
     name: "commands",
-    aliases: ["cm", "mycommand", "cmd", "cmds"],
+    aliases: ["cm", "mycommand", "cmd", "cmds", "mc"],
     // 1113339391419625572 - Epic Wonderland
     // 1135995107842195550 - Epic Park
     // 839731097473908767 - Blackstone
