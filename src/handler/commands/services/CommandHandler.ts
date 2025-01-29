@@ -61,7 +61,7 @@ export class CommandHandler {
 
   static async handlePrefixCommand(message: Message): Promise<void> {
     // Dynamically get the prefix based on the guild ID
-    const prefix = config.getPrefix?.(message.guild?.id || '') ?? config.prefix;
+    const prefix = config.getPrefix?.(message.guild?.id || '') ?? config.prefix; // dynamite from config
 
     // Ensure the message starts with the prefix
     if (!message.content.startsWith(prefix)) return;

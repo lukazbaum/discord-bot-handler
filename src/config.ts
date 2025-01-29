@@ -7,6 +7,7 @@ import {
   type MessageReplyOptions,
 } from 'discord.js';
 
+// allows custom prefixes for bot per server
 const serverPrefixes: Record<string, string> = {
   '1135995107842195550': 'ep',  // Epic Park
   '1113339391419625572': 'ep',  // Epic Wonderland
