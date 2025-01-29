@@ -7,6 +7,7 @@ import type {
 } from 'discord.js';
 
 export interface Config {
+  getPrefix?: (guildId: string) => string; // uses dynmanic prefix assignment by guild
   prefix: string;
   ownerId?: string;
   eventsFolder: string;
