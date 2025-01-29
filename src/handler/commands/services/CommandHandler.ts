@@ -59,21 +59,33 @@ export class CommandHandler {
     }
   }
 
-  static async handlePrefixCommand(message: Message): Promise<void> {
-    const commandName: string = message.content.slice(config.prefix.length).trim().split(/\s+/)[0];
+static async handlePrefixCommand(message: Message): Promise<void> {
+    // Dynamically get the prefix based on the guild ID
+    const prefix = config.getPrefix?.(message.guild?.id || '') ?? config.prefix; // dynamite from config
+
+    // Ensure the message starts with the prefix
+    if (!message.content.startsWith(prefix)) return;
+  
+    // Extract the command name from the message content
+    const commandName: string = message.content.slice(prefix.length).trim().split(/\s+/)[0];
+  
     const resolvedCommandName: string = client.commands.prefixAliases.get(commandName) ?? commandName;
-
+  
+    // Get the command object from the command collection
     const command: PrefixCommand | undefined = client.commands.prefix.get(resolvedCommandName);
-
+  
     if (!command) {
-      return;
+      return; // Command not found, exit silently
     }
-
+  
+    // Check if the user has permission to execute the command
     if (!(await this.checkCommandPermission(command, message))) return;
-
     try {
+      
+      // Execute the command and log its usage if necessary
       await command.execute(message);
-      if (command.logUsage) await this.sendUsageLog(message, resolvedCommandName, 'Prefix Command');
+      if (command.logUsage) {
+        await this.sendUsageLog(message, resolvedCommandName, 'Prefix Command');
     } catch (err) {
       LogManager.logError(`Error executing prefix command ${resolvedCommandName}`, err);
     }
