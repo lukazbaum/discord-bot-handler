@@ -31,7 +31,7 @@ export default new PrefixCommand({
 		 if(message.channel.type !== ChannelType.GuildText) return;
 	    	let stringContent = message.content.toString()
 		 if(!stringContent.includes("#")) {
-                    await message.reply('please specify a channel name ex. # channelname')
+                    await message.reply('please specify a channel name ex. assign @user # channelname')
                	     return;
 		 }
 		 let newName = stringContent.split('#')

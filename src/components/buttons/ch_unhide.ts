@@ -11,8 +11,9 @@ export default new Button({
 
             //guild setup
             const publicViewRoleList: { [key: string]: string } = {
-                        "1135995107842195550": "1143236724718317673",
-                        "801822272113082389": "807811542057222176",
+              "1135995107842195550": "1143236724718317673", // EPic Park
+              "1113339391419625572": "1113451646031241316", // Epic Wonderland
+              "839731097473908767" : "839731097633423389", // Blackstone
              };
 	    
             const publicRole = Object.entries(publicViewRoleList).find(([key, val]) => key === serverId)?.[1];
