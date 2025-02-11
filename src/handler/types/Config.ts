@@ -8,6 +8,7 @@ import type {
 
 export interface Config {
   prefix: string;
+  customPrefixes?: CustomPrefix[];
   ownerId?: string;
   eventsFolder: string;
   commandsFolder: string;
@@ -24,4 +25,9 @@ export interface LogChannelConfig {
     commandName: string,
     commandType: string,
   ) => Promise<MessageReplyOptions>;
+}
+
+export interface CustomPrefix {
+  guildId: string;
+  prefix: string;
 }

@@ -9,6 +9,13 @@ import {
 
 const defaultConfig: Config = {
   prefix: '!',
+  customPrefixes: [
+    {
+      guildId: "GUILD_ID",
+      prefix: "?"
+    }
+  ],
+
   ownerId: 'YOUR_USER_ID',
   eventsFolder: 'events',
   commandsFolder: 'commands',
