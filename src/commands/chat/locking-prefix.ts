@@ -6,12 +6,14 @@ export default new PrefixCommand({
 	name: "lock",
 	aliases: ["unlock"],
 	// 1113339391419625572 - Epic Wonderland
-	// 801822272113082389 - Epic
 	// 1135995107842195550 - Epic Park
-	allowedGuilds: ['1135995107842195550', '1113339391419625572'],
+	// 839731097473908767  - Blackstone
+	allowedGuilds: ['1135995107842195550', '1113339391419625572', '839731097473908767'],
 	allowedRoles: ['1147864509344661644', '1148992217202040942', '1147864509344661644', '807811542057222176',
 		'1113407924409221120', // epic wonderland staff
-		'1113451646031241316'], // epic wonderland users
+		'1113451646031241316', // epic wonderland users
+		'839731097633423389', // blackstone users
+		],
 	allowedCategories: ['1147909067172483162',
 		'1143954459030986812',
 		'1142846259321913486',
@@ -31,11 +33,13 @@ export default new PrefixCommand({
 		'808109909266006087',
 		'1170776642080215081',
 		'825060923768569907',
-		'1113414355669753907',// epic wonderland staff
+		'1113414355669753907',// epic wonderland play land staff
+		'1115772256052846632', /// epic wonderland staff
 		'1113414451912257536', // epic wonderland booster
 		'1115072766878691428', // epic wonderland supreme land
 		'1151855336865665024', // epic wonderland supreme land 1
 		'1320055421561471048', // epic wonderland supreme land 2
+		'1115357822222348319', // epic wonderland Epic Host Land
 		'839731102281105409', // Blacstone Knights Hall
 		'839731101885923345', // Blackstone wizards tower
 		'839731101622075415', // Blacstone Dragon Cave

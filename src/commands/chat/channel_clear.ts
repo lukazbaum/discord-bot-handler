@@ -1,6 +1,6 @@
-import {  Message, ChannelType, EmbedBuilder}  from "discord.js";
+import {  Message, ChannelType, EmbedBuilder, TextChannel}  from "discord.js";
 import { PrefixCommand } from '../../handler';
-const { isOwner, getisland, addedusers, bannedusers } = require('/home/ubuntu/ep_bot/extras/functions');
+const { isOwner} = require('/home/ubuntu/ep_bot/extras/functions');
 
 export default new PrefixCommand({
     name: "clear",
@@ -32,11 +32,13 @@ export default new PrefixCommand({
                         '966458661469839440',
                         '808109909266006087',
                         '825060923768569907',
-                        '1113414355669753907',// epic wonderland staff
+      '1113414355669753907',// epic wonderland play land staff
+      '1115772256052846632', /// epic wonderland staff
                         '1113414451912257536', // epic wonderland booster
                         '1115072766878691428', // epic wonderland supreme land
         	              '1151855336865665024', // epic wonderland supreme land 1
 	    	                '1320055421561471048', // epic wonderland supreme land 2
+                        '1115357822222348319', // epic wonderland Epic Host Land
                         '839731102813913107', // Blackstone Squires Corner
                         '839731102281105409', // Blackstone Knights Hall
                         '839731101885923345', // Blackstone wizards tower
@@ -45,71 +47,60 @@ export default new PrefixCommand({
                         '1019301054120210482', // Blackstone Donors
                         '967657150769942578', // Blackstone Staff
     ],
-    async execute(message: Message): Promise<void> {
-         try{
-		        if(message.channel.type !== ChannelType.GuildText) return;
-                // This whole Block checks for the channel owner and if not channel owner
-                 // if its not the channel owner, checks for the staff role
-                 // if user is a staff member, they can run the command
-                 // if user is a channel owner or a cowner on the channel / mentioned channel,
-                 // then they are authorized.
+  async execute(message: Message): Promise<void> {
+    try {
+      if (message.channel.type !== ChannelType.GuildText) return;
 
-                let getOwner = await isOwner(message.author.id)
-                let checkStaff = await  message.guild.members.cache.get(message.author.id)
-                let channel = message.channel.id
-		        let serverId = message.guild.id
+      let getOwner = await isOwner(message.author.id);
+      let checkStaff = message.guild?.members.cache.get(message.author.id);
+      let channel = message.channel.id;
+      let serverId = message.guild?.id;
 
-                //handles null values
-                let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+      let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel);
 
-                // object is guildId:RoleId 
+      const modRoleList: { [key: string]: string } = {
+        "1135995107842195550": "1148992217202040942", // epic park staff
+        "1113339391419625572": "1113407924409221120", // epic wonderland staff
+        "839731097473908767": "845499229429956628", // blackstone staff
+      };
 
-                const modRoleList: { [key: string]: string } = {
-                    "1135995107842195550": "1148992217202040942", // epic park staff
-                    '1113339391419625572':'1113407924409221120', // epic wonderland staff
-                    "839731097473908767": "845499229429956628", // blackstone staff royal guards
-                };
+      const roleId = modRoleList[serverId || ""];
 
-                const roleId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];
+      if (!checkOwner) {
+        if (!checkStaff?.roles.cache.has(roleId)) {
+          await message.reply('You must be an owner/cowner of this channel to run this command.');
+          return;
+        } else {
+          console.log("Clear Ran In:", message.channel.id, "by", message.author.id);
+        }
+      }
 
+      let args = message.content.split(" "); // Extract command arguments
+      if (args.length < 2) {
+        await message.reply('Please supply a number between 1 and 100.');
+        return;
+      }
 
-                if(!checkOwner){
-                        if(!(checkStaff.roles.cache.has(roleId))){
-                                await message.reply('you must be an owner/cowner of this channel to run this command')
-                                return;
+      let numberToDelete = parseInt(args[2]); // Convert to number
 
-                        }else if(checkStaff.roles.cache.has(roleId)){
-                                console.log("Clear Ran In: ", message.channel.id, "by", message.author.id)
-                        }
-                }
+      if (isNaN(numberToDelete) || numberToDelete < 1 || numberToDelete > 100) {
+        await message.reply('Please supply a valid number between 1 and 100.');
+        return;
+      }
 
-
-		let stringContent = message.content
-		 console.log(stringContent)
-
-		if(Number(stringContent)) {
-			if(Number(stringContent) === 0){
-				await message.reply('please supply a number between 1 and 100')
-                                return;
-
-			}else if(Number(stringContent) >= 101){
-				await message.reply('please supply a number between 1 and  100')
-				return;
-			} else {
-				const getValue = a => [].concat(a).at(0);
-				await message.channel.bulkDelete(getValue(stringContent))
-			}
-		}else{
-			await message.reply('please supply a number between 1 and 100') 
-			return;
-		}
-
-		let embed = new EmbedBuilder()
+      const textChannel = message.channel as TextChannel; // Ensure channel type is correct
+      await textChannel.bulkDelete(numberToDelete, true) // Delete messages
+        .then(() => {
+          let embed = new EmbedBuilder()
             .setTitle("Channel Manager: Delete Messages")
-		    .setDescription(`${stringContent}  messages have been deleted`)
-               	await message.channel.send({embeds: [embed]})
-         } catch (err)
-                {console.error(err)}
-    }
-});
+            .setDescription(`${numberToDelete} messages have been deleted.`)
+            .setColor(0x3498db);
+          textChannel.send({ embeds: [embed] });
+        })
+        .catch(err => console.error("Error deleting messages:", err));
 
+    } catch (err) {
+      console.error("Command execution error:", err);
+    }
+  }
+});

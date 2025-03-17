@@ -30,11 +30,13 @@ export default new PrefixCommand({
                         '1225165761920630845',
                         '966458661469839440',
                         '825060923768569907',
-                        '1113414355669753907',// epic wonderland staff
+      '1113414355669753907',// epic wonderland play land staff
+      '1115772256052846632', /// epic wonderland staff
                         '1113414451912257536', // epic wonderland booster
                         '1115072766878691428', // epic wonderland supreme land
                         '1151855336865665024', // epic wonderland supreme land 1
-	    		        '1320055421561471048', // epic wonderland supreme land 2
+	    		              '1320055421561471048', // epic wonderland supreme land 2
+                        '1115357822222348319', // epic wonderland Epic Host Land
                         '839731102281105409', // Blacstone Knights Hall
                         '839731101885923345', // Blackstone wizards tower
                         '839731101622075415', // Blacstone Dragon Cave
@@ -85,7 +87,7 @@ export default new PrefixCommand({
 			await message.reply("This channel isn't assigned to a user.")
 		}else{
 	       		await disableevents(message.channel.id)
-        		await message.reply("Epic RPG and Idle Alerts Are Disabled use `ep events` to re-enable.")
+        		await message.reply("Epic RPG and Idle Alerts Are Disabled use `events` to re-enable.")
 		}
 	}catch(err)
   	{console.log(err)}

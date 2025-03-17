@@ -17,14 +17,11 @@ export default new PrefixCommand({
 					"1113407924409221120", // epic wonderland staff
 					'845499229429956628', // Blackstone Staff
 		],
-	optionalAllowedChannels:["1142401741866946702","1147233774938107966", "1138531756878864434",
-								"1151411404071518228","1142401741866946702","1158570345100488754",
-								"839731098690650117", // backstone assign
-								"1024861424549376040", // my personal channel in blackstone
-		],
-	optionalAllowedCategories:["1137072690264551604","1203928376205905960","1152037896841351258",
-								"1113414355669753907", //epic wonderland staff
+	allowedCategories:["1137072690264551604","1203928376205905960","1152037896841351258",
+		'1113414355669753907',// epic wonderland play land staff
+		'1115772256052846632', /// epic wonderland staff
 								"1113414355669753907", // blackstone staff
+								"839731098456293420", // blackstone management
 		],
     async execute(message: Message): Promise<void> {
 	 try{

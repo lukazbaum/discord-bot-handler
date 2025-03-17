@@ -31,10 +31,13 @@ export default new PrefixCommand({
 												'808109909266006087',
                         '825060923768569907',
 												'1113414355669753907',// epic wonderland staff
+												'1113414355669753907',// epic wonderland play land staff
+												'1115772256052846632', /// epic wonderland staff
 												'1113414451912257536', // epic wonderland booster
 												'1115072766878691428', // epic wonderland supreme land
 												'1151855336865665024', // epic wonderland supreme land 1
-												'1320055421561471048', // epic wonderland supreme land 2
+													'1320055421561471048', // epic wonderland supreme land 2
+												'1115357822222348319', // epic wonderland Epic Host Land
 												'839731102281105409', // Blacstone Knights Hall
 												'839731101622075415', // Blacstone Dragon Cave
 												'872692223488184350', // Blackstone Nitro Islands
@@ -92,7 +95,7 @@ export default new PrefixCommand({
 		let embed = new EmbedBuilder()
 			.setTitle("Channel Manager: Remove User")
 			.setDescription(`<@!${message.mentions.members.first().id}> has been removed
-				 \n *to add user back use ep adduser*`)
+				 \n *to add user back use adduser*`)
 			.setColor(`#097969`)
 
 		const row: any = new ActionRowBuilder()

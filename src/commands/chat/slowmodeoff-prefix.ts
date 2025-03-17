@@ -14,6 +14,7 @@ export default new PrefixCommand({
 	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
 	allowedRoles: ['1147864509344661644', '1148992217202040942','807811542057222176',
 		'1113407924409221120', // epic wonderland staff
+		'1113451646031241316', // epic wonderland users
 		'845499229429956628', // Blackstone Staff
 		'839731097633423389' // Blackstone Users
 		],
@@ -26,11 +27,13 @@ export default new PrefixCommand({
 		'966458661469839440',
 		'808109909266006087',
 		'825060923768569907',
-		'1113414355669753907',// epic wonderland staff
+		'1113414355669753907',// epic wonderland play land staff
+		'1115772256052846632', /// epic wonderland staff
 		'1113414451912257536', // epic wonderland booster
 		'1115072766878691428', // epic wonderland supreme land
 		'1151855336865665024', // epic wonderland supreme land 1
 		'1320055421561471048', // epic wonderland supreme land 2
+		'1115357822222348319', // epic wonderland Epic Host Land
 		'839731102281105409', // Blacstone Knights Hall
 		'839731101885923345', // Blackstone wizards tower
 		'839731101622075415', // Blacstone Dragon Cave
@@ -70,7 +73,7 @@ export default new PrefixCommand({
 				await message.reply('you must be an owner/cowner of this channel to run this command')
 					return;
 			}else if(checkStaff.roles.cache.has(roleId)){
-				console.log("Clear Ran In: ", message.channel.id, "by", message.author.id)
+				console.log("slowmode Ran In: ", message.channel.id, "by", message.author.id)
 			}
 		}
 

@@ -25,7 +25,8 @@ export default new PrefixCommand({
 		"1147909282201870406",
 		"1147909200924643349",
 		"1140190313915371530",
-		'1113414355669753907',// epic wonderland staff
+		'1113414355669753907',// epic wonderland play land staff
+		'1115772256052846632', /// epic wonderland staff
 		'967657150769942578', // Blackstone Staff
 
 	],

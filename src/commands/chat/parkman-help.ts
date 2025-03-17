@@ -42,7 +42,7 @@ function createHelpEmbeds(type: string, prefix: string): EmbedBuilder[] {
 			.setColor("#097969")
 			.setDescription(`Parkman commands all start with \`${prefix} <commandName>\`.`)
 			.addFields(
-				{ name: "➡ Split Steal `ep ss help`", value: "> ss, ss-nocoin", inline: false },
+				{ name: `➡ Split Steal \`${prefix}\`ss help\``, value: "> ss, ss-nocoin", inline: false },
 			),
 
 		new EmbedBuilder()
@@ -198,7 +198,7 @@ export default new PrefixCommand({
 				// ✅ Interaction collector for Select Menu
 				const collector = sentMessage.createMessageComponentCollector({
 					componentType: ComponentType.StringSelect,
-					time: 60000
+					time: 600000
 				});
 
 				collector.on("collect", async (interaction) => {

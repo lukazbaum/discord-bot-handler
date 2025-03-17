@@ -18,24 +18,24 @@ export default new PrefixCommand({
     allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
     allowedRoles: [
         '1148992217202040942', //Epic Park Staff
-        '967657150769942578', // Blackstone Staff
-        '1113407924409221120' // Epic Wonderland
+        '845499229429956628', // Blackstone Staff
+        '1113407924409221120', // Epic Wonderland
+        '1331378320851337307', // Epic Wonderland Games
     ],
     async execute(message: Message): Promise<void> {
         try {
 	    if(message.channel.type !== ChannelType.GuildText) return;
 
 
-            // Parse reward from message content, default to 10 if not provided
-            const parsed = message.content
+            const args = message.content.split(" ").slice(2); // Extract arguments
+            const parsed = args.length > 0 ? args[0] : "10"; // Default to "10"
+            let reward = !isNaN(parseInt(parsed, 10)) ? parseInt(parsed, 10) : 10; // Use let, not const
 
             if(parsed === "help") {
-		if(message.channel.type !== ChannelType.GuildText) return;
+                if(message.channel.type !== ChannelType.GuildText) return;
                 await message.reply({ content: "coin defaults to 10Q Supply custom value using a number only. usage: ```ep ss 50```"});
                 return;
             }
-
-            const reward = parsed && !isNaN(parseInt(parsed, 10)) ? parseInt(parsed, 10) : 10;
 
             if (isNaN(reward) || reward <= 0) {
 		if(message.channel.type !== ChannelType.GuildText) return;

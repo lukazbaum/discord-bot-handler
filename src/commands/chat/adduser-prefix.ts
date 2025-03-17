@@ -14,12 +14,15 @@ export default new PrefixCommand({
 		'1073788272452579359',
 		'807826290295570432',
 		'1262566008405622879',
-		'1113407924409221120', // epic wonderland staff
+		'1113414355669753907',// epic wonderland play land staff
+		'1115772256052846632', /// epic wonderland staff
+		'1113451646031241316', // epic wonderland users
 		'845499229429956628', // Blackstone Staff
 		'839731097633423389' // Blackstone Users
 	],
 	allowedCategories: ['1147909067172483162',
 		'1147909156196593787',
+		'1147909282201870406',
 		'1147909539413368883',
 		'1147909373180530708',
 		'1147909282201870406',
@@ -37,12 +40,15 @@ export default new PrefixCommand({
 		'1113414451912257536', // epic wonderland booster
 		'1115072766878691428', // epic wonderland supreme land
 		'1151855336865665024', // epic wonderland supreme land 1
+		'1320055421561471048', // epic wonderland supreme land 2
+		'1115357822222348319', // epic wonderland Epic Host Land
 		'839731102813913107', // Blackstone Squires Corner
 		'839731102281105409', // Blackstone Knights Hall
 		'839731101885923345', // Blackstone wizards tower
 		'839731101622075415', // Blackstone Dragon Cave
 		'872692223488184350', // Blackstone Nitro Islands
 		'839731101391781906', // Blackstone Kingdom Elite
+		'967657150769942578', // Blackstone Royal Wing
 		'1019301054120210482', // Blackstone Donors
 		'967657150769942578', // Blackstone Staff
 	],
@@ -54,10 +60,11 @@ export default new PrefixCommand({
 
 			let getOwner = await isOwner(message.author.id);
 			let checkStaff = await message.guild.members.cache.get(message.author.id);
-			let channel = message.channel.id;
-			let serverId = message.guild.id;
+			let channel = String(message.channel.id);
+			let serverId = String(message.guild.id);
 
-			let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel);
+			let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+
 
 			const modRoleList: { [key: string]: string } = {
 				"1135995107842195550": "1148992217202040942",
@@ -69,9 +76,11 @@ export default new PrefixCommand({
 
 			if (!checkOwner) {
 				if (!checkStaff.roles.cache.has(roleId)) {
-					await initialReply.edit("You must be an owner/cowner of this channel to run this command.");
+					await message.reply("You must be an owner/cowner of this channel to run this command.");
 					return;
 				}
+			}	else if(checkStaff.roles.cache.has(roleId)){
+			console.log("Addcowner Ran In: ", message.channel.id, "by", message.author.id)
 			}
 
 			let messageContent = message.content.toLowerCase();
@@ -114,7 +123,7 @@ export default new PrefixCommand({
 
 			const embed1 = new EmbedBuilder()
 				.setTitle("Channel Manager: Add Channel User")
-				.setDescription(`__Current List of Added Users__\n${addlist}\n\n*To ban a user, use command ep ban*`)
+				.setDescription(`__Current List of Added Users__\n${addlist}\n\n*To ban a user, use command ban*`)
 				.setColor(`#097969`);
 
 			await initialReply.edit({ content: null, embeds: [embed1] });

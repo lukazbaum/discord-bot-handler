@@ -5,7 +5,8 @@ const { checkisland, getisland } = require("/home/ubuntu/ep_bot/extras/functions
 export default new PrefixCommand({
 	name: "boostercheck",
 	aliases: ["bc", "boosts"],
-	allowedRoles: ["1148992217202040942"],
+	allowedGuilds: ["1135995107842195550"],
+	allowedRoles: ["1136168655172947988"],
 	allowedCategories: ["1137072690264551604", "1140190313915371530"],
 	async execute(message: Message): Promise<void> {
 		if (message.channel.type !== ChannelType.GuildText) return;

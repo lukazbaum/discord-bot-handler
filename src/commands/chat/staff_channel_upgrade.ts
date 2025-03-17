@@ -8,6 +8,7 @@ const amariclient = new AmariBot(amarikey);
 export default new PrefixCommand({
     name: "staff_upgrade",
     aliases: ["staffupgrade", "staff_Upgrade", "sup", "changecat"],
+	allowedGuilds: ["1135995107842195550"],
 	allowedRoles:["1148992217202040942"],
 	allowedCategories:["1137072690264551604"],
     async execute(message: Message): Promise<void> {

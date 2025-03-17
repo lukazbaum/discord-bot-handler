@@ -16,9 +16,10 @@ export default new PrefixCommand({
 			'1246691890183540777',
 			'1073788272452579359',
 			'807826290295570432',
-			'1113407924409221120', // epic wonderland staff
-			'1113451646031241316', // epic wonderland users
-			'845499229429956628', // Blackstone Staff
+		'1113414355669753907',// epic wonderland play land staff
+		'1115772256052846632', /// epic wonderland staff
+		'1113451646031241316', // epic wonderland users
+		'845499229429956628', // Blackstone Staff
 			'839731097633423389' // Blackstone Users
 	],
 	allowedCategories: ['1147909156196593787', '1147909067172483162','1140190313915371530',
@@ -37,11 +38,14 @@ export default new PrefixCommand({
 			'1115072766878691428', // epic wonderland supreme land
 			'1151855336865665024', // epic wonderland supreme land 1
 			'1320055421561471048', // epic wonderland supreme land 2
+			'1115357822222348319', // epic wonderland Epic Host Land
 			'872692223488184350', // Blackstone Nitro Islands
 			'1019301054120210482', // Blackstone Donors
 			'967657150769942578', // Blackstone Staff
 			'839731101622075415', // Blackstone Dragon Caves
 			'839731101391781906', // Blackstone Kingdoms Elite
+			'967657150769942578', // Blackstone Royal Wing
+
 	],
 	async execute(message: Message): Promise<void> {
 	 try{
@@ -145,7 +149,7 @@ export default new PrefixCommand({
 			.setTitle("Channel Manager: Add CO-owner")
 			.setDescription(`<@!${cleanid}> has been added as a cowner
 
-					*to remove a cowner, use command ep remcowner*`)
+					*to remove a cowner, use command  remcowner*`)
 			.setColor(`#097969`)
 
 		await message.reply({embeds:[embed1]})

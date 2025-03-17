@@ -9,7 +9,8 @@ export default new PrefixCommand({
     // 839731097473908767 - Blackstone
     allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
     allowedRoles: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
-                    '1113407924409221120',//epic wonderland staff
+        '1113407924409221120', // epic wonderland staff
+        '1113451646031241316', // epic wonderland users
                     '1019301054120210482', // Blackstone Donors
                     '967657150769942578', // Blackstone Staff
       ],

@@ -46,7 +46,7 @@ async function processQueue(client: Client, requester: Message): Promise<void> {
 		const allChannels = await getislands();
 		const serverChannels = allChannels.filter((ch: any) => `${ch.server}` === guildId);
 
-		console.log("Filtered Channels for This Server:", serverChannels);
+		//console.log("Filtered Channels for This Server:", serverChannels);
 
 		// Known user IDs to skip
 		const knownUserIdsToSkip = ['1151325182351392818', '1234731796944650340'];
@@ -78,7 +78,7 @@ async function processQueue(client: Client, requester: Message): Promise<void> {
 				inactiveUsers
 					.map(
 						(ch: any, index: number) =>
-							`> ${index + 1}. <@!${ch.user}> owns: <#${ch.channel}>`
+							`> ${index + 1}. <@!${ch.user}> left and use to own: <#${ch.channel}>`
 					)
 					.join("\n")
 			);
@@ -123,7 +123,7 @@ export default new PrefixCommand({
 	allowedRoles: [
 		"1148992217202040942", "807826290295570432", "1073788272452579359",
 		"1113407924409221120", "1306823330271330345",
-		'845499229429956628', '1113407924409221120'
+		'845499229429956628', '1113407924409221120', '845499229429956628'
 	],
 	optionalAllowedChannels: [
 		"1142401741866946702", "1147233774938107966", "1138531756878864434",
@@ -133,12 +133,15 @@ export default new PrefixCommand({
 	],
 	optionalAllowedCategories: [
 		"1137072690264551604", "1203928376205905960", "1152037896841351258",
-		"1113414355669753907", "839731098456293420"
+		"1113414355669753907", "839731098456293420",
+		'1113414355669753907',// epic wonderland play land staff
+		'1115772256052846632', /// epic wonderland staff
+		"967657150769942578"
 	],
 	async execute(message: Message): Promise<void> {
 		const guildId = message.guildId;
 		if (!guildId) {
-			await message.reply("This command can only be run in a server.");
+			await message.reply("This command can only be run in an allowed server.");
 			return;
 		}
 
