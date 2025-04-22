@@ -1,4 +1,4 @@
-// src/commands/chat/eternalCalc.ts
+// ✅ src/commands/chat/eternalCalc.ts
 
 import {
   Message, EmbedBuilder, GuildTextBasedChannel,
@@ -21,8 +21,9 @@ export default new PrefixCommand({
   async execute(message: Message): Promise<void> {
     const userId = message.author.id;
     const guildId = message.guild?.id ?? "global";
+    const content = message.content.toLowerCase();
 
-    if (message.content.includes("help")) {
+    if (content.includes("help")) {
       const helpEmbed = new EmbedBuilder()
         .setTitle("🧬 Eternal Calculator Help")
         .setColor("#00bcd4")
@@ -35,7 +36,7 @@ export default new PrefixCommand({
       return void message.reply({ embeds: [helpEmbed] });
     }
 
-    if (message.content.includes("reset")) {
+    if (content.includes("reset")) {
       sessionStore.set(userId, {
         origin: "command",
         step: "awaitingEternal",
@@ -44,13 +45,13 @@ export default new PrefixCommand({
       return void message.reply("♻️ Session reset. Please type `rpg p e` again.");
     }
 
-    if (message.content.includes("clear")) {
+    if (content.includes("clear")) {
       sessionStore.delete(userId);
       await clearEternalUnsealData(userId, guildId);
       return void message.reply("🧼 Session + DB cleared.");
     }
 
-    if (message.content.includes("history")) {
+    if (content.includes("history")) {
       const history = await getEternalUnsealHistory(userId);
       if (!history.length) return void message.reply("📭 No unseals found.");
       const formatted = history.map((h: any, i: number) =>
@@ -62,6 +63,7 @@ export default new PrefixCommand({
       return void message.reply({ embeds: [embed] });
     }
 
+    // Begin new session
     sessionStore.set(userId, {
       origin: "command",
       step: "awaitingEternal",
@@ -70,10 +72,7 @@ export default new PrefixCommand({
 
     await message.reply("📜 Type `rpg p e`, then `rpg p`, then `rpg i`…");
 
-    const channel = message.channel;
-    if (!("send" in channel)) return;
-
-    const collector = (channel as GuildTextBasedChannel).createMessageCollector({
+    const collector = (message.channel as GuildTextBasedChannel).createMessageCollector({
       time: 300_000,
       filter: (msg) => {
         const session = sessionStore.get(userId);
@@ -87,19 +86,25 @@ export default new PrefixCommand({
 
       try {
         if (msg.author.bot && session.step === "awaitingEternal" && msg.embeds.length) {
-          session.eternal = parseEternalEmbed(msg.embeds[0].data);
+          const parsed = parseEternalEmbed(msg.embeds[0].data);
+          if ("_error" in parsed) return void msg.reply(`${parsed._error}\nPlease run \`ep et reset\` and try again.`);
+          session.eternal = parsed;
           session.step = "awaitingProfile";
           return void msg.reply("📘 Now send `rpg p`...");
         }
 
         if (msg.author.bot && session.step === "awaitingProfile" && msg.embeds.length) {
-          session.profile = parseProfileEmbed(msg.embeds[0].data);
+          const parsed = parseProfileEmbed(msg.embeds[0].data);
+          if ("_error" in parsed) return void msg.reply(parsed._error);
+          session.profile = parsed;
           session.step = "awaitingInventory";
           return void msg.reply("🎒 Now send `rpg i`...");
         }
 
         if (msg.author.bot && session.step === "awaitingInventory" && msg.embeds.length) {
-          session.inventory = parseInventoryEmbed(msg.embeds[0].data);
+          const parsed = parseInventoryEmbed(msg.embeds[0].data);
+          if ("_error" in parsed) return void msg.reply(parsed._error);
+          session.inventory = parsed;
           session.step = "awaitingGoal";
           return void msg.reply("🎯 What’s your **target Eternality**?");
         }
@@ -107,6 +112,14 @@ export default new PrefixCommand({
         if (!msg.author.bot && session.step === "awaitingGoal") {
           const goal = parseInt(msg.content.trim());
           if (isNaN(goal)) return void msg.reply("❌ Invalid number. Try `400`");
+          if (goal <= session.eternal.eternalProgress) {
+            await msg.reply(
+              `🎯 Already Eternality **${session.eternal.eternalProgress}**. Pick a higher target.\nRun \`ep et reset\` if needed.`
+            );
+            sessionStore.delete(userId);
+            collector.stop();
+            return;
+          }
           session.goal = goal;
           session.step = "awaitingTC";
           return void msg.reply("🍪 How many **Time Cookies** do you use per cooldown reset?");
@@ -117,7 +130,7 @@ export default new PrefixCommand({
           if (isNaN(tc)) return void msg.reply("❌ Invalid number. Try `3`");
           session.tc = tc;
           session.step = "awaitingExpectedTT";
-          return void msg.reply("🧮 How many **total Time Travels will you have at the moment of unsealing?**");
+          return void msg.reply("🧮 How many **total Time Travels** will you have at unsealing?");
         }
 
         if (!msg.author.bot && session.step === "awaitingExpectedTT") {
@@ -168,7 +181,7 @@ export default new PrefixCommand({
         console.error("⚠️ Eternal Calc Error:", err);
         sessionStore.delete(userId);
         collector.stop();
-        await msg.reply("⚠️ Something went wrong. Please start again.");
+        await msg.reply("⚠️ Something went wrong. Run `<prefix> et reset` to try again.");
       }
     });
   }

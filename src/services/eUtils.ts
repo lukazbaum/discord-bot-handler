@@ -1,42 +1,49 @@
-// 🔥 Updated eUtils.ts — Accurate Eternal Calculations (Excel-aligned)
 import { EmbedBuilder } from "discord.js";
 
-export function parseEternalEmbed(embed: any) {
-  const statsField = embed.fields.find((f: any) => f.name.includes("ETERNAL STATS"));
-  const progressField = embed.fields.find((f: any) => f.name.includes("ETERNAL PROGRESS"));
-  const equipField = embed.fields.find((f: any) => f.name.includes("ETERNAL EQUIPMENT"));
+function findField(embed: any, keyword: string) {
+  return embed.fields.find((f: any) =>
+    f.name.toLowerCase().includes(keyword.toLowerCase())
+  );
+}
 
-  if (!statsField || !progressField || !equipField) {
-    throw new Error("❌ Embed is missing required Eternal fields");
+export function parseEternalEmbed(embed: any):
+  | { eternalAT: number; eternalDEF: number; eternalLIFE: number; eternalProgress: number; lastUnsealTT: number; swordTier: number; swordLevel: number; }
+  | { _error: string }
+{
+  try {
+    const stats = findField(embed, "eternal stats")?.value;
+    const progress = findField(embed, "eternal progress")?.value;
+    const equip = findField(embed, "eternal equipment")?.value;
+
+    if (!stats || !progress || !equip) {
+      return { _error: "❌ Missing sections in embed. Use `rpg p e` (not just `rpg p`)." };
+    }
+
+    const statsMatch = stats.match(/E-AT\*\*: (\d+).+E-DEF\*\*: (\d+).+E-LIFE\*\*: (\d+)/s);
+    const progressMatch = progress.match(/\*\*Eternality\*\*: (\d+).+\*\*Last unseal time travels\*\*: (\d+)/s);
+    const equipMatch = equip.match(/sword.*\| T(\d+) Lv(\d+)/i);
+
+    if (!statsMatch || !progressMatch) {
+      return { _error: "❌ Embed parse failed. Ensure it’s from `rpg p e` not another command." };
+    }
+
+    return {
+      eternalAT: parseInt(statsMatch[1]),
+      eternalDEF: parseInt(statsMatch[2]),
+      eternalLIFE: parseInt(statsMatch[3]),
+      eternalProgress: parseInt(progressMatch[1]),
+      lastUnsealTT: parseInt(progressMatch[2]),
+      swordTier: parseInt(equipMatch?.[1] || "0"),
+      swordLevel: parseInt(equipMatch?.[2] || "0")
+    };
+  } catch {
+    return { _error: "❌ Unexpected error. Run `prefix et reset`." };
   }
-
-  const stats = statsField.value;
-  const progress = progressField.value;
-  const equip = equipField.value;
-
-  const match = stats.match(/E-AT\*\*: (\d+).+E-DEF\*\*: (\d+).+E-LIFE\*\*: (\d+)/s);
-  if (!match) throw new Error("❌ Failed to parse ETERNAL STATS");
-
-  const progressMatch = progress.match(/\*\*Eternality\*\*: (\d+).+\*\*Last unseal time travels\*\*: (\d+)/s);
-  if (!progressMatch) throw new Error("❌ Failed to parse ETERNAL PROGRESS");
-
-  const [eternality, lastUnseal] = progressMatch.slice(1);
-  const swordMatch = equip.match(/sword.*\| T(\d+) Lv(\d+)/i);
-
-  return {
-    eternalAT: parseInt(match[1]),
-    eternalDEF: parseInt(match[2]),
-    eternalLIFE: parseInt(match[3]),
-    eternalProgress: parseInt(eternality),
-    lastUnsealTT: parseInt(lastUnseal),
-    swordTier: parseInt(swordMatch?.[1] || "0"),
-    swordLevel: parseInt(swordMatch?.[2] || "0")
-  };
 }
 
 export function parseProfileEmbed(embed: any) {
-  const profile = embed.fields.find((f: any) => f.name === "PROGRESS")?.value || "";
-  const match = profile.match(/\*\*Level\*\*: (\d+).+Time travels\*\*: (\d+)/s);
+  const val = findField(embed, "progress")?.value || "";
+  const match = val.match(/\*\*Level\*\*: (\d+).+Time travels\*\*: (\d+)/s);
   return {
     level: parseInt(match?.[1] || "0"),
     timeTravels: parseInt(match?.[2] || "0")
@@ -44,87 +51,78 @@ export function parseProfileEmbed(embed: any) {
 }
 
 export function parseInventoryEmbed(embed: any) {
-  const inv = embed.fields.find((f: any) => f.name.includes("More items"))?.value || "";
-  const match = inv.match(/eternity flame\*\*: ([\d,]+)/);
+  const val = findField(embed, "more items")?.value || "";
+  const match = val.match(/eternity flame\*\*: ([\d,]+)/);
   return {
     eternityFlames: parseInt((match?.[1] || "0").replace(/,/g, ""))
   };
 }
 
-// 📈 XP required from Eternality A → B
 function flamesFromTo(start: number, end: number): number {
   let sum = 0;
   for (let i = start + 1; i <= end; i++) {
-    if (i <= 2000) {
-      sum += Math.floor(50 * Math.pow(1.015, i - 200));
-    } else {
-      sum += 8000;
-    }
+    sum += i <= 2000 ? Math.floor(50 * Math.pow(1.015, i - 200)) : 8000;
   }
   return sum;
 }
 
-// 📦 Unseal flame cost
-function unsealCost(eternalProgress: number, dungeons: number = 0): number {
-  const safeEternity = Math.max(eternalProgress, 200);
-  return 25 * safeEternity + 25 + (dungeons * 25);
+function unsealCost(current: number, dungeons = 0): number {
+  return 25 * Math.max(current, 200) + 25 + dungeons * 25;
 }
 
-// 📈 Bonus Time Travels
-function passiveTTBonus(eternality: number, lastUnsealTT: number, expectedTT: number): number {
-  const ttGained = expectedTT - lastUnsealTT;
-  return Math.max(Math.floor(eternality * ttGained * 3 / 2500), 0);
+function passiveTTBonus(eternality: number, lastUnseal: number, expected: number): number {
+  const gained = expected - lastUnseal;
+  return Math.max(Math.floor(eternality * gained * 3 / 2500), 0);
 }
 
-// 🗡️ Predict Gear
 function getPredictedWeaponTier(eternity: number) {
-  const cappedEternity = Math.min(eternity, 3000);
-  const tier = Math.max(3, Math.floor((cappedEternity - 200) / 25) + 3);
-  const tierStart = 200 + Math.floor((cappedEternity - 200) / 25) * 25;
-  const percent = (cappedEternity - tierStart) / 25;
-  const level = Math.min(Math.floor(percent * 100), 100);
+  const start = Math.max(eternity, 200);
+  let tier = 3;
 
-  return {
-    tier: Math.min(tier, 30),
-    level
-  };
+  if (start >= 250) tier = 4;
+  if (start >= 300) tier = 5;
+  if (start >= 400) tier = 6;
+  if (start >= 600) tier = 7;
+  if (start >= 800) tier = 8;
+  if (start >= 1200) tier = 9;
+  if (start >= 1500) tier = 10;
+
+  const tierStart = [200, 250, 300, 400, 600, 800, 1200, 1500][tier - 3] ?? 200;
+  const level = Math.min(Math.floor((start - tierStart) * 0.8), 100);
+
+  return { tier, level };
 }
 
 export function calculateEternalResults(eternal: any, input: any) {
   const { eternalProgress, lastUnsealTT } = eternal;
   const { targetEternality, plannedTT, tcPerDungeon } = input;
 
-  if (targetEternality <= eternalProgress) throw new Error("Already reached this goal");
+  if (targetEternality <= eternalProgress) {
+    return { _error: "🎯 You already reached or exceeded this Eternality. Try a higher goal or reset with `prefix et reset`." };
+  }
 
   const flamesToReach = flamesFromTo(eternalProgress, targetEternality);
   const ttGained = plannedTT - lastUnsealTT;
   const dungeonsNeeded = Math.ceil(flamesToReach / 500);
-  const estimatedRuns = Math.ceil(flamesToReach / 600);
   const estTC = dungeonsNeeded * tcPerDungeon;
-
+  console.log("[🧪] Predicting weapon tier for eternity:", targetEternality);
   const { tier, level } = getPredictedWeaponTier(targetEternality);
-  const base: Record<number, number> = {
+  const baseAtk = {
     1: 15900, 2: 31800, 3: 47700, 4: 63600, 5: 79500,
-    6: 95400, 7: 111300, 8: 127200, 9: 143100, 10: 159000,
-    11: 174900, 12: 190800, 13: 198750, 14: 210000, 15: 221250,
-    16: 232500, 17: 243750, 18: 255000, 19: 266250, 20: 277500,
-    21: 288750, 22: 300000, 23: 311250, 24: 322500, 25: 333750,
-    26: 345000, 27: 356250, 28: 367500, 29: 378750, 30: 390000
-  };
-  const baseAtk = base[tier] || 0;
-  const atk = Math.floor(baseAtk * (1 + level * 0.01)); // ⚠️ 1% per level (0.01 not 0.05)
+    6: 95400, 7: 111300, 8: 127200, 9: 143100, 10: 159000
+  }[tier] || 0;
 
   return {
     flamesToReach,
     ttGained,
     estTC,
     dungeonsNeeded,
-    estimatedRuns,
+    estimatedRuns: Math.ceil(flamesToReach / 600),
     tcPerDungeon,
     unsealFlames: unsealCost(targetEternality, dungeonsNeeded),
     recommended: {
       name: `T${tier} Lv${level}`,
-      attack: atk
+      attack: Math.floor(baseAtk * (1 + level * 0.01))
     }
   };
 }
@@ -143,6 +141,8 @@ export function calculateFullInfo(
     tcPerDungeon
   });
 
+  if ("_error" in base) return base;
+
   const unsealFlames = unsealCost(targetEternality);
   const deficit = unsealFlames - inventory.eternityFlames;
 
@@ -157,61 +157,27 @@ export function calculateFullInfo(
 }
 
 export function formatPage1(result: any) {
-  const embed = new EmbedBuilder()
+  return new EmbedBuilder()
     .setTitle("📊 Eternal Progress Summary")
     .setColor("#00acc1")
     .addFields(
       { name: "⛏️ Dungeons", value: `**${result.dungeonsNeeded.toLocaleString()}**`, inline: true },
-      {
-        name: "🍪 TC Cost",
-        value: `**${result.estTC.toLocaleString()}** (${result.tcPerDungeon}×${result.dungeonsNeeded.toLocaleString()})`,
-        inline: true
-      },
-      {
-        name: "🔓 Unseal Cost",
-        value: `**${result.unsealFlames.toLocaleString()}** (~${Math.ceil(result.unsealFlames / 500)} runs)`,
-        inline: true
-      },
-      {
-        name: "🗡️ Gear @ Goal",
-        value: `**${result.recommended.name}**\nAtk: ${result.recommended.attack.toLocaleString()}`,
-        inline: true
-      }
+      { name: "🍪 TC Cost", value: `**${result.estTC.toLocaleString()}** (${result.tcPerDungeon}×${result.dungeonsNeeded.toLocaleString()})`, inline: true },
+      { name: "🔓 Unseal Cost", value: `**${result.unsealFlames.toLocaleString()}** (~${Math.ceil(result.unsealFlames / 500)} runs)`, inline: true },
+      { name: "🗡️ Gear @ Goal", value: `**${result.recommended.name}**\nAtk: ${result.recommended.attack.toLocaleString()}`, inline: true }
     );
-  return embed;
 }
 
 export function formatPage2(result: any) {
-  const embed = new EmbedBuilder()
+  return new EmbedBuilder()
     .setTitle("🎒 Eternal Inventory & Readiness")
     .setColor("#00acc1")
     .addFields(
       { name: "🔥 You Own", value: `**${result.flameInventory.toLocaleString()}**`, inline: true },
       { name: "🧮 Needed", value: `**${result.unsealFlames.toLocaleString()}**`, inline: true },
-      {
-        name: "❗ Deficit",
-        value: result.flameDeficit > 0
-          ? `**${result.flameDeficit.toLocaleString()}**`
-          : "✅ No Deficit",
-        inline: true
-      },
-      {
-        name: "📈 TT Earned Since Last Unseal",
-        value: `**${result.ttGained?.toLocaleString() ?? "0"}**`,
-        inline: true
-      },
-      {
-        name: "🎁 Bonus TT",
-        value: result.bonusTT > 0
-          ? `**${result.bonusTT.toLocaleString()}**`
-          : "🔹 None",
-        inline: true
-      },
-      {
-        name: "✅ Can Unseal?",
-        value: result.flameDeficit > 0 ? "🔴 No" : "🟢 Yes",
-        inline: true
-      }
+      { name: "❗ Deficit", value: result.flameDeficit > 0 ? `**${result.flameDeficit.toLocaleString()}**` : "✅ No Deficit", inline: true },
+      { name: "📈 TT Earned Since Last Unseal", value: `**${result.ttGained?.toLocaleString() ?? "0"}**`, inline: true },
+      { name: "🎁 Bonus TT", value: result.bonusTT > 0 ? `**${result.bonusTT.toLocaleString()}**` : "🔹 None", inline: true },
+      { name: "✅ Can Unseal?", value: result.flameDeficit > 0 ? "🔴 No" : "🟢 Yes", inline: true }
     );
-  return embed;
 }
