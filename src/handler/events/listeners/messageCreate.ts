@@ -3,20 +3,20 @@ import { Event } from '../base/Event';
 import { client } from '../../../index';
 import { Events, type Message } from 'discord.js';
 import { CommandHandler } from '../../commands/services/CommandHandler';
+import { eternalEmbedResponder } from '../../../services/externalEmbedListener';
 
 export default new Event({
   name: Events.MessageCreate,
   async execute(message: Message): Promise<void> {
-    // Ignore bot messages and DMs
+    // 👁 Listen to all embeds and user replies for Eternal sessions
+    await eternalEmbedResponder(message);
+
     if (!client.user || message.author.bot || !message.guild) return;
 
-    // Get the dynamic prefix based on the guild ID, or fallback to the default
-    const prefix = config.getPrefix?.(message.guild.id) ?? config.prefix;  // dynnamite prefix assignment
-
-    // Ignore messages that don't start with the prefix
+    const prefix = config.getPrefix?.(message.guild.id) ?? config.prefix;
     if (!message.content.startsWith(prefix)) return;
 
-    // Pass the message to the command handler
+    // 🎯 Trigger `ep eternal`, `ep eternal full`, etc
     await CommandHandler.handlePrefixCommand(message);
-  },
+  }
 });
