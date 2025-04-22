@@ -1,5 +1,4 @@
-// src/services/eUtils.ts
-
+// 🔥 Updated eUtils.ts — Accurate Eternal Calculations (Excel-aligned)
 import { EmbedBuilder } from "discord.js";
 
 export function parseEternalEmbed(embed: any) {
@@ -7,7 +6,9 @@ export function parseEternalEmbed(embed: any) {
   const progressField = embed.fields.find((f: any) => f.name.includes("ETERNAL PROGRESS"));
   const equipField = embed.fields.find((f: any) => f.name.includes("ETERNAL EQUIPMENT"));
 
-  if (!statsField || !progressField || !equipField) throw new Error("❌ Embed is missing required Eternal fields");
+  if (!statsField || !progressField || !equipField) {
+    throw new Error("❌ Embed is missing required Eternal fields");
+  }
 
   const stats = statsField.value;
   const progress = progressField.value;
@@ -50,32 +51,41 @@ export function parseInventoryEmbed(embed: any) {
   };
 }
 
+// 📈 XP required from Eternality A → B
 function flamesFromTo(start: number, end: number): number {
   let sum = 0;
   for (let i = start + 1; i <= end; i++) {
-    const capped = Math.min(i, 2000);
-    sum += Math.floor(50 * Math.pow(1.015, capped - 200));
+    if (i <= 2000) {
+      sum += Math.floor(50 * Math.pow(1.015, i - 200));
+    } else {
+      sum += 8000;
+    }
   }
   return sum;
 }
 
+// 📦 Unseal flame cost
 function unsealCost(eternalProgress: number, dungeons: number = 0): number {
   const safeEternity = Math.max(eternalProgress, 200);
   return 25 * safeEternity + 25 + (dungeons * 25);
 }
 
+// 📈 Bonus Time Travels
 function passiveTTBonus(eternality: number, lastUnsealTT: number, expectedTT: number): number {
   const ttGained = expectedTT - lastUnsealTT;
   return Math.max(Math.floor(eternality * ttGained * 3 / 2500), 0);
 }
 
+// 🗡️ Predict Gear
 function getPredictedWeaponTier(eternity: number) {
-  const capped = Math.min(eternity, 3000);
-  const tier = Math.floor((capped - 200) / 25) + 3;
-  const tierStart = Math.floor((capped - 200) / 25) * 25 + 200;
-  const level = Math.min(Math.floor((capped - tierStart) * 0.8), 99);
+  const cappedEternity = Math.min(eternity, 3000);
+  const tier = Math.max(3, Math.floor((cappedEternity - 200) / 25) + 3);
+  const tierStart = 200 + Math.floor((cappedEternity - 200) / 25) * 25;
+  const percent = (cappedEternity - tierStart) / 25;
+  const level = Math.min(Math.floor(percent * 100), 100);
+
   return {
-    tier: Math.max(tier, 3),
+    tier: Math.min(tier, 30),
     level
   };
 }
@@ -89,20 +99,27 @@ export function calculateEternalResults(eternal: any, input: any) {
   const flamesToReach = flamesFromTo(eternalProgress, targetEternality);
   const ttGained = plannedTT - lastUnsealTT;
   const dungeonsNeeded = Math.ceil(flamesToReach / 500);
+  const estimatedRuns = Math.ceil(flamesToReach / 600);
   const estTC = dungeonsNeeded * tcPerDungeon;
 
   const { tier, level } = getPredictedWeaponTier(targetEternality);
-  const base: Record<number, number> = {};
-  for (let t = 1; t <= 30; t++) base[t] = 15900 * t;
-
+  const base: Record<number, number> = {
+    1: 15900, 2: 31800, 3: 47700, 4: 63600, 5: 79500,
+    6: 95400, 7: 111300, 8: 127200, 9: 143100, 10: 159000,
+    11: 174900, 12: 190800, 13: 198750, 14: 210000, 15: 221250,
+    16: 232500, 17: 243750, 18: 255000, 19: 266250, 20: 277500,
+    21: 288750, 22: 300000, 23: 311250, 24: 322500, 25: 333750,
+    26: 345000, 27: 356250, 28: 367500, 29: 378750, 30: 390000
+  };
   const baseAtk = base[tier] || 0;
-  const atk = Math.floor(baseAtk * (1 + level * 0.05));
+  const atk = Math.floor(baseAtk * (1 + level * 0.01)); // ⚠️ 1% per level (0.01 not 0.05)
 
   return {
     flamesToReach,
     ttGained,
     estTC,
     dungeonsNeeded,
+    estimatedRuns,
     tcPerDungeon,
     unsealFlames: unsealCost(targetEternality, dungeonsNeeded),
     recommended: {
@@ -152,7 +169,7 @@ export function formatPage1(result: any) {
       },
       {
         name: "🔓 Unseal Cost",
-        value: `**${result.unsealFlames.toLocaleString()}** (~${Math.ceil(result.unsealFlames / 500).toLocaleString()} runs)`,
+        value: `**${result.unsealFlames.toLocaleString()}** (~${Math.ceil(result.unsealFlames / 500)} runs)`,
         inline: true
       },
       {
