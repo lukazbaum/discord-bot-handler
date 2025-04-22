@@ -1,3 +1,5 @@
+// src/services/eUtils.ts
+
 import { EmbedBuilder } from "discord.js";
 
 export function parseEternalEmbed(embed: any) {
@@ -5,9 +7,7 @@ export function parseEternalEmbed(embed: any) {
   const progressField = embed.fields.find((f: any) => f.name.includes("ETERNAL PROGRESS"));
   const equipField = embed.fields.find((f: any) => f.name.includes("ETERNAL EQUIPMENT"));
 
-  if (!statsField || !progressField || !equipField) {
-    throw new Error("❌ Embed is missing required Eternal fields");
-  }
+  if (!statsField || !progressField || !equipField) throw new Error("❌ Embed is missing required Eternal fields");
 
   const stats = statsField.value;
   const progress = progressField.value;
@@ -53,7 +53,8 @@ export function parseInventoryEmbed(embed: any) {
 function flamesFromTo(start: number, end: number): number {
   let sum = 0;
   for (let i = start + 1; i <= end; i++) {
-    sum += Math.floor(50 * Math.pow(1.015, i - 200));
+    const capped = Math.min(i, 2000);
+    sum += Math.floor(50 * Math.pow(1.015, capped - 200));
   }
   return sum;
 }
@@ -69,15 +70,12 @@ function passiveTTBonus(eternality: number, lastUnsealTT: number, expectedTT: nu
 }
 
 function getPredictedWeaponTier(eternity: number) {
-  if (eternity < 200) return { tier: 3, level: 0 }; // ensure floor bound
-
-  const tierIndex = Math.floor((eternity - 200) / 25);
-  const tier = Math.max(3 + tierIndex, 3);
-  const tierStart = 200 + tierIndex * 25;
-  const level = Math.min(Math.floor((eternity - tierStart) * 0.8), 20);
-
+  const capped = Math.min(eternity, 3000);
+  const tier = Math.floor((capped - 200) / 25) + 3;
+  const tierStart = Math.floor((capped - 200) / 25) * 25 + 200;
+  const level = Math.min(Math.floor((capped - tierStart) * 0.8), 99);
   return {
-    tier,
+    tier: Math.max(tier, 3),
     level
   };
 }
@@ -91,18 +89,12 @@ export function calculateEternalResults(eternal: any, input: any) {
   const flamesToReach = flamesFromTo(eternalProgress, targetEternality);
   const ttGained = plannedTT - lastUnsealTT;
   const dungeonsNeeded = Math.ceil(flamesToReach / 500);
-  const estimatedRuns = Math.ceil(flamesToReach / 600);
   const estTC = dungeonsNeeded * tcPerDungeon;
 
   const { tier, level } = getPredictedWeaponTier(targetEternality);
-  const base: Record<number, number> = {
-    1: 15900, 2: 31800, 3: 47700, 4: 63600, 5: 79500,
-    6: 95400, 7: 111300, 8: 127200, 9: 143100, 10: 159000,
-    11: 174900, 12: 190800, 13: 198750, 14: 210000, 15: 221250,
-    16: 232500, 17: 243750, 18: 255000, 19: 266250, 20: 277500,
-    21: 288750, 22: 300000, 23: 311250, 24: 322500, 25: 333750,
-    26: 345000, 27: 356250, 28: 367500, 29: 378750, 30: 390000
-  };
+  const base: Record<number, number> = {};
+  for (let t = 1; t <= 30; t++) base[t] = 15900 * t;
+
   const baseAtk = base[tier] || 0;
   const atk = Math.floor(baseAtk * (1 + level * 0.05));
 
@@ -111,7 +103,6 @@ export function calculateEternalResults(eternal: any, input: any) {
     ttGained,
     estTC,
     dungeonsNeeded,
-    estimatedRuns,
     tcPerDungeon,
     unsealFlames: unsealCost(targetEternality, dungeonsNeeded),
     recommended: {
@@ -153,21 +144,20 @@ export function formatPage1(result: any) {
     .setTitle("📊 Eternal Progress Summary")
     .setColor("#00acc1")
     .addFields(
-      { name: "📈 XP Needed", value: `**${result.flamesToReach}**`, inline: true },
-      { name: "⛏️ Dungeons", value: `**${result.dungeonsNeeded}**`, inline: true },
+      { name: "⛏️ Dungeons", value: `**${result.dungeonsNeeded.toLocaleString()}**`, inline: true },
       {
         name: "🍪 TC Cost",
-        value: `**${result.estTC}** (${result.tcPerDungeon}×${result.dungeonsNeeded})`,
+        value: `**${result.estTC.toLocaleString()}** (${result.tcPerDungeon}×${result.dungeonsNeeded.toLocaleString()})`,
         inline: true
       },
       {
         name: "🔓 Unseal Cost",
-        value: `**${result.unsealFlames}** (~${Math.ceil(result.unsealFlames / 500)} runs)`,
+        value: `**${result.unsealFlames.toLocaleString()}** (~${Math.ceil(result.unsealFlames / 500).toLocaleString()} runs)`,
         inline: true
       },
       {
         name: "🗡️ Gear @ Goal",
-        value: `**${result.recommended.name}**\nAtk: ${result.recommended.attack}`,
+        value: `**${result.recommended.name}**\nAtk: ${result.recommended.attack.toLocaleString()}`,
         inline: true
       }
     );
@@ -179,15 +169,27 @@ export function formatPage2(result: any) {
     .setTitle("🎒 Eternal Inventory & Readiness")
     .setColor("#00acc1")
     .addFields(
-      { name: "🔥 You Own", value: `**${result.flameInventory}**`, inline: true },
-      { name: "🧮 Needed", value: `**${result.unsealFlames}**`, inline: true },
+      { name: "🔥 You Own", value: `**${result.flameInventory.toLocaleString()}**`, inline: true },
+      { name: "🧮 Needed", value: `**${result.unsealFlames.toLocaleString()}**`, inline: true },
       {
         name: "❗ Deficit",
-        value: result.flameDeficit > 0 ? `**${result.flameDeficit}**` : "✅ No Deficit",
+        value: result.flameDeficit > 0
+          ? `**${result.flameDeficit.toLocaleString()}**`
+          : "✅ No Deficit",
         inline: true
       },
-      { name: "📈 TT Earned Since Last Unseal", value: `**${result.ttGained ?? 0}**`, inline: true },
-      { name: "🎁 Bonus TT", value: result.bonusTT > 0 ? `**${result.bonusTT}**` : "🔹 None", inline: true },
+      {
+        name: "📈 TT Earned Since Last Unseal",
+        value: `**${result.ttGained?.toLocaleString() ?? "0"}**`,
+        inline: true
+      },
+      {
+        name: "🎁 Bonus TT",
+        value: result.bonusTT > 0
+          ? `**${result.bonusTT.toLocaleString()}**`
+          : "🔹 None",
+        inline: true
+      },
       {
         name: "✅ Can Unseal?",
         value: result.flameDeficit > 0 ? "🔴 No" : "🟢 Yes",
