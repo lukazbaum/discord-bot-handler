@@ -1,5 +1,3 @@
-// src/services/sessionStore.ts
-
 interface EternalSession {
   origin: "command" | "listener";
   step:
@@ -8,7 +6,8 @@ interface EternalSession {
     | "awaitingInventory"
     | "awaitingGoal"
     | "awaitingTC"
-    | "awaitingExpectedTT";
+    | "awaitingExpectedTT"
+    | "awaitingDaysSealed";
   channelId: string;
   eternal?: {
     eternalAT: number;
@@ -29,6 +28,27 @@ interface EternalSession {
   goal?: number;
   tc?: number;
   expectedTT?: number;
+  daysSealed?: number;
+  result?: {
+    flamesToReach: number;
+    ttGained: number;
+    estTC: number;
+    dungeonsNeeded: number;
+    estimatedRuns: number;
+    tcPerDungeon: number;
+    unsealFlames: number;
+    recommended: {
+      name: string;
+      attack: number;
+    };
+    atkPowerNeeded?: number;
+    atkBitePowerNeeded?: number;
+    swordBaseAtk?: number;
+    flameInventory: number;
+    flameDeficit: number;
+    canUnseal: boolean;
+    bonusTT: number;
+  };
 }
 
 export const eternalSessionStore = new Map<string, EternalSession>();

@@ -6,17 +6,14 @@ function findField(embed: any, keyword: string) {
   );
 }
 
-export function parseEternalEmbed(embed: any):
-  | { eternalAT: number; eternalDEF: number; eternalLIFE: number; eternalProgress: number; lastUnsealTT: number; swordTier: number; swordLevel: number; }
-  | { _error: string }
-{
+export function parseEternalEmbed(embed: any) {
   try {
     const stats = findField(embed, "eternal stats")?.value;
     const progress = findField(embed, "eternal progress")?.value;
     const equip = findField(embed, "eternal equipment")?.value;
 
     if (!stats || !progress || !equip) {
-      return { _error: "❌ Missing sections in embed. Use `rpg p e` (not just `rpg p`)." };
+      return { _error: "❌ Missing sections in embed. Use `rpg p e`." };
     }
 
     const statsMatch = stats.match(/E-AT\*\*: (\d+).+E-DEF\*\*: (\d+).+E-LIFE\*\*: (\d+)/s);
@@ -24,7 +21,7 @@ export function parseEternalEmbed(embed: any):
     const equipMatch = equip.match(/sword.*\| T(\d+) Lv(\d+)/i);
 
     if (!statsMatch || !progressMatch) {
-      return { _error: "❌ Embed parse failed. Ensure it’s from `rpg p e` not another command." };
+      return { _error: "❌ Embed parse failed. Ensure it's from `rpg p e`." };
     }
 
     return {
@@ -37,7 +34,7 @@ export function parseEternalEmbed(embed: any):
       swordLevel: parseInt(equipMatch?.[2] || "0")
     };
   } catch {
-    return { _error: "❌ Unexpected error. Run `prefix et reset`." };
+    return { _error: "❌ Unexpected error. Run `ep et reset`." };
   }
 }
 
@@ -61,18 +58,19 @@ export function parseInventoryEmbed(embed: any) {
 function flamesFromTo(start: number, end: number): number {
   let sum = 0;
   for (let i = start + 1; i <= end; i++) {
-    sum += i <= 2000 ? Math.floor(50 * Math.pow(1.015, i - 200)) : 8000;
+    if (i <= 200) {
+      sum += 50;
+    } else if (i <= 2000) {
+      sum += Math.floor(50 * Math.pow(1.015, i - 200));
+    } else {
+      sum += 8000;
+    }
   }
   return sum;
 }
 
-function unsealCost(current: number, dungeons = 0): number {
-  return 25 * Math.max(current, 200) + 25 + dungeons * 25;
-}
-
-function passiveTTBonus(eternality: number, lastUnseal: number, expected: number): number {
-  const gained = expected - lastUnseal;
-  return Math.max(Math.floor(eternality * gained * 3 / 2500), 0);
+function unsealCost(eternality: number, dungeons = 0): number {
+  return 25 * Math.max(eternality, 200) + 25 + dungeons * 25;
 }
 
 function getPredictedWeaponTier(eternity: number) {
@@ -93,91 +91,117 @@ function getPredictedWeaponTier(eternity: number) {
   return { tier, level };
 }
 
-export function calculateEternalResults(eternal: any, input: any) {
-  const { eternalProgress, lastUnsealTT } = eternal;
-  const { targetEternality, plannedTT, tcPerDungeon } = input;
-
-  if (targetEternality <= eternalProgress) {
-    return { _error: "🎯 You already reached or exceeded this Eternality. Try a higher goal or reset with `prefix et reset`." };
-  }
-
-  const flamesToReach = flamesFromTo(eternalProgress, targetEternality);
-  const ttGained = plannedTT - lastUnsealTT;
-  const dungeonsNeeded = Math.ceil(flamesToReach / 500);
-  const estTC = dungeonsNeeded * tcPerDungeon;
-  console.log("[🧪] Predicting weapon tier for eternity:", targetEternality);
-  const { tier, level } = getPredictedWeaponTier(targetEternality);
-  const baseAtk = {
-    1: 15900, 2: 31800, 3: 47700, 4: 63600, 5: 79500,
-    6: 95400, 7: 111300, 8: 127200, 9: 143100, 10: 159000
-  }[tier] || 0;
-
-  return {
-    flamesToReach,
-    ttGained,
-    estTC,
-    dungeonsNeeded,
-    estimatedRuns: Math.ceil(flamesToReach / 600),
-    tcPerDungeon,
-    unsealFlames: unsealCost(targetEternality, dungeonsNeeded),
-    recommended: {
-      name: `T${tier} Lv${level}`,
-      attack: Math.floor(baseAtk * (1 + level * 0.01))
-    }
-  };
-}
-
 export function calculateFullInfo(
   eternal: any,
   profile: any,
   inventory: any,
   targetEternality: number,
   tcPerDungeon: number,
-  expectedTT: number
+  expectedTT: number,
+  daysSealed: number = 7
 ) {
-  const base = calculateEternalResults(eternal, {
-    targetEternality,
-    plannedTT: expectedTT,
-    tcPerDungeon
-  });
+  const flamesNeededForUnseal = unsealCost(targetEternality);
 
-  if ("_error" in base) return base;
+  const dungeonsNeeded = Math.ceil(flamesNeededForUnseal / 500);
+  const estTC = dungeonsNeeded * tcPerDungeon;
 
-  const unsealFlames = unsealCost(targetEternality);
-  const deficit = unsealFlames - inventory.eternityFlames;
+  const { tier, level } = getPredictedWeaponTier(targetEternality);
+
+  const baseAtk = {
+    1: 15900, 2: 31800, 3: 47700, 4: 63600, 5: 79500,
+    6: 95400, 7: 111300, 8: 127200, 9: 143100, 10: 159000
+  }[tier] || 0;
+
+  const swordBaseAtk = Math.floor(baseAtk * (1 + level * 0.01));
+
+  const atkPowerNeeded = Math.floor(0.4 * swordBaseAtk);
+  const atkBitePowerNeeded = Math.floor(0.52 * swordBaseAtk);
+
+  // 🔥 THE FIX: calculate real ttGained
+  const ttGained = Math.max(1, expectedTT - eternal.lastUnsealTT);
+
+  const bonusMultiplier = 1 + (daysSealed * 0.01);
+  const bonusTT = Math.floor(targetEternality * (ttGained + (daysSealed / 15)) * 3 / 2500 * bonusMultiplier);
 
   return {
-    ...base,
+    currentEternality: eternal.eternalProgress,
+    targetEternality,
+    unsealFlames: flamesNeededForUnseal,
+    dungeonsNeeded,
+    estTC,
+    recommended: {
+      name: `T${tier} Lv${level}`,
+      attack: swordBaseAtk
+    },
+    atkPowerNeeded,
+    atkBitePowerNeeded,
+    swordBaseAtk,
     flameInventory: inventory.eternityFlames,
-    unsealFlames,
-    flameDeficit: deficit,
-    canUnseal: deficit <= 0,
-    bonusTT: passiveTTBonus(eternal.eternalProgress, eternal.lastUnsealTT, expectedTT)
+    flameDeficit: flamesNeededForUnseal - inventory.eternityFlames,
+    canUnseal: inventory.eternityFlames >= flamesNeededForUnseal,
+    bonusTT,
+    ttGained
   };
+}
+
+export function formatPagePower(result: any) {
+  const power40Ratio = result.recommended.attack / (result.atkPowerNeeded || 1);
+  const powerBiteRatio = result.recommended.attack / (result.atkBitePowerNeeded || 1);
+
+  const potencyPercent = Math.min(100, Math.max(0, Math.floor(power40Ratio * 40)));
+
+  const potencyColor = potencyPercent >= 20 ? "🟢" : potencyPercent >= 10 ? "🟠" : "🔴";
+
+  const potencyNeeded = Math.max(0, 20 - potencyPercent);
+  const potencyIncreasePerDungeon = 2;
+  const estimatedDungeonsForPotency = potencyNeeded > 0
+    ? Math.ceil(potencyNeeded / potencyIncreasePerDungeon)
+    : 0;
+
+  const ttEfficiency = (result.bonusTT / (result.ttGained || 1));
+  const ttColor = ttEfficiency >= 4 ? "🟢" : ttEfficiency >= 2 ? "🟡" : "🔴";
+
+  return new EmbedBuilder()
+    .setTitle("⚡ Eternal Unseal & Gear Success Prediction")
+    .setColor("#ff7043")
+    .setDescription([
+      result.recommended.attack < result.atkPowerNeeded
+        ? `❌ To Power [40% success], you need 🗡️ **${result.recommended.name}**.`
+        : "☑️ Power [40% success] achievable!",
+      result.recommended.attack < result.atkBitePowerNeeded
+        ? `❌ To Power+Bite [52% success], you need 💙 **+${(result.atkBitePowerNeeded - result.recommended.attack).toLocaleString()}** more attack.`
+        : "☑️ Power+Bite [52% success] achievable!",
+      `🔮 Estimated potency success: ${potencyColor} **${potencyPercent}%**`,
+      estimatedDungeonsForPotency > 0
+        ? `📈 ~**${estimatedDungeonsForPotency}** more Eternal Dungeon wins needed for 20% Potency!`
+        : "☑️ Potency 20% success achievable now!",
+      `🔥 Unseal cost: **${result.unsealFlames.toLocaleString()}** flames`,
+      `📈 Bonus TT per TT gained:  **${ttEfficiency.toFixed(1)}**`,
+      `📈 Total Bonus TTs at unseal: **${result.bonusTT.toLocaleString()}**`,
+      potencyPercent < 10 ? "⚠️ Warning: Very low potency success! Consider farming Eternal Dungeons or enchanting gear." : "",
+    ].filter(line => line !== "").join("\n"));
 }
 
 export function formatPage1(result: any) {
   return new EmbedBuilder()
-    .setTitle("📊 Eternal Progress Summary")
+    .setTitle("📈 Eternal Unseal Planning Summary")
     .setColor("#00acc1")
     .addFields(
-      { name: "⛏️ Dungeons", value: `**${result.dungeonsNeeded.toLocaleString()}**`, inline: true },
-      { name: "🍪 TC Cost", value: `**${result.estTC.toLocaleString()}** (${result.tcPerDungeon}×${result.dungeonsNeeded.toLocaleString()})`, inline: true },
-      { name: "🔓 Unseal Cost", value: `**${result.unsealFlames.toLocaleString()}** (~${Math.ceil(result.unsealFlames / 500)} runs)`, inline: true },
-      { name: "🗡️ Gear @ Goal", value: `**${result.recommended.name}**\nAtk: ${result.recommended.attack.toLocaleString()}`, inline: true }
-    );
+      { name: "🛡️ Target Eternity", value: `**${result.targetEternality}**`, inline: true },
+      { name: "🔥 Flames Needed to Unseal", value: `**${result.unsealFlames.toLocaleString()}** flames`, inline: true },
+      { name: "⛏️ Eternal Dungeons Needed (while unsealed)", value: `**${result.dungeonsNeeded.toLocaleString()}** wins`, inline: true },
+      { name: "🍪 Estimated Time Cookies Needed", value: `**${result.estTC.toLocaleString()}** cookies`, inline: true }
+    )
+    .setFooter({ text: "Dungeons counted are Eternal Dungeons during Unsealed period — to farm flames for next Unseal." });
 }
-
 export function formatPage2(result: any) {
   return new EmbedBuilder()
     .setTitle("🎒 Eternal Inventory & Readiness")
     .setColor("#00acc1")
     .addFields(
-      { name: "🔥 You Own", value: `**${result.flameInventory.toLocaleString()}**`, inline: true },
-      { name: "🧮 Needed", value: `**${result.unsealFlames.toLocaleString()}**`, inline: true },
+      { name: "🔥 Flames Owned", value: `**${result.flameInventory.toLocaleString()}**`, inline: true },
+      { name: "🧮 Flames Needed", value: `**${result.unsealFlames.toLocaleString()}**`, inline: true },
       { name: "❗ Deficit", value: result.flameDeficit > 0 ? `**${result.flameDeficit.toLocaleString()}**` : "✅ No Deficit", inline: true },
-      { name: "📈 TT Earned Since Last Unseal", value: `**${result.ttGained?.toLocaleString() ?? "0"}**`, inline: true },
-      { name: "🎁 Bonus TT", value: result.bonusTT > 0 ? `**${result.bonusTT.toLocaleString()}**` : "🔹 None", inline: true },
-      { name: "✅ Can Unseal?", value: result.flameDeficit > 0 ? "🔴 No" : "🟢 Yes", inline: true }
+      { name: "✅ Can Unseal?", value: result.canUnseal ? "🟢 Yes" : "🔴 No", inline: true }
     );
 }
