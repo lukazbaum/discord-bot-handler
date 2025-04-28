@@ -1,9 +1,27 @@
 import { EmbedBuilder } from "discord.js";
+import { getEternalUnsealHistory, addEternalPathChoice } from '/home/ubuntu/ep_bot/extras/functions.js';
 
 function findField(embed: any, keyword: string) {
   return embed.fields.find((f: any) =>
     f.name.toLowerCase().includes(keyword.toLowerCase())
   );
+}
+
+export function extractPlayerNameFromEmbed(embed: any): string {
+  return embed?.author?.name?.split("—")[0]?.trim() || "";
+}
+
+export function extractPlayerNameFromUnsealMessage(content: string): string {
+  const match = content.match(/@(\S+)/);
+  return match ? match[1] : "";
+}
+
+
+function createProgressBar(percent: number): string {
+  const green = Math.floor(percent / 10);
+  const yellow = (percent % 10 >= 5) ? 1 : 0;
+  const black = 10 - green - yellow;
+  return "🟩".repeat(green) + "🟨".repeat(yellow) + "⬛".repeat(black);
 }
 
 export function parseEternalEmbed(embed: any) {
@@ -48,25 +66,12 @@ export function parseProfileEmbed(embed: any) {
 }
 
 export function parseInventoryEmbed(embed: any) {
-  const val = findField(embed, "more items")?.value || "";
-  const match = val.match(/eternity flame\*\*: ([\d,]+)/);
+  const val = findField(embed, "items")?.value || findField(embed, "more items")?.value || "";
+  const match = val.match(/eternity\s*flame\*\*?:\s*([\d,]+)/i);
+
   return {
     eternityFlames: parseInt((match?.[1] || "0").replace(/,/g, ""))
   };
-}
-
-function flamesFromTo(start: number, end: number): number {
-  let sum = 0;
-  for (let i = start + 1; i <= end; i++) {
-    if (i <= 200) {
-      sum += 50;
-    } else if (i <= 2000) {
-      sum += Math.floor(50 * Math.pow(1.015, i - 200));
-    } else {
-      sum += 8000;
-    }
-  }
-  return sum;
 }
 
 function unsealCost(eternality: number, dungeons = 0): number {
@@ -91,6 +96,36 @@ function getPredictedWeaponTier(eternity: number) {
   return { tier, level };
 }
 
+export async function getCurrentEternity(userId: string): Promise<number | null> {
+  try {
+    const history = await getEternalUnsealHistory(userId);
+    if (!history.length) return null;
+    const latest = history[0];
+    return latest.eternityLevel || null;
+  } catch (err) {
+    console.error("⚠️ Error getting current Eternity:", err);
+    return null;
+  }
+}
+
+export function parseDungeonEmbed(embed: any) {
+  try {
+    const rewardsField = embed.fields?.find((f: any) => f.name.includes("Rewards"));
+    if (!rewardsField) {
+      return { _error: "❌ No Rewards field found in embed." };
+    }
+
+    const flamesMatch = rewardsField.value.match(/([\d,]+)\s*<:eternityflame/);
+    const flamesEarned = flamesMatch ? parseInt(flamesMatch[1].replace(/,/g, '')) : 0;
+
+    return { flamesEarned };
+  } catch (err) {
+    console.error("⚠️ Error parsing dungeon embed:", err);
+    return { _error: "❌ Failed to parse dungeon embed." };
+  }
+}
+
+
 export function calculateFullInfo(
   eternal: any,
   profile: any,
@@ -101,7 +136,6 @@ export function calculateFullInfo(
   daysSealed: number = 7
 ) {
   const flamesNeededForUnseal = unsealCost(targetEternality);
-
   const dungeonsNeeded = Math.ceil(flamesNeededForUnseal / 500);
   const estTC = dungeonsNeeded * tcPerDungeon;
 
@@ -117,11 +151,12 @@ export function calculateFullInfo(
   const atkPowerNeeded = Math.floor(0.4 * swordBaseAtk);
   const atkBitePowerNeeded = Math.floor(0.52 * swordBaseAtk);
 
-  // 🔥 THE FIX: calculate real ttGained
   const ttGained = Math.max(1, expectedTT - eternal.lastUnsealTT);
 
   const bonusMultiplier = 1 + (daysSealed * 0.01);
   const bonusTT = Math.floor(targetEternality * (ttGained + (daysSealed / 15)) * 3 / 2500 * bonusMultiplier);
+
+  const farmingEfficiency = Math.round(0.5 * eternal.eternalProgress + 7.5);
 
   return {
     currentEternality: eternal.eternalProgress,
@@ -129,6 +164,7 @@ export function calculateFullInfo(
     unsealFlames: flamesNeededForUnseal,
     dungeonsNeeded,
     estTC,
+    farmingEfficiency,
     recommended: {
       name: `T${tier} Lv${level}`,
       attack: swordBaseAtk
@@ -140,16 +176,14 @@ export function calculateFullInfo(
     flameDeficit: flamesNeededForUnseal - inventory.eternityFlames,
     canUnseal: inventory.eternityFlames >= flamesNeededForUnseal,
     bonusTT,
-    ttGained
+    ttGained,
+    daysSealed
   };
 }
 
 export function formatPagePower(result: any) {
   const power40Ratio = result.recommended.attack / (result.atkPowerNeeded || 1);
-  const powerBiteRatio = result.recommended.attack / (result.atkBitePowerNeeded || 1);
-
   const potencyPercent = Math.min(100, Math.max(0, Math.floor(power40Ratio * 40)));
-
   const potencyColor = potencyPercent >= 20 ? "🟢" : potencyPercent >= 10 ? "🟠" : "🔴";
 
   const potencyNeeded = Math.max(0, 20 - potencyPercent);
@@ -165,43 +199,87 @@ export function formatPagePower(result: any) {
     .setTitle("⚡ Eternal Unseal & Gear Success Prediction")
     .setColor("#ff7043")
     .setDescription([
-      result.recommended.attack < result.atkPowerNeeded
-        ? `❌ To Power [40% success], you need 🗡️ **${result.recommended.name}**.`
-        : "☑️ Power [40% success] achievable!",
-      result.recommended.attack < result.atkBitePowerNeeded
-        ? `❌ To Power+Bite [52% success], you need 💙 **+${(result.atkBitePowerNeeded - result.recommended.attack).toLocaleString()}** more attack.`
-        : "☑️ Power+Bite [52% success] achievable!",
-      `🔮 Estimated potency success: ${potencyColor} **${potencyPercent}%**`,
+      `🛡️ **Power 40%:** ${result.recommended.attack < result.atkPowerNeeded ? "❌ Needs 🗡️ " + result.recommended.name : "☑️ Achievable"}`,
+      `💙 **Power+Bite 52%:** ${result.recommended.attack < result.atkBitePowerNeeded ? "❌ Missing +" + (result.atkBitePowerNeeded - result.recommended.attack).toLocaleString() + " ATK" : "☑️ Achievable"}`,
+      "",
+      `🔮 **Potency Success:** ${potencyColor} **${potencyPercent}%**`,
       estimatedDungeonsForPotency > 0
-        ? `📈 ~**${estimatedDungeonsForPotency}** more Eternal Dungeon wins needed for 20% Potency!`
-        : "☑️ Potency 20% success achievable now!",
-      `🔥 Unseal cost: **${result.unsealFlames.toLocaleString()}** flames`,
-      `📈 Bonus TT per TT gained:  **${ttEfficiency.toFixed(1)}**`,
-      `📈 Total Bonus TTs at unseal: **${result.bonusTT.toLocaleString()}**`,
-      potencyPercent < 10 ? "⚠️ Warning: Very low potency success! Consider farming Eternal Dungeons or enchanting gear." : "",
-    ].filter(line => line !== "").join("\n"));
+        ? `📈 ~**${estimatedDungeonsForPotency}** Eternal Dungeon wins needed for 20% Potency`
+        : "☑️ Potency 20% ready now!",
+      "",
+      `🔥 **Unseal Cost:** **${result.unsealFlames.toLocaleString()}** flames`,
+      `${ttColor} **Bonus TT / TT gained:** **${ttEfficiency.toFixed(1)}**`,
+      `📈 **Total Bonus TTs at unseal:** **${result.bonusTT.toLocaleString()}**`
+    ].filter(Boolean).join("\n"))
+    .setTimestamp();
 }
 
 export function formatPage1(result: any) {
+  const farmingEmoji = result.farmingEfficiency >= 500 ? "🟢" : result.farmingEfficiency >= 300 ? "🟡" : "🔴";
+
+  const progressPercent = Math.min(100, Math.floor((result.flameInventory / result.unsealFlames) * 100));
+  const progressBar = createProgressBar(progressPercent);
+
+  const bonusTTEfficiency = (result.bonusTT / (result.ttGained || 1));
+  const bonusTTColor = bonusTTEfficiency >= 4 ? "🟢" : bonusTTEfficiency >= 2 ? "🟡" : "🔴";
+
+  // 📈 TT Goal Planning Section
+  const safeTTGain = 20;    // Casual player
+  const optimalTTGain = 70; // Normal active player
+  const aggressiveTTGain = 150; // Hard grinder
+
+  // Bonus TT predictions
+  function calculateBonusTT(ttsGained: number, daysSealed: number, eternality: number) {
+    return Math.floor(eternality * (ttsGained + (daysSealed / 15)) * 3 / 2500);
+  }
+
+  const safeBonusTT = calculateBonusTT(result.ttGained + safeTTGain, result.daysSealed, result.currentEternality);
+  const optimalBonusTT = calculateBonusTT(result.ttGained + optimalTTGain, result.daysSealed, result.currentEternality);
+  const aggressiveBonusTT = calculateBonusTT(result.ttGained + aggressiveTTGain, result.daysSealed, result.currentEternality);
+
+  const fields = [
+    { name: "🎯 Target Eternity", value: `⚡ **${result.targetEternality.toLocaleString()}**`, inline: true },
+    { name: "🔥 Unseal Flames Required", value: `🟥 **${result.unsealFlames.toLocaleString()}** flames`, inline: true },
+    { name: "⛏️ Eternal Dungeons Needed (post-unseal)", value: `🟪 **${result.dungeonsNeeded.toLocaleString()}** runs`, inline: true },
+    { name: "🍪 Estimated Time Cookies", value: `🟨 **${result.estTC.toLocaleString()}** cookies`, inline: true },
+    { name: "🏹 Farming Efficiency", value: `${farmingEmoji} **${result.farmingEfficiency.toLocaleString()} flames/run**`, inline: true },
+    { name: "📊 Flame Progress", value: `${progressBar} (${progressPercent}%)`, inline: false },
+    { name: "📈 Bonus TT Efficiency", value: `${bonusTTColor} **${bonusTTEfficiency.toFixed(1)} bonus TTs / TT gained**`, inline: true },
+    { name: "🧮 Recommended TT Goals", value: [
+        `🐢 Safe ➔ +${safeTTGain} TTs ➔ 📈 ~**${safeBonusTT}** Bonus TTs`,
+        `🐇 Optimal ➔ +${optimalTTGain} TTs ➔ 📈 ~**${optimalBonusTT}** Bonus TTs`,
+        `🦅 Aggressive ➔ +${aggressiveTTGain} TTs ➔ 📈 ~**${aggressiveBonusTT}** Bonus TTs`
+      ].join("\n"), inline: false }
+  ];
+
   return new EmbedBuilder()
-    .setTitle("📈 Eternal Unseal Planning Summary")
-    .setColor("#00acc1")
-    .addFields(
-      { name: "🛡️ Target Eternity", value: `**${result.targetEternality}**`, inline: true },
-      { name: "🔥 Flames Needed to Unseal", value: `**${result.unsealFlames.toLocaleString()}** flames`, inline: true },
-      { name: "⛏️ Eternal Dungeons Needed (while unsealed)", value: `**${result.dungeonsNeeded.toLocaleString()}** wins`, inline: true },
-      { name: "🍪 Estimated Time Cookies Needed", value: `**${result.estTC.toLocaleString()}** cookies`, inline: true }
-    )
-    .setFooter({ text: "Dungeons counted are Eternal Dungeons during Unsealed period — to farm flames for next Unseal." });
+    .setTitle("📈 Eternal Sealed Progress & Bonus Planning")
+    .setDescription("🔮 Grind Time Travels during sealed Eternity to maximize your Bonus TT when unsealing!")
+    .setColor(result.canUnseal ? "#00cc66" : "#cc0000")
+    .addFields(fields)
+    .setFooter({ text: "⚡ Plan based on your own TT grinding effort. No boosts assumed." })
+    .setTimestamp();
 }
+
 export function formatPage2(result: any) {
+  const progressPercent = Math.min(100, Math.floor((result.flameInventory / result.unsealFlames) * 100));
+  const progressBar = createProgressBar(progressPercent);
+
+  const extraDungeonsNeeded = result.flameDeficit > 0 ? Math.ceil(result.flameDeficit / 500) : 0;
+
+  const fields = [
+    { name: "🔥 Flames Owned", value: `🟥 **${result.flameInventory.toLocaleString()}**`, inline: true },
+    { name: "🧮 Flames Needed", value: `🟥 **${result.unsealFlames.toLocaleString()}**`, inline: true },
+    { name: "📊 Flame Progress", value: `${progressBar} (${progressPercent}%)`, inline: false },
+    { name: "❗ Deficit", value: result.flameDeficit > 0 ? `🔻 **${result.flameDeficit.toLocaleString()}**` : "✅ No Deficit", inline: true },
+    { name: "✅ Can Unseal?", value: result.canUnseal ? "🟢 Yes" : "🔴 No", inline: true }
+  ];
+
+
   return new EmbedBuilder()
     .setTitle("🎒 Eternal Inventory & Readiness")
-    .setColor("#00acc1")
-    .addFields(
-      { name: "🔥 Flames Owned", value: `**${result.flameInventory.toLocaleString()}**`, inline: true },
-      { name: "🧮 Flames Needed", value: `**${result.unsealFlames.toLocaleString()}**`, inline: true },
-      { name: "❗ Deficit", value: result.flameDeficit > 0 ? `**${result.flameDeficit.toLocaleString()}**` : "✅ No Deficit", inline: true },
-      { name: "✅ Can Unseal?", value: result.canUnseal ? "🟢 Yes" : "🔴 No", inline: true }
-    );
+    .setColor(result.canUnseal ? "#00cc66" : "#cc0000")
+    .addFields(fields)
+    .setFooter({ text: "Flames gathered vs needed for your next Unseal." })
+    .setTimestamp();
 }

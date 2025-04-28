@@ -126,38 +126,54 @@ export default new PrefixCommand({
 
         // 🌟 Real handling begins
         if (msg.author.bot && session.step === "awaitingEternal") {
+          const footerText = msg.embeds[0].footer?.text.toLowerCase() || "";
+
           const parsed = parseEternalEmbed(msg.embeds[0].data);
+
           if ("_error" in parsed) {
             await msg.reply(`${parsed._error}\nPlease run \`ep et reset\`.`);
             return;
           }
+
+          // ✅ Only after type guard:
           session.eternal = parsed;
 
           if (parsed.eternalProgress < 100) {
             await msg.reply("⚠️ Warning: Detected Eternity **less than 100**.\nIs your `rpg p e` embed updated?\nPlease re-run `rpg p e` if needed!");
           }
 
-          const footerText = msg.embeds[0].footer?.text || "";
-
-          if (footerText.toLowerCase().includes("unsealed for")) {
-            session.step = "awaitingDaysSealed";
-            await msg.reply("⏳ You are currently **Unsealed**!\nHow many **days until you expect to Unseal**?\n_(Example: 7)_");
+          if (footerText.includes("unsealed for")) {
+            try {
+              const history = await getEternalUnsealHistory(userId);
+              if (history.length) {
+                const lastUnsealDate = new Date(history[0].timestamp);
+                const now = new Date();
+                const diffTime = Math.abs(now.getTime() - lastUnsealDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                session.daysSealed = diffDays;
+                session.step = "awaitingProfile";
+                await msg.reply(`📆 Detected **${diffDays}** days since last unseal.\n📘 Now send \`rpg p\`...`);
+              } else {
+                session.step = "awaitingDaysSealed";
+                await msg.reply("📆 No unseal history found.\n⏳ How many **days until your next unseal**?\n_(Example: 7)_");
+              }
+            } catch (err) {
+              console.error("⚠️ Database error:", err);
+              session.step = "awaitingDaysSealed";
+              await msg.reply("⚠️ Couldn't load history.\n⏳ How many **days until your next unseal**?\n_(Example: 7)_");
+            }
             return;
           }
 
-          const history = await getEternalUnsealHistory(userId);
-          if (history.length) {
-            const lastUnsealDate = new Date(history[0].timestamp);
-            const now = new Date();
-            const diffTime = Math.abs(now.getTime() - lastUnsealDate.getTime());
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            session.daysSealed = diffDays;
-            session.step = "awaitingProfile";
-            await msg.reply(`📆 Detected **${diffDays}** days since last unseal.\n📘 Now send \`rpg p\`...`);
-          } else {
+          if (footerText.includes("sealed")) {
             session.step = "awaitingDaysSealed";
-            await msg.reply("📆 No history found.\nHow many **days until you expect to Unseal**?\n_(Example: 7)_");
+            await msg.reply("📜 Detected **sealed Eternity**.\n⏳ How many **days until your next unseal**?\n_(Example: 7)_");
+            return;
           }
+
+          // fallback
+          session.step = "awaitingDaysSealed";
+          await msg.reply("📜 Couldn't detect Eternity status.\n⏳ How many **days until your next unseal**?\n_(Example: 7)_");
           return;
         }
 
@@ -226,6 +242,7 @@ export default new PrefixCommand({
 
           session.expectedTT = expectedTT;
 
+          // ✅ Correct calculateFullInfo usage
           const result = calculateFullInfo(
             session.eternal,
             { ...session.profile!, timeTravels: expectedTT },
@@ -236,14 +253,13 @@ export default new PrefixCommand({
             session.daysSealed ?? 7
           );
 
-          if ("_error" in result) {
-            await msg.reply(`${result._error}\nRun \`ep et reset\`.`);
-            sessionStore.delete(userId);
-            collector.stop();
-            return;
-          }
+          // ✅ No "_error" checks needed anymore
+          const pages = [
+            formatPagePower(result),
+            formatPage1(result),
+            formatPage2(result)
+          ];
 
-          const pages = [formatPagePower(result), formatPage1(result), formatPage2(result)];
           let currentPage = 0;
 
           const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
