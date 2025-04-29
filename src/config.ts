@@ -7,15 +7,18 @@ import {
   type MessageReplyOptions,
 } from 'discord.js';
 
-// allows custom prefixes for bot per server
-const serverPrefixes: Record<string, string> = {
-  '1135995107842195550': 'ep',  // Epic Park
-  '1113339391419625572': 'ep',  // Epic Wonderland
-  '839731097473908767': 'bs',   // Blackstone
-};
-
 const defaultConfig: Config = {
-  getPrefix: (guildId: string) => serverPrefixes[guildId] || 'ep',
+  getPrefix: (guildId: string) => {
+    const custom = defaultConfig.customPrefixes.find(cp => cp.guildId === guildId);
+    return custom?.prefix || 'ep'; // 'ep' is the default prefix
+  },
+  customPrefixes: [
+    {
+      guildId: "839731097473908767",
+      prefix: "bs"
+    }
+  ],
+
   ownerId: '936693149114449921',
   eventsFolder: 'events',
   commandsFolder: 'commands',
@@ -51,9 +54,9 @@ const defaultConfig: Config = {
   logChannelConfig: {
     channelId: '1150881816664883300',
     message: async (
-      context: Interaction | ContextMenuCommandInteraction | Message,
-      commandName: string,
-      commandType: string,
+        context: Interaction | ContextMenuCommandInteraction | Message,
+        commandName: string,
+        commandType: string,
     ): Promise<MessageReplyOptions> => {
       return {
         embeds: [getLogChannelPresetEmbed(context, commandName, commandType)],

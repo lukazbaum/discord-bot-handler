@@ -1,134 +1,145 @@
-import {
-  Message,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
-} from "discord.js";
-
+import { Message } from "discord.js";
 import {
   parseEternalEmbed,
-  parseProfileEmbed,
-  parseInventoryEmbed,
-  calculateFullInfo,
-  formatPagePower,
-  formatPage1,
-  formatPage2,
+  parseDungeonEmbed
 } from "./eUtils";
 
-import { eternalSessionStore } from "./sessionStore";
-
 import {
-  handleEternalProfileEmbed,
-} from "./eternityEvents";
-
-import {
-  getEternalUnsealHistory,
   saveOrUpdateEternityProfile,
   addEternalDungeonWin,
   addEternalUnseal,
-} from "/home/ubuntu/ep_bot/extras/functions.js";
+  getEternityProfile
+} from "/home/ubuntu/ep_bot/extras/functions";
 
-import { updateCareer } from './eternityCareerUpdater.js';
+import { ensureEternityProfile } from "./eternityProfile";
+import { tryFindUserIdByName } from "./eternityUtils";
+import { forceProfileSync } from "./forceProfileSync";
 
-export async function eternalEmbedResponder(message: Message): Promise<void> {
+const EPIC_RPG_BOT_ID = '555955826880413696';
+
+/**
+ * 🔥 Handle Flame Detection from RPG Inventory
+ */
+export async function handleFlameDetection(message: Message): Promise<void> {
+  if (!message.embeds.length || message.author.id !== EPIC_RPG_BOT_ID) return;
+
+  const embed = message.embeds[0];
+  const flamesField = embed.fields?.find(field =>
+    field.name.toLowerCase().includes("items") && field.value.toLowerCase().includes("eternity flame")
+  );
+
+  if (!flamesField) return;
+
+  const flameMatch = flamesField.value.match(/eternity flame.*?:\s*([\d,]+)/i);
+  const flameAmount = flameMatch ? parseInt(flameMatch[1].replace(/,/g, "")) : 0;
+  if (flameAmount <= 0) return;
+
+  const playerName = embed?.author?.name?.split("—")?.[0]?.trim();
+  if (!playerName) {
+    console.warn("⚠️ Could not extract player name from inventory embed.");
+    return;
+  }
+
+  const guildId = message.guild?.id;
+  if (!guildId) return;
+
+  const userId = await tryFindUserIdByName(message.guild, playerName);
+
+  if (!userId) {
+    console.warn(`⚠️ Cannot resolve userId for "${playerName}"`);
+    return;
+  }
+
+  const existingProfile = await getEternityProfile(userId, guildId);
+  if (existingProfile) {
+    await saveOrUpdateEternityProfile(userId, guildId, existingProfile.current_eternality, flameAmount);
+  } else {
+    await saveOrUpdateEternityProfile(userId, guildId, 0, flameAmount);
+  }
+
+  console.log(`🔥 Inventory flames updated for ${userId}: ${flameAmount.toLocaleString()}`);
+  await forceProfileSync(userId, guildId);
+}
+
+/**
+ * 🧠 Handle Eternal Profile Embed
+ */
+export async function handleEternalProfileEmbed(message: Message): Promise<void> {
+  const guildId = message.guild?.id;
+  if (!guildId) return;
+
+  const userId = message.interaction?.user?.id || message.mentions?.users.first()?.id || message.author.id;
+
+  const embed = message.embeds[0];
+  if (!embed) return;
+
+  const parsed = parseEternalEmbed(embed);
+  if (parsed?._error) {
+    console.warn(`⚠️ Error parsing eternal profile for ${userId}: ${parsed._error}`);
+    return;
+  }
+
+  const eternalProgress = parsed.eternalProgress || 0;
+
+  await saveOrUpdateEternityProfile(userId, guildId, eternalProgress);
+
+  console.log(`✅ Eternity Profile saved for ${userId}: ${eternalProgress}`);
+  await forceProfileSync(userId, guildId);
+}
+
+/**
+ * 🔓 Handle Eternity Unseal Event
+ */
+export async function handleEternalUnsealMessage(message: Message): Promise<void> {
+  const guildId = message.guild?.id;
+  if (!guildId) return;
+
+  const userId = message.author.id;
+
+  const flamesMatch = message.content.match(/-\s*([\d,]+)\s*<:eternityflame/i);
+  const flamesCost = flamesMatch ? parseInt(flamesMatch[1].replace(/,/g, "")) : 0;
+
+  const bonusTTMatch = message.content.match(/got\s+([\d,]+)\s*<:timetravel/i);
+  const bonusTT = bonusTTMatch ? parseInt(bonusTTMatch[1].replace(/,/g, "")) : 0;
+
+  if (!flamesCost) {
+    console.warn(`⚠️ Could not parse flames cost from unseal message: ${message.content}`);
+    return;
+  }
+
+  await ensureEternityProfile(userId, guildId);
+
+  await addEternalUnseal(userId, guildId, flamesCost, 0, bonusTT);
+  console.log(`🔓 Unseal recorded for ${userId}: -${flamesCost} flames, +${bonusTT} TT`);
+
+  await forceProfileSync(userId, guildId);
+}
+
+/**
+ * 🐉 Handle Dungeon Victory Embed
+ */
+export async function handleEternalDungeonVictory(message: Message): Promise<void> {
   const userId = message.author.id;
   const guildId = message.guild?.id;
-  const content = message.content.toLowerCase();
-  const session = eternalSessionStore.get(userId);
+  if (!guildId) return;
 
-  if (!guildId || !session || session.channelId !== message.channel.id) return;
-  if (session.origin === "command") return;
+  const embed = message.embeds[0];
+  if (!embed) return;
 
-  try {
-    // 🔥 Check for RPG PE (Eternity Progress Embed)
-    if (session.step === "awaitingEternal" && message.author.bot && message.embeds.length) {
-      await handleEternalProfileEmbed(message);
-
-      const parsed = parseEternalEmbed(message.embeds[0].data);
-      if ("_error" in parsed) {
-        await message.reply(`${parsed._error}\nPlease run \`ep et reset\`.`);
-        return;
-      }
-
-      session.eternal = parsed;
-
-      const footerText = message.embeds[0].footer?.text || "";
-      if (parsed.eternalProgress < 100) {
-        await message.reply("⚠️ Warning: Detected Eternity **less than 100**.\nPlease re-run `rpg p e` if needed!");
-      }
-
-      try {
-        await saveOrUpdateEternityProfile(userId, guildId, parsed.eternalProgress);
-        await updateCareer(userId, guildId);
-      } catch (err) {
-        console.error("⚠️ Failed to save eternity profile:", err);
-      }
-
-      if (footerText.toLowerCase().includes("unsealed for")) {
-        session.step = "awaitingDaysSealed";
-        await message.reply("⏳ You are currently **Unsealed**!\nHow many **days until you expect to Unseal**?\n_(Example: 7)_");
-        return;
-      }
-
-      const history = await getEternalUnsealHistory(userId);
-      if (history.length) {
-        const lastUnsealDate = new Date(history[0].createdAt);
-        const now = new Date();
-        const diffTime = Math.abs(now.getTime() - lastUnsealDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        session.daysSealed = diffDays;
-        session.step = "awaitingProfile";
-        await message.reply(`📆 Detected **${diffDays}** days since last unseal.\n📘 Now send \`rpg p\`...`);
-      } else {
-        session.step = "awaitingDaysSealed";
-        await message.reply("📆 No history found.\nHow many **days until you expect to Unseal**?\n_(Example: 7)_");
-      }
-      return;
-    }
-
-    // 🐉 Eternal Dungeon Reward Embed Detection
-    if (message.author.bot && message.embeds.length) {
-      const embed = message.embeds[0];
-      const rewardField = embed.fields?.[0];
-      const authorName = embed.author?.name?.toLowerCase() || "";
-
-      if (rewardField && rewardField.name.toLowerCase().includes("reward") && authorName.includes("quest")) {
-        const flameMatch = rewardField.value.match(/(\d[\d,]*)\s*<:eternityflame/i);
-        if (flameMatch) {
-          const flames = parseInt(flameMatch[1].replace(/,/g, ""));
-          if (flames > 0) {
-            try {
-              await addEternalDungeonWin(userId, guildId, flames);
-              await updateCareer(userId, guildId);
-              console.log(`🐉 [Dungeon Win Recorded] ${userId}: +${flames} flames`);
-            } catch (err) {
-              console.warn("⚠️ Failed saving dungeon win:", err);
-            }
-          }
-        }
-      }
-    }
-
-    // 🔓 Eternity Unseal Detection
-    if (content.includes("unsealed the eternity")) {
-      try {
-        const flamesMatch = message.content.match(/-\s*([\d,]+)\s*<:eternityflame/i);
-        const flames = flamesMatch ? parseInt(flamesMatch[1].replace(/,/g, "")) : 0;
-        if (flames > 0) {
-          await addEternalUnseal(userId, guildId, flames, 0);
-          await updateCareer(userId, guildId);
-          console.log(`🔓 [Unseal Recorded] ${userId}: -${flames} flames`);
-        }
-      } catch (err) {
-        console.warn("⚠️ Failed saving unseal event:", err);
-      }
-    }
-
-  } catch (err) {
-    console.error("⚠️ Eternal embed responder error:", err);
-    eternalSessionStore.delete(userId);
-    await message.reply("⚠️ Something went wrong. Please type `ep et reset` to restart.");
+  const parsed = parseDungeonEmbed(embed);
+  if (parsed?._error) {
+    console.warn(`⚠️ Failed to parse dungeon victory for ${userId}: ${parsed._error}`);
+    return;
   }
+
+  const flamesEarned = parsed.flamesEarned || 0;
+  if (flamesEarned <= 0) {
+    console.warn(`⚠️ No flames detected in dungeon win for ${userId}`);
+    return;
+  }
+
+  await addEternalDungeonWin(userId, guildId, flamesEarned);
+  console.log(`🐉 Dungeon win recorded for ${userId}: +${flamesEarned} flames`);
+
+  await forceProfileSync(userId, guildId);
 }

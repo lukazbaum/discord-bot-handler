@@ -161,7 +161,7 @@ export default new PrefixCommand({
 			console.log(`[HELP COMMAND] Executed by ${message.author.tag}`);
 
 			const guildId = message.guild?.id || "default"; // Get guild ID or fallback
-			const prefix = defaultConfig.getPrefix(guildId); // ✅ Correctly fetching the prefix
+			const prefix = defaultConfig.getPrefix(guildId)
 
 			let commandArgs = message.content.trim().toLowerCase();
 			let isStaffHelp = /help\s+staff$/.test(commandArgs); // ✅ Properly detect "help staff"

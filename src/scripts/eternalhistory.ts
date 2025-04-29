@@ -1,6 +1,6 @@
-// full_backfill_v4.ts
+// full_backfill_v5.ts
 
-import { Client, GatewayIntentBits, TextChannel, Snowflake, Collection, Message } from "discord.js";
+import { Client, GatewayIntentBits, TextChannel, Collection, Message } from "discord.js";
 import { config } from "dotenv";
 import fs from "fs/promises";
 import cliProgress from "cli-progress";
@@ -27,7 +27,7 @@ const client = new Client({
   ]
 });
 
-const TARGET_GUILD_ID = "1135995107842195550";
+const TARGET_GUILD_ID = "1135995107842195550"; // <-- your server ID
 const LAST_IDS_FILE = "last_scanned_ids.json";
 const MAX_MESSAGES_BEFORE_SAVE = 5000;
 const PARALLEL_CHANNELS = 5;
@@ -59,7 +59,10 @@ async function sleep(ms: number) {
 async function resolveUserId(username: string, guild: any): Promise<string | null> {
   try {
     const members = await guild.members.fetch();
-    const user = members.find((m: any) => m.user.username.toLowerCase() === username.toLowerCase());
+    const user = members.find((m: any) =>
+      m.user.username.toLowerCase() === username.toLowerCase() ||
+      m.nickname?.toLowerCase() === username.toLowerCase()
+    );
     return user ? user.user.id : null;
   } catch (error) {
     console.error("❌ Error resolving user:", error);
@@ -95,7 +98,7 @@ function parseUnsealFlamesAndTTFromMessage(message: Message<true>) {
   return { flames, bonusTT };
 }
 
-// --- Scanning Functions --- //
+// --- Main Scanner --- //
 
 async function scanChannel(channel: TextChannel, guild: any) {
   let lastId = lastIds[channel.id];
@@ -105,25 +108,18 @@ async function scanChannel(channel: TextChannel, guild: any) {
     console.log(`📍 Starting fresh scan in ${channel.name}`);
   }
 
-  console.log(`🔎 Scanning: ${channel.name}`);
-  let messagesScanned = 0;
-  let startTime = Date.now();
-
-  const initialGuess = 50000;
   const progressBar = new cliProgress.SingleBar({
     format: `[{bar}] {percentage}% | {value}/{total} msgs | ETA: {eta_formatted}`,
-    autopadding: true,
     barCompleteChar: '\u2588',
     barIncompleteChar: '\u2591',
     hideCursor: true
   }, cliProgress.Presets.shades_classic);
 
-  progressBar.start(initialGuess, 0);
-  let dynamicTotal = initialGuess;
+  progressBar.start(50000, 0);
 
   while (true) {
     try {
-      const options: { limit: number; before?: Snowflake } = { limit: 100 };
+      const options: { limit: number; before?: string } = { limit: 100 };
       if (lastId) options.before = lastId;
 
       const messages = await fetchMessagesWithRetry(channel, options);
@@ -132,21 +128,8 @@ async function scanChannel(channel: TextChannel, guild: any) {
       const messageArray = Array.from(messages.values());
 
       for (const message of messageArray) {
-        messagesScanned++;
         totalMessages++;
         progressBar.increment();
-
-        if (messagesScanned > dynamicTotal - 5000) {
-          dynamicTotal += 50000;
-          progressBar.setTotal(dynamicTotal);
-        }
-
-        if (progressBar.getProgress() >= 1) {
-          progressBar.update(progressBar.getTotal(), {
-            barCompleteChar: '\u001b[32m█\u001b[0m',
-            barIncompleteChar: ' '
-          });
-        }
 
         if (message.author?.bot && message.embeds.length) {
           const embed = message.embeds[0];
@@ -156,11 +139,16 @@ async function scanChannel(channel: TextChannel, guild: any) {
             const userId = await resolveUserId(username, guild);
             if (userId) {
               const parsed = parseEternalEmbed(embed.data);
-              if (!parsed._error) {
+              if (parsed && !parsed._error) {
                 const currentProfile = await getEternityProfile(userId, guild.id);
-                if (!currentProfile || parsed.eternalProgress >= currentProfile.current_eternality) {
-                  await saveOrUpdateEternityProfile(userId, guild.id, parsed.eternalProgress);
+                const newEternity = parsed.eternalProgress;
+
+                if (!currentProfile || newEternity > currentProfile.current_eternality) {
+                  await saveOrUpdateEternityProfile(userId, guild.id, newEternity);
+                  console.log(`📈 Eternity updated: ${username} → ${newEternity}`);
                   totalEternities++;
+                } else {
+                  console.log(`↪️ Skipped lower eternity for ${username}`);
                 }
               }
             }
@@ -173,6 +161,7 @@ async function scanChannel(channel: TextChannel, guild: any) {
               const flames = parseFlamesFromDungeonEmbed(embed);
               if (flames > 0) {
                 await addEternalDungeonWin(userId, guild.id, flames);
+                console.log(`🐉 Dungeon win: +${flames} flames for ${username}`);
                 totalDungeons++;
               }
             }
@@ -185,35 +174,34 @@ async function scanChannel(channel: TextChannel, guild: any) {
           const userId = await resolveUserId(username, guild);
           if (userId) {
             const { flames, bonusTT } = parseUnsealFlamesAndTTFromMessage(message);
-            await addEternalUnseal(userId, guild.id, flames, bonusTT);
+            await addEternalUnseal(userId, guild.id, flames, 0, bonusTT);
+            console.log(`🔓 Unseal recorded: ${username} -${flames} flames, +${bonusTT} TT`);
             totalUnseals++;
           }
         }
       }
 
-      // Move lastId back safely
+      // Update last ID
       const lastMessage = messageArray[messageArray.length - 1];
       if (lastMessage) {
         lastId = (BigInt(lastMessage.id) - BigInt(1)).toString();
         lastIds[channel.id] = lastId;
       }
 
-      if (messagesScanned >= MAX_MESSAGES_BEFORE_SAVE) {
+      if (totalMessages % MAX_MESSAGES_BEFORE_SAVE === 0) {
         await saveLastIds();
-        console.log(`💾 Progress saved after ${messagesScanned} messages in ${channel.name}`);
-        messagesScanned = 0;
-        startTime = Date.now();
+        console.log(`💾 Progress saved after ${totalMessages} total messages`);
       }
 
     } catch (err) {
-      console.error(`⚠️ Error in channel ${channel.name}:`, err);
+      console.error(`⚠️ Error scanning ${channel.name}:`, err);
       await sleep(60000);
     }
   }
 
   await saveLastIds();
   progressBar.stop();
-  console.log(`✅ Finished ${channel.name}`);
+  console.log(`✅ Finished scanning ${channel.name}`);
 }
 
 async function fetchMessagesWithRetry(channel: TextChannel, options: any): Promise<Collection<string, Message<true>>> {
@@ -261,9 +249,9 @@ async function main() {
 
     console.log("\n🏁 Full scan completed!");
     console.log(`🔎 Messages scanned: ${totalMessages}`);
-    console.log(`⚡ Eternities found: ${totalEternities}`);
-    console.log(`🐉 Dungeons found: ${totalDungeons}`);
-    console.log(`🔓 Unseals found: ${totalUnseals}`);
+    console.log(`⚡ Eternities updated: ${totalEternities}`);
+    console.log(`🐉 Dungeon wins recorded: ${totalDungeons}`);
+    console.log(`🔓 Unseals recorded: ${totalUnseals}`);
     process.exit(0);
   });
 
