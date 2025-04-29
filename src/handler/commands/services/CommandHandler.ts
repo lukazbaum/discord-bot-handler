@@ -64,10 +64,10 @@ export class CommandHandler {
     const prefix = config.getPrefix?.(message.guild?.id || '') ?? config.prefix; // dynamite from config
 
     // Ensure the message starts with the prefix
-    if (!message.content.startsWith(prefix)) return;
+    if (!message.content.toLowerCase().startsWith(prefix.toLowerCase())) return;
 
     // Extract the command name from the message content
-    const commandName: string = message.content.slice(prefix.length).trim().split(/\s+/)[0];
+    const commandName: string = message.content.slice(prefix.length).trim().split(/\s+/)[0]?.toLowerCase();
     const resolvedCommandName: string = client.commands.prefixAliases.get(commandName) ?? commandName;
 
     // Get the command object from the command collection

@@ -7,8 +7,9 @@ import type {
 } from 'discord.js';
 
 export interface Config {
-  getPrefix?: (guildId: string) => string; // uses dynmanic prefix assignment by guild
-  prefix?: string;
+  prefix?: string; // now optional (if you want static fallback)
+  getPrefix: (guildId: string) => string; // new dynamic function
+  customPrefixes?: CustomPrefix[];
   ownerId?: string;
   eventsFolder: string;
   commandsFolder: string;
@@ -21,8 +22,13 @@ export interface Config {
 export interface LogChannelConfig {
   channelId: string;
   message: (
-    context: Interaction | ContextMenuCommandInteraction | Message,
-    commandName: string,
-    commandType: string,
+      context: Interaction | ContextMenuCommandInteraction | Message,
+      commandName: string,
+      commandType: string,
   ) => Promise<MessageReplyOptions>;
+}
+
+export interface CustomPrefix {
+  guildId: string;
+  prefix: string;
 }

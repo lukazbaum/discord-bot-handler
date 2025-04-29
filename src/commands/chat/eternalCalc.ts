@@ -23,8 +23,8 @@ import { eternalSessionStore as sessionStore } from "../../services/sessionStore
 import { clearEternalUnsealData, getEternalUnsealHistory } from "/home/ubuntu/ep_bot/extras/functions";
 
 export default new PrefixCommand({
-  name: "eternal",
-  aliases: ["eprofile", "et"],
+  name: "et",
+  aliases: ["eprofile", "et1"],
   allowedGuilds: ["1135995107842195550"],
 
   async execute(message: Message): Promise<void> {

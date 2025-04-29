@@ -4,7 +4,7 @@ const {
   updateEternalPathChoice
 } = require('/home/ubuntu/ep_bot/extras/functions');
 
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, Message, Guild } from "discord.js";
 
 
 export async function getDisplayTitle(userId: string, currentEternity: number): Promise<string> {
@@ -17,6 +17,26 @@ export async function setDisplayTitle(userId: string, title: string): Promise<vo
     await addEternalPathChoice(userId, title);
   } catch (err) {
     console.error("⚠️ Error saving title:", err);
+  }
+}
+
+export async function tryFindUserIdByName(guild: Guild, playerName: string): Promise<string | null> {
+  try {
+    // Fetch all members if not cached
+    if (!guild.members.cache.size) {
+      await guild.members.fetch();
+    }
+
+    // Try exact match
+    const member = guild.members.cache.find(m =>
+      m.user.username.toLowerCase() === playerName.toLowerCase() ||
+      (m.nickname && m.nickname.toLowerCase() === playerName.toLowerCase())
+    );
+
+    return member ? member.user.id : null;
+  } catch (err) {
+    console.error('❌ Error trying to find user by name:', err);
+    return null;
   }
 }
 
@@ -97,6 +117,23 @@ function createProgressBar(percent: number) {
   const yellow = (percent % 10 >= 5) ? 1 : 0;
   const black = 10 - green - yellow;
   return "🟩".repeat(green) + "🟨".repeat(yellow) + "⬛".repeat(black);
+}
+
+export function tryExtractUserIdFromMessage(message: Message): string | null {
+  if (!message) return null;
+
+  // 1. If the message was sent by a normal user (not a bot), use that
+  if (!message.author.bot) {
+    return message.author.id;
+  }
+
+  // 2. If the message mentions exactly 1 user, it's probably for them
+  if (message.mentions.users.size === 1) {
+    return message.mentions.users.first()?.id ?? null;
+  }
+
+  // 3. Otherwise, we can't be sure
+  return null;
 }
 
 export function buildEternityProfileEmbed(currentEternity: number, title: string, loreText: string) {
