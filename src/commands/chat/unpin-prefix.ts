@@ -51,6 +51,7 @@ export default new PrefixCommand({
                         '839731101391781906', // Blackstone Kingdom Elite
                         '1019301054120210482', // Blackstone Donors
                         '967657150769942578', // Blackstone Staff
+	    		'1128607975972548711', // luminescent staff
     ],
     async execute(message: Message): Promise<void> {
 	try{
@@ -75,6 +76,7 @@ export default new PrefixCommand({
             "1135995107842195550": "1148992217202040942", // epic park staff
             '1113339391419625572':'1113407924409221120', // epic wonderland staff
             "839731097473908767": "845499229429956628", // blackstone staff royal guards
+            "871269916085452870" : "871393325389844521", // luminescent staff
         };
 
         const roleId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];

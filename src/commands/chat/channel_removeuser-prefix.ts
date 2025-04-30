@@ -80,7 +80,7 @@ export default new PrefixCommand({
             "801822272113082389": "807826290295570432",
             "1113339391419625572":"1113407924409221120", // epic wonderland staff
           "839731097473908767": "845499229429956628", // blackstone staff royal guards
-          "871269916085452870": "1128607975972548711", // Luminescent Staff
+          "871269916085452870": "871393325389844521", // Luminescent Staff
 
         };
 
