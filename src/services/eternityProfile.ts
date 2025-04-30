@@ -1,55 +1,35 @@
 import {
-  getEternityProfile,
   saveOrUpdateEternityProfile,
-  getEternalUnsealHistory,
-  getEternalDungeonWins,
-  getEternalPathChoice,
-} from '/home/ubuntu/ep_bot/extras/functions'; // <-- adjust the path to where you export your DB functions
+  getEternityProfile,
+  getDungeonWins,
+  getEternalUnsealHistory
+} from '/home/ubuntu/ep_bot/extras/functions.js';
 
-export interface EternalProfileData {
-  userId: string;
-  guildId: string;
-  currentEternity: number;
-  flamesOwned?: number;
-  lastUnsealTT?: number;
-  unsealHistory?: any[];
-  dungeonWins?: any[];
-  pathChoice?: {
-    chosenPath: string;
-    ttGoal: number;
-    targetEternity: number;
-    displayTitle?: string;
-  } | null;
-}
+import { EternalProfileData } from './eternalProfile';
 
-/**
- * Loads a full Eternal Profile from the database
- */
 export async function loadEternalProfile(userId: string, guildId: string): Promise<EternalProfileData | null> {
   const profile = await getEternityProfile(userId, guildId);
   if (!profile) return null;
 
-  const unsealHistory = await getEternalUnsealHistory(userId);
-  const dungeonWins = await getEternalDungeonWins(userId, guildId);
-  const pathChoice = await getEternalPathChoice(userId, guildId);
-
   return {
     userId,
     guildId,
-    currentEternity: profile.current_eternality || 0,
-    flamesOwned: profile.flames_owned || 0, // if you track flames separately later
-    lastUnsealTT: profile.last_unseal_tt || 0,
-    unsealHistory,
-    dungeonWins,
-    pathChoice: pathChoice ? {
-      chosenPath: pathChoice.chosen_path,
-      ttGoal: pathChoice.tt_goal,
-      targetEternity: pathChoice.target_eternity,
-      displayTitle: pathChoice.display_title || undefined
-    } : null
+    username: profile.username ?? null,
+    currentEternity: profile.current_eternality ?? 0,
+    flamesOwned: profile.flames_owned ?? 0,
+    lastUnsealTT: profile.last_unseal_tt ?? 0,
+    ttsGainedDuringSeal: profile.tts_gained_during_seal ?? 0,
+    daysSealed: profile.days_sealed ?? 0,
+    targetEternity: profile.target_eternality ?? undefined,
+    swordTier: profile.sword_tier ?? undefined,
+    swordLevel: profile.sword_level ?? undefined,
+    armorTier: profile.armor_tier ?? undefined,
+    armorLevel: profile.armor_level ?? undefined,
+    pathChoice: profile.path_choice ? JSON.parse(profile.path_choice) : undefined,
+    unsealHistory: await getEternalUnsealHistory(userId) ?? [],
+    dungeonWins: await getDungeonWins(userId, guildId) ?? []
   };
 }
-
 
 export async function updateEternity(userId: string, guildId: string, newEternity: number): Promise<string> {
   return await saveOrUpdateEternityProfile(userId, guildId, newEternity);

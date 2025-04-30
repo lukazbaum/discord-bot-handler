@@ -1,57 +1,40 @@
-import {
-  getEternalUnsealHistory,
-  getEternalDungeonWins,
-  getEternityProfile,
-  upsertEternityCareer
-} from '/home/ubuntu/ep_bot/extras/functions'; // Adjust if needed
+import { getEternalUnsealHistory, getEternalDungeonWins, saveOrUpdateEternityProfile } from '/home/ubuntu/ep_bot/extras/functions';
 
 /**
- * Updates a player's Eternity Career profile.
+ * 🏆 Aggregates Eternity career stats from history tables and updates the profile
  */
 export async function updateCareer(userId: string, guildId: string): Promise<void> {
   try {
-    // 📦 Pull all player data in parallel
-    const [unseals, dungeons, profile] = await Promise.all([
-      getEternalUnsealHistory(userId),
-      getEternalDungeonWins(userId, guildId),
-      getEternityProfile(userId, guildId)
-    ]);
+    const unsealHistory = await getEternalUnsealHistory(userId);
+    const dungeonWins = await getEternalDungeonWins(userId);
 
-    if (!profile) {
-      console.warn(`⚠️ No Eternity Profile found for userId=${userId}`);
-      return;
-    }
+    const totalUnseals = unsealHistory.length;
+    const totalBonusTT = unsealHistory.reduce((sum, u) => sum + (u.bonusTT || 0), 0);
 
-    // 📈 Calculate career totals
-    const highestEternity = profile.current_eternality || 0;
-    const totalUnseals = Array.isArray(unseals) ? unseals.length : 0;
-    const totalFlamesBurned =
-      (unseals?.reduce((sum, u) => sum + (u.flamesCost || 0), 0) || 0) +
-      (dungeons?.reduce((sum, d) => sum + (d.flamesEarned || 0), 0) || 0);
-    const totalBonusTT = unseals?.reduce((sum, u) => sum + (u.bonusTT || 0), 0) || 0;
-    const firstUnsealDate = unseals?.length ? unseals[unseals.length - 1].createdAt : null;
+    const totalDungeonWins = dungeonWins.length;
+    const totalFlamesEarned = dungeonWins.reduce((sum, win) => sum + (win.flamesEarned || 0), 0);
 
-    // 🏆 Dynamic achievement badges
-    const achievements: string[] = [];
-    if (totalUnseals >= 10) achievements.push("🔹 10+ Unseals");
-    if (highestEternity >= 500) achievements.push("🔹 500+ Eternity Achiever");
-    if (totalFlamesBurned >= 500_000) achievements.push("🔹 500k+ Flames Burned");
-    if (totalFlamesBurned >= 1_000_000) achievements.push("🔹 1 Million+ Flames Burned");
+    // Last unseal TT
+    const lastUnsealTT = unsealHistory[0]?.bonusTT ?? 0;
 
-    // 📤 Save updated career
-    const careerData = {
-      highestEternity,
-      totalFlamesBurned,
-      totalBonusTT,
-      totalUnseals,
-      firstUnsealDate,
-      achievements
-    };
+    // 🧠 Save into eternity_profiles
+    await saveOrUpdateEternityProfile(
+      userId,
+      guildId,
+      null,             // currentEternity not updated here
+      null,             // flamesOwned not updated here
+      totalDungeonWins,
+      totalFlamesEarned,
+      null,             // don't override last_unseal_tt here
+      null,             // username
+      null, null,       // sword
+      null, null,       // armor
+      null,             // ttGainedDuringSeal
+      null              // daysSealed
+    );
 
-    await upsertEternityCareer(userId, guildId, careerData);
-    console.log(`🏆 Eternity Career successfully updated for userId=${userId}`);
-
+    console.log(`✅ Eternity Profile updated for user ${userId}`);
   } catch (err) {
-    console.error('❌ Error while updating Eternity Career:', err);
+    console.error("❌ Failed to update Eternity Career:", err);
   }
 }

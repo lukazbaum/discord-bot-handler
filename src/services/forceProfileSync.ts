@@ -6,7 +6,7 @@ import {
   getEternalDungeonWins,
   upsertEternityCareer,
   saveOrUpdateEternityProfile
-} from '../scripts/functions-wrapper'; // adjust if needed
+} from '../scripts/functions-wrapper'; // Adjust path if needed
 
 export async function forceProfileSync(userId: string, guildId: string): Promise<void> {
   try {
@@ -24,26 +24,26 @@ export async function forceProfileSync(userId: string, guildId: string): Promise
     const totalUnseals = unseals?.length || 0;
     const totalDungeonWins = dungeons?.length || 0;
 
-    const totalFlamesFromUnseals = unseals?.reduce((sum, u) => sum + (u.flamesCost || 0), 0) || 0;
-    const totalFlamesFromDungeons = dungeons?.reduce((sum, d) => sum + (d.flamesEarned || 0), 0) || 0;
+    const totalFlamesFromUnseals = unseals.reduce((sum, u) => sum + (u.flamesCost || 0), 0);
+    const totalFlamesFromDungeons = dungeons.reduce((sum, d) => sum + (d.flamesEarned || 0), 0);
     const totalFlamesEarned = totalFlamesFromUnseals + totalFlamesFromDungeons;
 
-    const lastUnsealTT = unseals?.length ? unseals[0]?.bonusTT || 0 : 0;
+    // 🚫 DO NOT overwrite lastUnsealTT using bonusTT
+    const existingLastUnsealTT = profile.last_unseal_tt ?? 0;
 
     const needsProfileUpdate =
       profile.total_edungeon_wins !== totalDungeonWins ||
-      profile.total_flames_earned !== totalFlamesEarned ||
-      profile.last_unseal_tt !== lastUnsealTT;
+      profile.total_flames_earned !== totalFlamesEarned;
 
     if (needsProfileUpdate) {
       await saveOrUpdateEternityProfile(
         userId,
         guildId,
         profile.current_eternality || 0,
-        profile.flames_owned || 0,
+        null,
         totalDungeonWins,
         totalFlamesEarned,
-        lastUnsealTT
+        existingLastUnsealTT // ✅ preserve correct lastUnsealTT
       );
 
       console.log(`✅ Eternity Profile updated for user ${userId}`);
@@ -51,7 +51,7 @@ export async function forceProfileSync(userId: string, guildId: string): Promise
       console.log(`ℹ️ Eternity Profile already up-to-date for user ${userId}`);
     }
 
-    // Always update career (it has achievements that can change on small events)
+    // 🎯 Build career data
     const careerData = {
       highestEternity: profile.current_eternality || 0,
       totalFlamesBurned: totalFlamesEarned,

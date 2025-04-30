@@ -1,4 +1,5 @@
 // src/services/syncEternityProfiles.ts
+
 import {
   getAllUserIdsFromProfiles,
   getEternalUnsealHistory,
@@ -38,16 +39,17 @@ export async function syncAllProfiles(): Promise<void> {
         const totalFlamesFromDungeons = dungeons?.reduce((sum, d) => sum + (d.flamesEarned || 0), 0) || 0;
         const totalFlamesEarned = totalFlamesFromUnseals + totalFlamesFromDungeons;
 
-        const lastUnsealTT = unseals?.length ? unseals[0]?.bonusTT || 0 : 0;
+        // 🚫 Do not override lastUnsealTT or flamesOwned unless explicitly needed
+        const existingLastUnsealTT = profile.last_unseal_tt ?? 0;
 
         await saveOrUpdateEternityProfile(
-          user_id,
-          guild_id,
-          profile.current_eternality || 0,
-          profile.flames_owned || 0,
-          totalDungeonWins,
-          totalFlamesEarned,
-          lastUnsealTT
+            user_id,
+            guild_id,
+            profile.current_eternality ?? 0,
+            null, // don't touch flamesOwned
+            totalDungeonWins,
+            totalFlamesEarned,
+            existingLastUnsealTT
         );
 
         console.log(`✅ Synced profile for user ${user_id} (Guild ${guild_id})`);

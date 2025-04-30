@@ -1,13 +1,17 @@
 import config from '../../../config';
 import { Event } from '../base/Event';
+import { client } from '../../../index';
 import { Events, Message } from 'discord.js';
 import { CommandHandler } from '../../commands/services/CommandHandler';
+
 import {
   handleFlameDetection,
   handleEternalProfileEmbed,
   handleEternalDungeonVictory,
-  handleEternalUnsealMessage
+  handleEternalUnsealMessage,
+  handleProfileEmbed
 } from '../../../services/externalEmbedListener';
+
 import { updateCareer } from '../../../services/eternityCareerUpdater';
 
 const EPIC_RPG_BOT_ID = '555955826880413696';
@@ -15,69 +19,73 @@ const EPIC_RPG_BOT_ID = '555955826880413696';
 export default new Event({
   name: Events.MessageCreate,
   async execute(message: Message): Promise<void> {
-    // ⛔ Ignore bots or DMs
-    if (message.author.bot || !message.guild) return;
+    if (!client.user || message.author.id === client.user.id || !message.guild) return;
 
     const prefix = config.getPrefix?.(message.guild.id) ?? config.prefix;
-    const content = message.content;
-    const lowerContent = content.toLowerCase();
-
-    // 🎯 Prefix command handling (ex: ep help)
-    if (content.startsWith(prefix)) {
-      await CommandHandler.handlePrefixCommand(message);
-      return; // ✅ Stop further processing after command
-    }
-
-    // 📥 Embed and message parsing from Epic RPG bot
+    const lowerContent = message.content.toLowerCase();
     const isFromEpicRpg = message.author.id === EPIC_RPG_BOT_ID;
 
-    // 🔥 RPG Inventory Embed → Eternity Flame Update
+    // 🎯 Handle Human Prefix Commands
+    if (!message.author.bot && message.content.startsWith(prefix)) {
+      console.log(`[COMMAND] Prefix command detected: ${message.content}`);
+      await CommandHandler.handlePrefixCommand(message);
+      return;
+    }
+
+    // 🔥 Inventory Embed (`rpg i`)
     if (isFromEpicRpg && message.embeds.length) {
       await handleFlameDetection(message);
     }
 
-    // 🧠 RPG Embed: Eternal Profile or Dungeon Victory
-    if (message.embeds.length && message.author.bot) {
+    // 🧠 Profile Embed (`rpg p`)
+    if (isFromEpicRpg && message.embeds.length) {
       const embed = message.embeds[0];
-      const fields = embed?.fields ?? [];
+      if (embed?.fields?.some(f => f.name.toLowerCase().includes("progress"))) {
+        await handleProfileEmbed(message); // 🧠 Cache TT from rpg p
+      }
+    }
 
-      // 🧠 Eternal Profile Embed
-      if (fields.some(f => f.name.toLowerCase().includes('eternal progress'))) {
+    // 📦 Eternity Embeds (rpg p e / dungeon wins)
+    if (isFromEpicRpg && message.embeds.length) {
+      const embed = message.embeds[0];
+
+      // 🧠 Eternity Profile (`rpg p e`)
+      if (embed?.fields?.some(f => f.name.toLowerCase().includes("eternal progress"))) {
         try {
           await handleEternalProfileEmbed(message);
           await updateCareer(message.author.id, message.guild.id);
           await message.react('✅');
           console.log(`✅ Eternity Profile updated`);
         } catch (err) {
-          console.error('❌ Failed to process Eternity Profile:', err);
+          console.error("❌ Failed to process Eternity Profile:", err);
         }
       }
 
-      // 🐉 Eternal Dungeon Victory Embed
-      const f0 = fields[0]?.name || '';
-      const f1 = fields[1]?.name || '';
-
-      if (f0.includes('is dead!') && f1.includes('eternity flames')) {
+      // 🐉 Eternal Dungeon Win
+      if (
+        embed?.fields?.[0]?.name?.toLowerCase().includes("is dead!") &&
+        embed?.fields?.[1]?.value?.includes("eternity flame")
+      ) {
         try {
           await handleEternalDungeonVictory(message);
           await updateCareer(message.author.id, message.guild.id);
           await message.react('🐉');
           console.log(`🐉 Eternal Dungeon Win detected`);
         } catch (err) {
-          console.error('❌ Failed to process Dungeon Win:', err);
+          console.error("❌ Failed to process Dungeon Win:", err);
         }
       }
     }
 
-    // 🔓 Plain-text Unseal Detection
-    if (lowerContent.includes('unsealed the eternity for')) {
+    // 🔓 Unseal Text Message
+    if (lowerContent.includes("unsealed the eternity for")) {
       try {
         await handleEternalUnsealMessage(message);
         await updateCareer(message.author.id, message.guild.id);
         await message.react('🔓');
         console.log(`🔓 Eternity Unseal detected`);
       } catch (err) {
-        console.error('❌ Failed to process Eternity Unseal:', err);
+        console.error("❌ Failed to process Eternity Unseal:", err);
       }
     }
   }
