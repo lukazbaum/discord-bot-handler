@@ -8,12 +8,13 @@ const amariclient = new AmariBot(amarikey);
 export default new PrefixCommand({
 	name: "userinfo",
 	aliases: ["Userinfo", "ui", "chaninfo", "Chaninfo"],
-	allowedGuilds: ["1135995107842195550", "1113339391419625572", "839731097473908767"],
+	allowedGuilds: ["1135995107842195550", "1113339391419625572", "839731097473908767","871269916085452870"],
 	allowedRoles: [
 		"1148992217202040942",
 		"807826290295570432",
 		"1113407924409221120",
 		"845499229429956628",
+		'871393325389844521', // Luminescent Leiutenint
 	],
 	allowedCategories: [
 		"1140190313915371530",
@@ -36,6 +37,7 @@ export default new PrefixCommand({
 		"967657150769942578",
 		'1113414355669753907',// epic wonderland play land staff
 		'1115772256052846632', /// epic wonderland staff
+		'1128607975972548711', // Luminescent Staff'
 	],
 
 	async execute(message: Message): Promise<void> {
@@ -87,6 +89,8 @@ export default new PrefixCommand({
 				"1135995107842195550": "1143236724718317673",
 				"1113339391419625572": "1113407924409221120",
 				"839731097473908767": "839731097473908767",
+				"871269916085452870": "929306033367699496", // Luminescent
+
 			};
 
 			const verifiedRoleId = verifiedRoleList[serverId];

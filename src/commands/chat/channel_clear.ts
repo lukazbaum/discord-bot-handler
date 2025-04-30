@@ -8,13 +8,15 @@ export default new PrefixCommand({
     // 1113339391419625572 - Epic Wonderland
     // 1135995107842195550 - Epic Park
     // 839731097473908767 - Blackstone
-    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767','871269916085452870'],
     allowedRoles: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
-                    '1113407924409221120', // epic wonderland staff
+              '1113407924409221120', // epic wonderland staff
 	        		'1113451646031241316', // epic wonderland users
-                    '845499229429956628', // Blackstone Staff
-                    '839731097633423389' // Blackstone Users
-        ],
+              '845499229429956628', // Blackstone Staff
+              '839731097633423389', // Blackstone Users
+             '871393325389844521' // Luminescent Leiutenint
+
+    ],
     allowedCategories: ['1147909067172483162',
 	    		'1142846259321913486',
                         '1147909156196593787',
@@ -34,18 +36,20 @@ export default new PrefixCommand({
                         '825060923768569907',
       '1113414355669753907',// epic wonderland play land staff
       '1115772256052846632', /// epic wonderland staff
-                        '1113414451912257536', // epic wonderland booster
-                        '1115072766878691428', // epic wonderland supreme land
-        	              '1151855336865665024', // epic wonderland supreme land 1
-	    	                '1320055421561471048', // epic wonderland supreme land 2
-                        '1115357822222348319', // epic wonderland Epic Host Land
-                        '839731102813913107', // Blackstone Squires Corner
-                        '839731102281105409', // Blackstone Knights Hall
-                        '839731101885923345', // Blackstone wizards tower
-                        '839731101622075415', // Blackstone Dragon Cave
-                        '872692223488184350', // Blackstone Nitro Islands
-                        '1019301054120210482', // Blackstone Donors
-                        '967657150769942578', // Blackstone Staff
+      '1113414451912257536', // epic wonderland booster
+      '1115072766878691428', // epic wonderland supreme land
+      '1151855336865665024', // epic wonderland supreme land 1
+      '1320055421561471048', // epic wonderland supreme land 2
+      '1115357822222348319', // epic wonderland Epic Host Land
+      '839731102813913107', // Blackstone Squires Corner
+      '839731102281105409', // Blackstone Knights Hall
+      '839731101885923345', // Blackstone wizards tower
+      '839731101622075415', // Blackstone Dragon Cave
+      '872692223488184350', // Blackstone Nitro Islands
+      '1019301054120210482', // Blackstone Donors
+      '967657150769942578', // Blackstone Staff
+      '1128607975972548711' // Luminescent Staff
+
     ],
   async execute(message: Message): Promise<void> {
     try {
@@ -62,6 +66,7 @@ export default new PrefixCommand({
         "1135995107842195550": "1148992217202040942", // epic park staff
         "1113339391419625572": "1113407924409221120", // epic wonderland staff
         "839731097473908767": "845499229429956628", // blackstone staff
+        "871269916085452870": "1128607975972548711", // Luminescent Staff
       };
 
       const roleId = modRoleList[serverId || ""];

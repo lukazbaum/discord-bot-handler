@@ -5,12 +5,15 @@ const { updateGuildBan } = require('/home/ubuntu/ep_bot/extras/functions');
 export default new PrefixCommand({
 	name: "removeserverban",
 	aliases: ["ub", "rsb", "ubuser", "usb", "sub"],
-	allowedGuilds: ['1135995107842195550', '1113339391419625572', '839731097473908767'],
+	// 871269916085452870 - Luminescent
+	allowedGuilds: ['1135995107842195550', '1113339391419625572', '839731097473908767','871269916085452870'],
 	allowedRoles: [
 		"1148992217202040942", // Epic Park Staff
 		"1113414355669753907", // Epic Wonderland Admin
 		"1113407924409221120", // Epic Wonderland Staff
 		"845499229429956628",  // Blackstone Staff
+		'871393325389844521', // Luminescent Leiutenint
+
 	],
 	async execute(message: Message): Promise<void> {
 		try {

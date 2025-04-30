@@ -15,6 +15,7 @@ export default new Button({
               "1135995107842195550": "1143236724718317673", // EPic Park
               "1113339391419625572": "1113451646031241316", // Epic Wonderland
               "839731097473908767" : "839731097473908767", // Blackstone
+              "871269916085452870" : "929306033367699496", // Luminescent
              };
 
             const publicRole = Object.entries(publicViewRoleList).find(([key, val]) => key === serverId)?.[1];

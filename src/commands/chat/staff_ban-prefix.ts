@@ -5,11 +5,14 @@ const { guildBan } = require('/home/ubuntu/ep_bot/extras/functions');
 export default new PrefixCommand({
 	name: "banserver",
 	aliases: ["bs", "serverban", "sb"],
-	allowedGuilds: ['1135995107842195550', '1113339391419625572', '839731097473908767'],
+	// 871269916085452870 - Luminescent
+
+	allowedGuilds: ['1135995107842195550', '1113339391419625572', '839731097473908767','871269916085452870'],
 	allowedRoles: [
 		"1148992217202040942", // Epic Park Staff
 		"1113407924409221120", // Epic Wonderland Staff
 		'845499229429956628',  // Blackstone Staff
+		'871393325389844521', // Luminescent Leiutenint
 	],
 	async execute(message: Message): Promise<void> {
 		try {
@@ -41,6 +44,8 @@ export default new PrefixCommand({
 				"1135995107842195550": "1148992217202040942", // Epic Park Staff
 				"1113339391419625572": "1113407924409221120", // Epic Wonderland Staff
 				"839731097473908767": "845499229429956628",  // Blackstone Staff
+				"871269916085452870": "1128607975972548711", // Luminescent Staff
+
 			};
 
 			const roleId = modRoleList[serverId!];

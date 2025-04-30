@@ -9,10 +9,12 @@ export default new PrefixCommand({
     // 1113339391419625572 - Epic Wonderland
     // 1135995107842195550 - Epic Park
     // 839731097473908767 - Blackstone
-    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767','871269916085452870'],
     allowedRoles:["1148992217202040942", // epic park staff
                     "1113407924409221120", // epic staff
                     '845499229429956628', // Blackstone Staff
+        '871393325389844521', // Luminescent Leiutenint
+
     ],
     async execute(message: Message): Promise<void> {
         try{

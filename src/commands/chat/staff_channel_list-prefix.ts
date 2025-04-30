@@ -8,10 +8,13 @@ export default new PrefixCommand({
 	// 1113339391419625572 - Epic Wonderland
 	// 1135995107842195550 - Epic Park
 	// 839731097473908767 - Blackstone
-	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	// 871269916085452870 - Luminescent
+
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767','871269916085452870'],
 	allowedRoles: ["1148992217202040942", "807826290295570432", "1073788272452579359", "1113407924409221120",
 					"1306823330271330345",
 					'845499229429956628', // Blackstone Staff
+		'871393325389844521', // Luminescent Leiutenint
 		],
 
 	optionalAllowedChannels: ["1142401741866946702", "1147233774938107966", "1138531756878864434",
@@ -20,6 +23,7 @@ export default new PrefixCommand({
 		'1113414355669753907',// epic wonderland play land staff
 		'1115772256052846632', /// epic wonderland staff
 								"839731098456293420", // blackstone staff land
+		'1128607975972548711', // Luminescent Staff
 		],
 
 	async execute(message: Message): Promise<void> {
@@ -32,6 +36,7 @@ export default new PrefixCommand({
 				'1135995107842195550': '1135995107842195550',
 				'1113339391419625572': '1113339391419625572',
 				'839731097473908767' : '839731097473908767',
+				'871269916085452870' : '871269916085452870',
 			};
 
 			const serverSelect = Object.entries(serverList).find(([key]) => key === serverId)?.[1];

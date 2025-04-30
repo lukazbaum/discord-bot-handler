@@ -5,12 +5,14 @@ const fs = require('fs');
 export default new PrefixCommand({
 	name: "embedview",
 	aliases: ["ev", "embedcheck"],
-	allowedGuilds: ['1135995107842195550', '1113339391419625572', '839731097473908767'],
+	allowedGuilds: ['1135995107842195550', '1113339391419625572', '839731097473908767','871269916085452870'],
 	allowedRoles: [
 		'1147864509344661644', '1148992217202040942', '1147864509344661644', '807811542057222176',
 		'1113407924409221120', // Epic Wonderland staff
 		'845499229429956628', // Blackstone Staff
-		'839731097633423389' // Blackstone Users
+		'839731097633423389', // Blackstone Users
+		'929306033367699496', // Luminescent Users
+		'871393325389844521', // Luminescent Leiutenint
 	],
 	async execute(message: typeof Message): Promise<void> {
 		try {

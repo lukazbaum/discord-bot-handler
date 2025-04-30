@@ -27,6 +27,8 @@ export default new PrefixCommand({
     '1140190313915371530',
     '1320055421561471048', // Epic Wonderland Supreme Land 2
     '1137072690264551604', // epic park staff area
+    '1128607975972548711', // Luminescent Staff
+
   ],
   async execute(message: Message): Promise<void> {
     try {

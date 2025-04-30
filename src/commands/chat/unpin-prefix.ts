@@ -9,7 +9,7 @@ export default new PrefixCommand({
     // 1113339391419625572 - Epic Wonderland
     // 1135995107842195550 - Epic Park
     // 839731097473908767 - Blackstone
-    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+    allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767','871269916085452870'],
     allowedRoles: ['1143236724718317673',
 	    		'1147864509344661644', 
 	    		'1148992217202040942',
@@ -19,7 +19,9 @@ export default new PrefixCommand({
       '1115772256052846632', /// epic wonderland staff
 	    		'1113451646031241316', // epic wonderland users
                 '845499229429956628', // Blackstone Staff
-                '839731097633423389' // Blackstone Users
+                '839731097633423389', // Blackstone Users
+      '929306033367699496', // Luminescent Users
+      '871393325389844521', // Luminescent Leiutenint
         ],
     allowedCategories: ['1147909067172483162',
                         '1147909156196593787',

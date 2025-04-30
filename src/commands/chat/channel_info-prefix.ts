@@ -8,13 +8,17 @@ export default new PrefixCommand({
 	// 1113339391419625572 - Epic Wonderland
 	// 1135995107842195550 - Epic Park
 	// 839731097473908767 - Blackstone
-	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767'],
+	// 871269916085452870 - Luminescent
+
+	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767','871269916085452870'],
 	allowedRoles: ['807826290295570432', '1262566008405622879','1147864509344661644', '1148992217202040942',
 		'1246691890183540777','1073788272452579359',
 		'1113407924409221120', // epic wonderland staff
 		'1113451646031241316', // epic wonderland users
-			'845499229429956628', // Blackstone Staff
-			'839731097633423389' // Blackstone Users
+		'845499229429956628', // Blackstone Staff
+		'839731097633423389', // Blackstone Users
+		'929306033367699496', // Luminescent Users
+		'871393325389844521' // Luminescent Leiutenint
 			],
 	allowedCategories: ['1147909067172483162',
                         '1147909156196593787',
@@ -48,6 +52,8 @@ export default new PrefixCommand({
 												'839731101391781906', // Blackstone Kingdom Elite
 												'1019301054120210482', // Blackstone Donors
 												'967657150769942578', // Blackstone Staff
+		'1128607975972548711', // Luminescent Staff
+
 	],
     async execute(message: Message): Promise<void> {
 	 try{
@@ -75,6 +81,8 @@ export default new PrefixCommand({
 			'1135995107842195550': '1143236724718317673',
 			'1113339391419625572':'1113451646031241316',
 			'839731097473908767' : '839731097633423389',
+			"871269916085452870": "929306033367699496", // Luminescent Staff
+
 		};
 		const verifiedRoleId = Object.entries(verifiedRoleList).find(([key, val]) => key === serverId)?.[1];
 
@@ -87,7 +95,9 @@ export default new PrefixCommand({
 			 "1135995107842195550": "1148992217202040942", // epic park staff
 			 '1113339391419625572':'1113407924409221120', // epic wonderland staff
 			 "839731097473908767": "845499229429956628", // blackstone staff royal guards
-                 };
+			 "871269916085452870": "1128607975972548711", // Luminescent Staff
+
+		 };
 
 		const roleId = Object.entries(modRoleIdList).find(([key, val]) => key === serverId)?.[1];
 
