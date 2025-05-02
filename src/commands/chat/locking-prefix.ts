@@ -15,7 +15,7 @@ export default new PrefixCommand({
 		'1113407924409221120', // epic wonderland staff
 		'1113451646031241316', // epic wonderland users
 		'839731097633423389', // blackstone users
-		'929306033367699496', // Luminescent Users
+		"1130783135156670504", // Luminescent Users
 		'871393325389844521', // Luminescent Leiutenint
 		],
 	allowedCategories: ['1147909067172483162',

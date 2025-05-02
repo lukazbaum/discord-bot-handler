@@ -23,7 +23,7 @@ export default new PrefixCommand({
         '845499229429956628', // Blackstone Staff
         '1113407924409221120', // Epic Wonderland
         '1331378320851337307', // Epic Wonderland Games
-        '929306033367699496', // Luminescent Users
+        "1130783135156670504", // Luminescent Users
         '871393325389844521', // Luminescent Leiutenint
     ],
     async execute(message: Message): Promise<void> {

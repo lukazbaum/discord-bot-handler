@@ -13,7 +13,7 @@ export default new PrefixCommand({
 	allowedRoles: ['1147864509344661644', '1148992217202040942','1147864509344661644','807811542057222176',
 		'1113451646031241316', // epic wonderland users
 		'839731097633423389', // blackstone users
-		'929306033367699496', // Luminescent Users
+		"1130783135156670504", // Luminescent Users
 		'871393325389844521' // Luminescent Leiutenint
 
 	],
