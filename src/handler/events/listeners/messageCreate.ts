@@ -25,8 +25,8 @@ export default new Event({
     const lowerContent = message.content.toLowerCase();
     const isFromEpicRpg = message.author.id === EPIC_RPG_BOT_ID;
 
-    // 🎯 Handle Human Prefix Commands
-    if (!message.author.bot && message.content.startsWith(prefix)) {
+// 🎯 Handle Human Prefix Commands (case-insensitive)
+    if (!message.author.bot && lowerContent.startsWith(prefix.toLowerCase())) {
       console.log(`[COMMAND] Prefix command detected: ${message.content}`);
       await CommandHandler.handlePrefixCommand(message);
       return;
