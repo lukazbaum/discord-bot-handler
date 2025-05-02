@@ -20,22 +20,22 @@ export async function setDisplayTitle(userId: string, title: string): Promise<vo
   }
 }
 
-export async function tryFindUserIdByName(guild: Guild, playerName: string): Promise<string | null> {
+export async function tryFindUserIdByName(guild: Guild, username: string): Promise<string | null> {
   try {
-    // Fetch all members if not cached
-    if (!guild.members.cache.size) {
-      await guild.members.fetch();
-    }
-
-    // Try exact match
-    const member = guild.members.cache.find(m =>
-      m.user.username.toLowerCase() === playerName.toLowerCase() ||
-      (m.nickname && m.nickname.toLowerCase() === playerName.toLowerCase())
+    const fetched = await guild.members.fetch({ query: username, limit: 1 });
+    const match = fetched.find(member =>
+        member.user.username.toLowerCase() === username.toLowerCase() ||
+        member.displayName.toLowerCase() === username.toLowerCase()
     );
 
-    return member ? member.user.id : null;
-  } catch (err) {
-    console.error('❌ Error trying to find user by name:', err);
+    if (match) return match.user.id;
+    return null;
+  } catch (err: any) {
+    if (err.code === 'GuildMembersTimeout') {
+      console.warn(`⏱️ Timeout fetching members in ${guild.name} when looking for ${username}`);
+      return null;
+    }
+    console.error("❌ Unexpected error fetching member:", err);
     return null;
   }
 }

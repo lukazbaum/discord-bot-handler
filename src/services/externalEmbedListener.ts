@@ -31,7 +31,6 @@ export async function handleFlameDetection(message: Message): Promise<void> {
 
   // 🛡️ Prevent overwriting with 0
   if (!flames || flames === 0) {
-    console.warn(`⚠️ Ignoring 0-flame update for ${playerName}`);
     return;
   }
 
@@ -113,6 +112,10 @@ export async function handleEternalDungeonVictory(message: Message): Promise<voi
   if (!guildId || !playerName) return;
 
   const userId = await tryFindUserIdByName(message.guild, playerName);
+  if (!userId) {
+    console.warn(`⚠️ [DUNGEON VICTORY] Could not resolve userId for "${playerName}"`);
+    return;
+  }
   if (!userId) return;
 
   const parsed = parseDungeonEmbed(embed);
@@ -122,28 +125,43 @@ export async function handleEternalDungeonVictory(message: Message): Promise<voi
   }
 
   await addEternalDungeonWin(userId, guildId, parsed.flamesEarned);
-  console.log(`🐉 +${parsed.flamesEarned} flames recorded for ${playerName}`);
+  console.log(`🐉 +${parsed.flamesEarned} dungeon flames recorded for ${playerName}`);
   await forceProfileSync(userId, guildId);
+
 }
 
 export async function handleEternalUnsealMessage(message: Message): Promise<void> {
   const guildId = message.guild?.id;
   if (!guildId) return;
 
-  const userId = message.author.id;
+  const content = message.content;
+  const playerMatch = content.match(/^(\S+)/); // capture the username before 'unsealed'
 
-  const flamesMatch = message.content.match(/-\s*([\d,]+)\s*<:eternityflame/i);
-  const bonusTTMatch = message.content.match(/got\s+([\d,]+)\s*<:timetravel/i);
+  if (!playerMatch) {
+    console.warn(`⚠️ Could not extract player name from unseal message: "${content}"`);
+    return;
+  }
+
+  const playerName = playerMatch[1];
+  const userId = await tryFindUserIdByName(message.guild, playerName);
+  if (!userId) {
+    console.warn(`⚠️ [UNSEAL] Could not resolve userId for "${playerName}"`);
+    return;
+  }
+
+  const flamesMatch = content.match(/-\s*([\d,]+)\s*<:eternityflame/i);
+  const bonusTTMatch = content.match(/got\s+([\d,]+)\s*<:timetravel/i);
 
   const flamesCost = flamesMatch ? parseInt(flamesMatch[1].replace(/,/g, "")) : 0;
   const bonusTT = bonusTTMatch ? parseInt(bonusTTMatch[1].replace(/,/g, "")) : 0;
 
   if (!flamesCost) {
-    console.warn(`⚠️ Could not parse flames cost from unseal message: ${message.content}`);
+    console.warn(`⚠️ Could not parse flames cost from message: "${content}"`);
     return;
   }
 
+  console.log(`📤 Recording unseal for ${playerName} (${userId}): -${flamesCost} 🔥, +${bonusTT} TT`);
+
   await addEternalUnseal(userId, guildId, flamesCost, 0, bonusTT);
-  console.log(`🔓 Unseal recorded for ${userId}: -${flamesCost} flames, +${bonusTT} TT`);
   await forceProfileSync(userId, guildId);
 }
