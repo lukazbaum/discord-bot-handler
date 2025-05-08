@@ -8,7 +8,7 @@ import { EmbedBuilder,
 import { buildEternalProfilePages } from '../../services/eternalProfilePages';
 import { loadEternalProfile } from '../../services/eternalProfile';
 import { calculateFullInfo, formatPage1, formatPage2, formatPagePower, formatPage4 } from '../../services/eUtils';
-import { getEternityPlan, saveEternityPlan, getEternalPathChoice } from '../../../../ep_bot/extras/functions.js';
+import { getEternityPlan, saveEternityPlan, updateEternityPlan, getEternalPathChoice } from '../../../../ep_bot/extras/functions.js';
 import { paginateEmbedWithSelect } from '../../utils/paginateEmbedWithSelect';
 
 export default new PrefixCommand({
@@ -124,8 +124,19 @@ export default new PrefixCommand({
         daysSealed: days
       };
 
-      await saveEternityPlan(plan);
-      await message.reply(`✅ Plan saved: TT Goal = ${ttGoal}, Days Sealed = ${days}`);
+      const existingPlan = await getEternityPlan(userId, guildId);
+
+      if (existingPlan) {
+        await updateEternityPlan(userId, guildId, {
+          tt_goal: plan.ttGoal,
+          target_eternity: plan.targetEternity,
+          days_sealed: plan.daysSealed
+        });
+        await message.reply(`🔄 Plan updated: TT Goal = ${ttGoal}, Days Sealed = ${days}`);
+      } else {
+        await saveEternityPlan(plan);
+        await message.reply(`✅ Plan saved: TT Goal = ${ttGoal}, Days Sealed = ${days}`);
+      }
       return;
     }
 

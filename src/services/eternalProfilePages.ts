@@ -3,9 +3,9 @@ import { loadEternalProfile, ensureEternityProfile } from './eternityProfile';
 import { getEternityPlan } from '/home/ubuntu/ep_bot/extras/functions';
 
 export async function buildEternalProfilePages(
-    userId: string,
-    guildId: string,
-    discordUsername?: string
+  userId: string,
+  guildId: string,
+  discordUsername?: string
 ): Promise<EmbedBuilder[]> {
   let profile = await loadEternalProfile(userId, guildId);
 
@@ -18,7 +18,13 @@ export async function buildEternalProfilePages(
   }
 
   const displayName = discordUsername || "Eternity User";
-  const { currentEternity = 0, flamesOwned = 0, dungeonWins = [], unsealHistory = [], lastUnsealTT = 0 } = profile;
+  const {
+    currentEternity = 0,
+    flamesOwned = 0,
+    dungeonWins = [],
+    unsealHistory = [],
+    lastUnsealTT = 0
+  } = profile;
 
   const lastUnseal = unsealHistory[0];
   const lastUnsealBonus = lastUnseal?.bonusTT ?? 0;
@@ -32,79 +38,69 @@ export async function buildEternalProfilePages(
     estimatedUnsealDate = new Date(new Date(lastUnseal.createdAt).getTime() + plan.daysSealed * 86400000);
   }
 
-  // 📄 Page 1 – Profile Overview
-  const page1 = new EmbedBuilder()
-      .setTitle(`📜 Eternal Profile`)
-      .setDescription(`**${displayName}**'s Eternity stats and progress overview.`)
-      .setColor('#00ccff')
-      .addFields(
-          // 🔹 Section: Status
-          { name: '🏆 Current Eternity', value: `${currentEternity.toLocaleString()}`, inline: true },
-          { name: '📌 Target Goal', value: `${plannedTarget}`, inline: true },
-          { name: '\u200b', value: '\u200b', inline: true }, // spacer for mobile formatting
+  // 🔥 Group wins by winDate or createdAt
+  function groupWinsByDay(wins: { flamesEarned: number, winDate?: string, createdAt?: string | Date }[]) {
+    const map = new Map<string, number>();
 
-          // 🔹 Section: Unseal & Rewards
-          { name: '🧱 Last Unseal At', value: lastUnsealEternity.toString(), inline: true },
-          { name: '💠 Last Bonus TT', value: `${lastUnsealBonus.toLocaleString()} 🌀`, inline: true },
-          { name: '🔥 Flames Owned', value: `${flamesOwned.toLocaleString()}`, inline: true },
+    for (const win of wins) {
+      const rawDate = win.winDate || win.createdAt;
+      if (!rawDate) continue;
 
-          // 🔹 Section: Combat Logs
-          { name: '🏰 Dungeon Wins', value: `${dungeonWins.length.toLocaleString()}`, inline: true },
-          ...(estimatedUnsealDate
-              ? [{
-                name: '🕓 Est. Next Unseal',
-                value: `${time(estimatedUnsealDate, TimestampStyles.ShortDate)}\n(${time(estimatedUnsealDate, TimestampStyles.RelativeTime)})`,
-                inline: true
-              }]
-              : [])
-      )
-      .setFooter({ text: 'ParkMan Eternal Progress Tracker' })
-      .setTimestamp();
+      const date = new Date(rawDate).toISOString().slice(0, 10); // yyyy-mm-dd
+      map.set(date, (map.get(date) || 0) + win.flamesEarned);
+    }
 
-  // 🔓 Page 2 – Unseal History
-  const page2 = new EmbedBuilder()
-      .setTitle("🔓 Recent Eternity Unseals")
-      .setColor('#ff8800')
-      .setDescription(
-          unsealHistory.length
-              ? unsealHistory.map(u =>
-                  `• **${new Date(u.createdAt).toLocaleDateString()}** → -${u.flamesCost.toLocaleString()} 🔥 / +${u.bonusTT.toLocaleString()} 🌀`
-              ).join('\n')
-              : "No unseals recorded yet."
-      )
-      .setFooter({ text: 'Tracking your path through Eternity...' })
-      .setTimestamp();
-
-  // 🐉 Page 3 – Dungeon Summary
-  const summary: Record<string, { flames: number, wins: number }> = {};
-  for (const win of dungeonWins) {
-    const date = new Date(win.createdAt).toLocaleDateString();
-    summary[date] = summary[date] || { flames: 0, wins: 0 };
-    summary[date].flames += win.flamesEarned;
-    summary[date].wins += 1;
+    return [...map.entries()].sort((a, b) => b[1] - a[1]);
   }
 
-  const sortedDates = Object.keys(summary).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  const topFlameDays = groupWinsByDay(dungeonWins);
+  const maxFlames = topFlameDays[0]?.[1] || 1;
 
-  const top5 = [...sortedDates]
-      .sort((a, b) => summary[b].flames - summary[a].flames)
-      .slice(0, 5)
-      .map(date => `• **${date}** → ${summary[date].flames.toLocaleString()} 🔥 (${summary[date].wins} win${summary[date].wins !== 1 ? 's' : ''})`);
+  function getFlameBar(flames: number) {
+    const ratio = flames / maxFlames;
+    if (ratio >= 0.9) return '🔥🔥🔥🔥🔥';
+    if (ratio >= 0.7) return '🔥🔥🔥🔥';
+    if (ratio >= 0.5) return '🔥🔥🔥';
+    if (ratio >= 0.3) return '🔥🔥';
+    return '🔥';
+  }
 
-  const allDays = sortedDates.map(date =>
-      `• **${date}** → ${summary[date].flames.toLocaleString()} 🔥 (${summary[date].wins} win${summary[date].wins !== 1 ? 's' : ''})`
-  );
+  // 📄 Page 1 – Profile Overview
+  const page1 = new EmbedBuilder()
+    .setTitle(`📜 Eternal Profile`)
+    .setDescription(`**${displayName}**'s Eternity stats and progress overview.`)
+    .setColor('#00ccff')
+    .addFields(
+      { name: '🏆 Current Eternity', value: `${currentEternity.toLocaleString()}`, inline: true },
+      { name: '📌 Target Goal', value: `${plannedTarget}`, inline: true },
+      { name: '​', value: '​', inline: true },
 
-  const page3 = new EmbedBuilder()
-      .setTitle("🐉 Dungeon Wins (Daily Summary)")
-      .setColor('#4caf50')
-      .setDescription(
-          sortedDates.length
-              ? `🏆 **Top 5 Flame Days:**\n${top5.join('\n')}\n\n📆 **All Daily Records:**\n${allDays.join('\n')}`
-              : "No dungeon wins recorded yet."
-      )
-      .setFooter({ text: 'Victory echoes across time...' })
-      .setTimestamp();
+      { name: '💠 Last Bonus TT', value: `${lastUnsealBonus.toLocaleString()} 🌀`, inline: true },
+      { name: '⏳ Last Unseal TT', value: `${lastUnsealTT.toLocaleString()} TT`, inline: true },
+      { name: '🔥 Flames Owned', value: `${flamesOwned.toLocaleString()}`, inline: true },
 
-  return [page1, page2, page3];
+      { name: '🏰 Dungeon Wins', value: `${dungeonWins.length.toLocaleString()}`, inline: true },
+
+      ...(estimatedUnsealDate
+        ? [{
+          name: '🕓 Est. Next Unseal',
+          value: `${time(estimatedUnsealDate, TimestampStyles.ShortDate)}\n(${time(estimatedUnsealDate, TimestampStyles.RelativeTime)})`,
+          inline: true
+        }]
+        : []),
+
+      ...(topFlameDays.length
+        ? [{
+          name: '📅 Top 3 Flame Days',
+          value: topFlameDays.slice(0, 3).map(([date, total], i) =>
+            `#${i + 1} – ${date}: **${total.toLocaleString()}** 🔥 ${getFlameBar(total)}`
+          ).join('\n'),
+          inline: false
+        }]
+        : [])
+    )
+    .setFooter({ text: 'ParkMan Eternal Progress Tracker' })
+    .setTimestamp();
+
+  return [page1];
 }

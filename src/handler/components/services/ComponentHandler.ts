@@ -24,12 +24,18 @@ export class ComponentHandler {
   }
 
   static async handleButtonInteraction(interaction: ButtonInteraction): Promise<void> {
+    // ✅ Skip all miniboss buttons
+    if (interaction.customId.startsWith('mblist:')) return;
+    if (interaction.customId.startsWith("localpg_")) return;
+
     const [customId, uniqueId] = interaction.customId.split(':');
     const component: Button | undefined = client.components.button.get(customId) as Button | undefined;
     await this.executeComponent(component, () => component!.execute(interaction, uniqueId || null));
   }
 
   static async handleAnySelectMenuInteraction(interaction: AnySelectMenuInteraction): Promise<void> {
+    if (interaction.customId.startsWith("localpg_")) return;
+
     const customId: string = interaction.customId;
     const component: SelectMenu | undefined = client.components.selectMenu.get(customId) as SelectMenu | undefined;
     const values: string[] = interaction.values.map((item: string) => item.split(':')[0]);
