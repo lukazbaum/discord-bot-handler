@@ -1,350 +1,171 @@
-import {  Message, TextChannel, ChannelType, EmbedBuilder}  from "discord.js";
-import { PrefixCommand } from '../../handler';
-const { updateOwner, getisland,  enableevents, createisland, checkisland} = require('/home/ubuntu/ep_bot/extras/functions');
-const emojiRegex = require('emoji-regex');
-const { amarikey } = require('../../../../ep_bot/extras/settings')
+import {
+  Message,
+  TextChannel,
+  ChannelType,
+  EmbedBuilder,
+} from "discord.js";
+import { PrefixCommand } from "../../handler";
+const { checkisland, createisland, enableevents } = require('/home/ubuntu/ep_bot/extras/functions');
+const emojiRegex = require("emoji-regex");
+const { amarikey } = require("../../../../ep_bot/extras/settings");
 const { AmariBot } = require("amaribot.js");
 const amariclient = new AmariBot(amarikey);
 
+// Centralized config for all guilds
+const guildConfigs = {
+  "1135995107842195550": { // Epic Park
+    ownerRole: "1147864509344661644",
+    staffRole: "1148992217202040942",
+    boosterRole: "1142141020218347601",
+    categories: {
+      staff: "1140190313915371530",
+      booster: "1147909067172483162",
+      default: "1147909200924643349",
+      40: "1147909282201870406",
+      60: "1147909373180530708",
+      80: "1147909539413368883",
+      120: "1147909156196593787",
+    },
+    nameFormat: (emoji, name) => emoji ? `${emoji}・${name}` : `・${name}`,
+    useAmari: true,
+  },
+  "1113339391419625572": { // Epic Wonderland
+    ownerRole: "1306823581870854174",
+    categories: { default: "1151855336865665024" },
+    nameFormat: (emoji, name) => emoji ? `${emoji} ⸾⸾${name}⸾⸾` : `⸾⸾${name}⸾⸾`,
+  },
+  "839731097473908767": { // Blackstone
+    ownerRole: "892026418937077760",
+    categories: { default: "839731102813913107" },
+    nameFormat: (emoji, name) => emoji ? `${emoji} ||${name}` : `||${name}`,
+  },
+  "871269916085452870": { // Luminescent
+    ownerRole: "1173220944882450564",
+    categories: { default: "1075868205396017152" },
+    nameFormat: (emoji, name) => emoji ? `${emoji}║${name}` : `║${name}`,
+  },
+};
+
 export default new PrefixCommand({
-    name: "assign",
-    aliases: ["Assign", "ac","assignchannel", "assignch"],
-	// 1113339391419625572 - Epic Wonderland
-	// 1135995107842195550 - Epic Park
-	// 839731097473908767 - Blackstone
-	// 871269916085452870 - Luminescent
-	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767','871269916085452870'],
-	allowedRoles:["1148992217202040942","807826290295570432", "1073788272452579359",
-					"1113407924409221120", // epic wonderland staff
-					'845499229429956628', // Blackstone Staff
-					'871393325389844521', // Luminescent Leiutenint
-		],
-	allowedCategories:["1137072690264551604","1203928376205905960","1152037896841351258",
-		'1113414355669753907',// epic wonderland play land staff
-		'1115772256052846632', /// epic wonderland staff
-								"1113414355669753907", // blackstone staff
-								"839731098456293420", // blackstone management
-		'1128607975972548711', // Luminescent Staff
+  name: "assign",
+  aliases: ["ac", "assignch"],
+  allowedGuilds: Object.keys(guildConfigs),
+  allowedRoles: [
+    "1148992217202040942", "807826290295570432", "1073788272452579359",
+    "1113407924409221120", "845499229429956628", "871393325389844521"
+  ],
+  allowedCategories:["1137072690264551604","1203928376205905960","1152037896841351258",
+    '1113414355669753907',// epic wonderland play land staff
+    '1115772256052846632', /// epic wonderland staff
+    "1113414355669753907", // blackstone staff
+    "839731098456293420", // blackstone management
+    '1128607975972548711', // Luminescent Staff
+    '890214306615021648', //luminescent mods only
 
-	],
-    async execute(message: Message): Promise<void> {
-	 try{
-		 if(message.channel.type !== ChannelType.GuildText) return;
-	    	let stringContent = message.content.toString()
-		 if(!stringContent.includes("#")) {
-                    await message.reply('please specify a channel name ex. assign @user # channelname')
-               	     return;
-		 }
-		 let newName = stringContent.split('#')
-		 let owner = message.mentions.users.first()
-		 if(!owner){
-                   await message.reply('please specify a valid @user')
-       		           return;
-		 }
-		 let ownerid = `${owner.id}`
-		 let channelCheck = checkisland(owner, message.guild.id)
-		 let emojiName;
-		 let channelName;
-		 let channelWord;
-		 let ownerRole = message.guild.roles.cache.get('1147864509344661644')
-		 let modRole = '1148992217202040942'
-		 let verifiedRole = '1143236724718317673'
-		 let memberTarget = message.guild.members.cache.get(owner.id)
-		 let boosterRole = "1142141020218347601"
-		 let staffRole = "1148992217202040942"
-		 let staffParent = "1140190313915371530"
-		 let boosterParent = "1147909067172483162"
-		 let skaterPark = "1147909200924643349"
-		 let parkPavilion = "1147909282201870406"
-		 let adventureTrails = "1147909373180530708"
-		 let tropicalLounge = "1147909539413368883"
-		 let parkPeaks = "1147909156196593787"
-		 let myamari;
-		 let level;
-	     const regex = emojiRegex();
-	     let emojiCount = 0
-	     let serverId = message.guild.id
-	     
-		 if(newName[1].includes("<")){
-		    await message.reply('You can only use stanard emojis in channel names')
-                    return;
-            }
-            
-            const serverCheck = Array.from(checkisland(owner, serverId));
+  ],
 
-		 if(serverCheck) {
-		    //@ts-ignore
-		    const isAdded = serverCheck && serverCheck.some((user) => user.server  === serverId)
+  async execute(message: Message): Promise<void> {
+    try {
+      if (message.channel.type !== ChannelType.GuildText) return;
 
-		    if(isAdded){
-                    	let embed = new EmbedBuilder()
-                        	.setTitle("Channel Manager: Assign Channel")
-                        	.setDescription(`User <@!${channelCheck.user}> already assigned to channel <#${channelCheck.channel}>. Contact dev if you still want to do this`)
-                        	await message.reply({embeds: [embed]})
-                        	return;
-		    }
-		 }
-	    let progress_bar = await message.channel.send('=>..')
+      const guildId = message.guild.id;
+      const config = guildConfigs[guildId];
+      if (!config) return;
 
-	    for (const match of String(newName).matchAll(regex)) {
-	    		  emojiName = match[0]
-	     	    	  ++emojiCount 
-            	}
+      const owner = message.mentions.users.first();
+      const raw = message.content.split("#")[1];
 
-		if(emojiCount >= 2) {
-		    message.reply("please only use 1 emoji, further name changes can be made with `ep name` \n*required format*: `# <emoji> channel name` or `# channelname`")
-		    return;
-	    }
+      if (!owner) {
+        await message.reply("❌ Please mention a valid user.");
+        return;
+      }
+      if (!raw) {
+        await message.reply("❌ Usage: `assign @user # emoji channelname`");
+        return;
+      }
 
-		if(emojiName) {
-                 channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
-                 channelName = channelWord
-		}else{
-			channelName = String(newName).split(`,`)[1].trimStart()
-			channelName = channelName.replace(/>/g, '')
-	    }
+      const emojiMatch = [...raw.matchAll(emojiRegex())];
+      const emoji = emojiMatch.length > 0 ? emojiMatch[0][0] : null;
+      const channelWord = emoji ? raw.split(emoji)[1]?.trimStart() : raw.trim();
+      const finalName = config.nameFormat(emoji, channelWord);
+      const existingChannel = message.guild.channels.cache.find(c => c.name === finalName);
+      const progressBar = await message.channel.send("=>..");
 
-		let channelExists =  await message.guild.channels.cache.find(channel => channel.id === `${channelName}`)
-		 let channelIHAZ = 0
+      let channel = existingChannel as TextChannel;
+      if (!channel) {
+        // Create new channel
+        const parent = config.categories.default;
+        channel = await message.guild.channels.create({
+          name: finalName,
+          type: ChannelType.GuildText,
+          parent,
+        });
+      }
 
-	   if(channelExists){
-		   channelIHAZ = 1
-	   }
-	       
+      // Amari level logic
+      let level = 0;
+      if (config.useAmari) {
+        try {
+          const amari = await amariclient.getUserLevel(guildId, owner.id);
+          level = parseInt(`${amari?.level ?? 0}`);
+        } catch {
+          level = 0;
+        }
+      }
 
-	   await progress_bar.edit('====>...')
-	    
-	   
-	    let channel;
-	    if((channelIHAZ === 1) && (message.guild.id ==="1135995107842195550") ) {
-		    channel = await message.guild.channels.cache.find(channel => channel.id === `${channelName}`) as TextChannel;
-			myamari =  await amariclient.getUserLevel(message.guild.id, ownerid)
-			level = parseInt(`${myamari.level}`)
-			if(memberTarget.roles.cache.has(staffRole)){
-				await channel.setParent(staffParent);
-			}else if(memberTarget.roles.cache.has(boosterRole)){
-				await channel.setParent(boosterParent);
-			}else if((level >= 40) && (level <= 59)){
-				await channel.setParent(parkPavilion);
-			}else if((level >= 60) && (level <= 79)){
-				await channel.setParent(adventureTrails);
-			}else if((level >= 80) && (level <= 119)){
-				await channel.setParent(tropicalLounge);
-			}else if(level >= 120) {
-				await channel.setParent(parkPeaks);
-			}
-		    await progress_bar.edit('========>...')
-			await channel.lockPermissions()
-			await channel.permissionOverwrites.edit(
-				`${owner.id}`,
-				{SendMessages:true, ViewChannel:true}
-                                                );
-			await progress_bar.edit('==========>.')
+      // Re-assign category if needed
+      if (config.categories) {
+        if (config.useAmari && level >= 120 && config.categories[120]) {
+          await channel.setParent(config.categories[120]);
+        } else if (level >= 80 && config.categories[80]) {
+          await channel.setParent(config.categories[80]);
+        } else if (level >= 60 && config.categories[60]) {
+          await channel.setParent(config.categories[60]);
+        } else if (level >= 40 && config.categories[40]) {
+          await channel.setParent(config.categories[40]);
+        } else {
+          await channel.setParent(config.categories.default);
+        }
+      }
 
-		    if(await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
-                        let channelOwner = message.guild.members.cache.get(`${owner.id}`)
-                        await enableevents(`${channel.id}`)
-                        await channelOwner.roles.add(ownerRole)
-                     }else{
-                        await message.reply("Something happened adding user to the database, contact a dev")
-                        return;
-                     }
+      await channel.lockPermissions();
+      await channel.permissionOverwrites.edit(owner.id, {
+        SendMessages: true,
+        ViewChannel: true,
+      });
+      await progressBar.edit("========>...");
 
-            }else if((channelIHAZ === 0) && (message.guild.id ==="1135995107842195550")){
-				myamari =  await amariclient.getUserLevel(message.guild.id, ownerid)
-				level = parseInt(`${myamari.level}`)
-		    	channel = await message.guild.channels.create({
-                         	name: `${channelName}`,
-                        	type: ChannelType.GuildText,
-                        	parent: "1147909200924643349",
-                        })
+      const dbResult = await createisland(owner.id, channel.id, guildId);
+      if (dbResult === "Created!") {
+        await enableevents(channel.id);
+        const member = message.guild.members.cache.get(owner.id);
+        if (member && config.ownerRole) {
+          await member.roles.add(config.ownerRole);
+        }
+      }
 
-		    	if(emojiName) {
-                 	channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
-                 	channelName = " "
-                 	channelName = String(channelName).concat(String(emojiName) + '・' + String(channelWord));
-                 	await channel.edit({name: channelName})
-				} else {
-                    	channelWord = String(newName).split(',')[1].trimStart();
-                    	channelName = " "
-                    	channelName = String(channelName).concat('・' + String(channelWord))
-                    	await channel.edit({name: channelName})
-            	    }
-		    	if(memberTarget.roles.cache.has(staffRole)){
-					await channel.setParent(staffParent);
-				}else if(memberTarget.roles.cache.has(boosterRole)){
-					await channel.setParent(boosterParent);
-				}else if((level >= 40) && (level <= 59)){
-					await channel.setParent(parkPavilion);
-				}else if((level >= 60) && (level <= 79)){
-					await channel.setParent(adventureTrails);
-				}else if((level >= 80) && (level <= 119)){
-					await channel.setParent(tropicalLounge);
-				}else if(level >= 120) {
-					await channel.setParent(parkPeaks);
-				}
-				await progress_bar.edit('========>...')
-				await channel.lockPermissions()
-				await channel.permissionOverwrites.edit(
-					`${owner.id}`,
-					{SendMessages:true, ViewChannel:true}
-                                                );
-				await progress_bar.edit('==========>.')
+      const embed = new EmbedBuilder()
+        .setTitle("✅ Channel Assigned")
+        .setDescription(`<@!${owner.id}> assigned to <#${channel.id}>\nCreated by <@!${message.author.id}>`)
+        .setColor("#097969");
 
-				if(await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
-                	let channelOwner = message.guild.members.cache.get(`${owner.id}`)
-                	await enableevents(`${channel.id}`)
-                	await channelOwner.roles.add(ownerRole)
-		  
-				}else{
-                        await message.reply("Something happened adding user to the database, contact a dev")
-                        return;
-            	  }	
+      await message.reply({ embeds: [embed] });
+      await channel.send({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle("📌 Channel Info")
+            .setDescription(`<@!${owner.id}> now owns this channel.\nUse \`ep help\` for commands.`)
+            .addFields({
+              name: "Created At", value: new Date().toLocaleString(), inline: true
+            }, {
+              name: "Created By", value: `<@${message.author.id}>`, inline: true
+            })
+        ]
+      });
 
-		}else if((channelIHAZ === 0) && (message.guild.id === "1113339391419625572")) {
-			channel = await message.guild.channels.create({
-				name: `${channelName}`,
-				type: ChannelType.GuildText,
-				parent: "1151855336865665024",
-			})
-			ownerRole = message.guild.roles.cache.get('1306823581870854174')
-
-			if (emojiName) {
-				channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
-				channelName = " "
-				channelName = String(channelName).concat(String(emojiName) + ' ⸾⸾' + String(channelWord)) + '⸾⸾ ';
-				await channel.edit({name: channelName})
-			} else {
-				channelWord = String(newName).split(',')[1].trimStart();
-				channelName = " "
-				channelName = String(channelName).concat(' ⸾⸾' + String(channelWord)) + '⸾⸾ '
-				await channel.edit({name: channelName})
-			}
-			await progress_bar.edit('========>...')
-			await channel.lockPermissions()
-			await channel.permissionOverwrites.edit(
-				`${owner.id}`,
-				{
-					SendMessages: true,
-					ViewChannel: true
-				}
-			);
-			await progress_bar.edit('==========>.')
-
-			if (await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
-				let channelOwner = message.guild.members.cache.get(`${owner.id}`)
-				await enableevents(`${channel.id}`)
-				await channelOwner.roles.add(ownerRole)
-
-			} else {
-				await message.reply("Something happened adding user to the database, contact a dev")
-				return;
-			}
-		}else if((channelIHAZ === 1) && (message.guild.id ==="1113339391419625572") ) {
-			channel = await message.guild.channels.cache.find(channel => channel.id === `${channelName}`) as TextChannel;
-			ownerRole = message.guild.roles.cache.get('1306823581870854174')
-			await progress_bar.edit('========>...')
-			await channel.lockPermissions()
-			await channel.permissionOverwrites.edit(
-				`${owner.id}`,
-				{
-					SendMessages: true,
-					ViewChannel: true
-				}
-			);
-			await progress_bar.edit('==========>.')
-			if (await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
-				let channelOwner = message.guild.members.cache.get(`${owner.id}`)
-				await enableevents(`${channel.id}`)
-				await channelOwner.roles.add(ownerRole)
-			} else {
-				await message.reply("Something happened adding user to the database, contact a dev")
-				return;
-			}
-		}else if((channelIHAZ === 0) && (message.guild.id === "839731097473908767")) {
-			channel = await message.guild.channels.create({
-				name: `${channelName}`,
-				type: ChannelType.GuildText,
-				parent: "839731102813913107",
-			})
-			ownerRole = message.guild.roles.cache.get('892026418937077760')
-
-			if (emojiName) {
-				channelWord = String(newName).split(`${emojiName}`)[1].trimStart();
-				channelName = " "
-				channelName = String(channelName).concat(String(emojiName) + ' ||' + String(channelWord));
-				await channel.edit({name: channelName})
-			} else {
-				channelWord = String(newName).split(',')[1].trimStart();
-				channelName = " "
-				channelName = String(channelName).concat(' ||' + String(channelWord))
-				await channel.edit({name: channelName})
-			}
-			await progress_bar.edit('========>...')
-			await channel.lockPermissions()
-			await channel.permissionOverwrites.edit(
-				`${owner.id}`,
-				{
-					SendMessages: true,
-					ViewChannel: true
-				}
-			);
-			await progress_bar.edit('==========>.')
-
-			if (await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
-				let channelOwner = message.guild.members.cache.get(`${owner.id}`)
-				await enableevents(`${channel.id}`)
-				await channelOwner.roles.add(ownerRole)
-
-			} else {
-				await message.reply("Something happened adding user to the database, contact a dev")
-				return;
-			}
-		}else if((channelIHAZ === 1) && (message.guild.id ==="839731097473908767") ) {
-			channel = await message.guild.channels.cache.find(channel => channel.id === `${channelName}`) as TextChannel;
-			ownerRole = message.guild.roles.cache.get('892026418937077760')
-			await progress_bar.edit('========>...')
-			await channel.lockPermissions()
-			await channel.permissionOverwrites.edit(
-				`${owner.id}`,
-				{
-					SendMessages: true,
-					ViewChannel: true
-				}
-			);
-			await progress_bar.edit('==========>.')
-			if (await createisland(`${owner.id}`, `${channel.id}`, `${serverId}`) === 'Created!') {
-				let channelOwner = message.guild.members.cache.get(`${owner.id}`)
-				await enableevents(`${channel.id}`)
-				await channelOwner.roles.add(ownerRole)
-			} else {
-				await message.reply("Something happened adding user to the database, contact a dev")
-				return;
-			}
-		}
-
-	    
-		let embed1 = new EmbedBuilder()
-		.setTitle("Channel Manager: Channel Creation")
-		.setDescription(`${owner} is assigned channel: <#${channel.id}>
-
-				channel created by <@!${message.author.id}>`)
- 	   let embed2 = new EmbedBuilder()
-		 .setTitle("Channel Manager: Channel Creation")
-		 .setDescription(`${owner} is assigned channel: <#${channel.id}> \n\n **Channel Manager Command:** ep help\n`)
-		 .addFields({name:"**--Channel Created--**", value: new Date().toLocaleString(), inline: true},
-			    {name:"**--Channel Created By--**", value: `<@${message.author.id}>`, inline: true},
-		 )
-
-		 await message.reply({embeds: [embed1]});
-		await channel.send({embeds: [embed2]});
-
-           
-	         
-	}catch(error)
-	    {message.reply('something happened, contact a dev')
-		    console.log(error)
-	    }
-
+    } catch (err) {
+      console.error("❌ Error in assign command:", err);
+      await message.reply("❌ Something went wrong. Contact a dev.");
     }
+  }
 });
