@@ -37,7 +37,8 @@ export default new PrefixCommand({
 		"967657150769942578",
 		'1113414355669753907',// epic wonderland play land staff
 		'1115772256052846632', /// epic wonderland staff
-		'1128607975972548711', // Luminescent Staff'
+    '1128607975972548711', // Luminescent Staff
+    '890214306615021648', //luminescent mods only
 	],
 
 	async execute(message: Message): Promise<void> {
@@ -138,18 +139,28 @@ export default new PrefixCommand({
 			let eventsState = "Off";
 
 			if (channelInfo) {
-				const allAdds = await addedusers(channel);
-				const allBans = await bannedusers(channel);
-				const cownersList = [
-					channelInfo.cowner1,
-					channelInfo.cowner2,
-					channelInfo.cowner3,
-					channelInfo.cowner4,
-					channelInfo.cowner5,
-				].filter(Boolean);
+        let rawAdds = await addedusers(channel);
+        let rawBans = await bannedusers(channel);
 
-				addList = allAdds.length > 30 ? "**... too many to list**" : allAdds.map((u, i) => `\n> ${i + 1}. <@!${u.user}>`).join("");
-				bannedList = allBans.map((u, i) => `\n> ${i + 1}. <@!${u.user}>`).join("");
+        const allAdds = Array.isArray(rawAdds) ? rawAdds : [];
+        const allBans = Array.isArray(rawBans) ? rawBans : [];
+
+        const cownersList = [
+          channelInfo.cowner1,
+          channelInfo.cowner2,
+          channelInfo.cowner3,
+          channelInfo.cowner4,
+          channelInfo.cowner5,
+        ].filter(Boolean);
+
+        addList = allAdds.length > 30
+          ? "**... too many to list**"
+          : allAdds.map((u, i) => `\n> ${i + 1}. <@!${u.user}>`).join("");
+
+        bannedList = allBans.length > 0
+          ? allBans.map((u, i) => `\n> ${i + 1}. <@!${u.user}>`).join("")
+          : "None";
+
 				cowners = cownersList.map((id, i) => `\n> ${i + 1}. <@!${id}>`).join("");
 				if (!Array.isArray(cowner_channels)) {
 					console.log("getCoChannels() did not return an array:", cowner_channels);

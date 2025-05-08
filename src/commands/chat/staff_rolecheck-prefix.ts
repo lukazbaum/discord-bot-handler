@@ -31,7 +31,8 @@ export default new PrefixCommand({
 		'1113414355669753907',// epic wonderland play land staff
 		'1115772256052846632', /// epic wonderland staff
 		'967657150769942578', // Blackstone Staff
-		'1128607975972548711', // Luminescent Staff
+    '1128607975972548711', // Luminescent Staff
+    '890214306615021648', //luminescent mods only
 
 
 	],

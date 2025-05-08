@@ -14,7 +14,8 @@ export default new PrefixCommand({
 	        		'1113451646031241316', // epic wonderland users
               '845499229429956628', // Blackstone Staff
               '839731097633423389', // Blackstone Users
-             '871393325389844521' // Luminescent Leiutenint
+      "1130783135156670504", // Luminescent Users
+      '871393325389844521', // Luminescent Leiutenint
 
     ],
     allowedCategories: ['1147909067172483162',
@@ -48,7 +49,11 @@ export default new PrefixCommand({
       '872692223488184350', // Blackstone Nitro Islands
       '1019301054120210482', // Blackstone Donors
       '967657150769942578', // Blackstone Staff
-      '1128607975972548711' // Luminescent Staff
+      '1128607975972548711', // Luminescent Staff
+      '1075867237891723404', // Luminescent Booster
+      '1075867596534055094', // luminescent Member Rooms
+      '1169317414748569701', // Luminescent Member Rooms II
+      '1075868205396017152', // Luminescent Plebs Rooms
 
     ],
   async execute(message: Message): Promise<void> {

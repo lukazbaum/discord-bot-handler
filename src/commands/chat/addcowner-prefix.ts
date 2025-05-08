@@ -48,7 +48,11 @@ export default new PrefixCommand({
 			'839731101622075415', // Blackstone Dragon Caves
 			'839731101391781906', // Blackstone Kingdoms Elite
 			'967657150769942578', // Blackstone Royal Wing
-			'1128607975972548711' // Luminescent Staff
+			'1128607975972548711', // Luminescent Staff
+      '1075867237891723404', // Luminescent Booster
+      '1075867596534055094', // luminescent Member Rooms
+      '1169317414748569701', // Luminescent Member Rooms II
+      '1075868205396017152', // Luminescent Plebs Rooms
 
 	],
 	async execute(message: Message): Promise<void> {

@@ -23,7 +23,8 @@ export default new PrefixCommand({
 		'1113414355669753907',// epic wonderland play land staff
 		'1115772256052846632', /// epic wonderland staff
 								"839731098456293420", // blackstone staff land
-		'1128607975972548711', // Luminescent Staff
+    '1128607975972548711', // Luminescent Staff
+    '890214306615021648', //luminescent mods only
 		],
 
 	async execute(message: Message): Promise<void> {

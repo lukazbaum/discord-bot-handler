@@ -71,6 +71,7 @@ export default new PrefixCommand({
 				"1135995107842195550": "1160751610771820554", // Epic Park
 				"1113339391419625572": "1115941478007582740", // Epic Wonderland Staff
 				"839731097473908767": "839731097754533897",  // Blackstone Warn Logs
+        "871269916085452870": "997111935952748575" //Luminescent Admin Logs
 			};
 
 			const banChannelId = banChannelList[serverId!];

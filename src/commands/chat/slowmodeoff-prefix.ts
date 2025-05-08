@@ -1,115 +1,85 @@
-import { ChannelManager, 
-	EmbedBuilder,
-	ChannelType,
-	Message} from "discord.js";
-import { PrefixCommand } from '../../handler';
-const {getisland, isOwner} = require('/home/ubuntu/ep_bot/extras/functions');
+import {
+  ChannelType,
+  EmbedBuilder,
+  Message
+} from "discord.js";
+import { PrefixCommand } from "../../handler";
+const { getisland, isOwner } = require('/home/ubuntu/ep_bot/extras/functions');
 
 export default new PrefixCommand({
-    name: "slowmodeoff",
-    aliases: ["smoff", "Slowmodeoff", "slowoff"],
-	// 1113339391419625572 - Epic Wonderland
-	// 1135995107842195550 - Epic Park
-	// 839731097473908767 - Blackstone
-	// 871269916085452870 - Luminescent
+  name: "slowmodeoff",
+  aliases: ["smoff", "Slowmodeoff", "slowoff"],
+  allowedGuilds: ['1135995107842195550', '1113339391419625572', '839731097473908767', '871269916085452870'],
+  allowedRoles: [
+    '1147864509344661644', '1148992217202040942','807811542057222176',
+    '1113407924409221120', '1113451646031241316', '845499229429956628',
+    '839731097633423389', '1130783135156670504', '871393325389844521'
+  ],
+  allowedCategories: [
+    "1140190313915371530", "1147909067172483162", "1147909156196593787",
+    "1203928376205905960", "1232728117936914432", "1192106199404003379",
+    "1192108950049529906", "1225165761920630845", "966458661469839440",
+    "808109909266006087", "825060923768569907", "1113414355669753907",
+    "1115772256052846632", "1113414451912257536", "1115072766878691428",
+    "1151855336865665024", "1320055421561471048", "1115357822222348319",
+    "839731102281105409", "839731101885923345", "839731101622075415",
+    "872692223488184350", "1019301054120210482", "839731101391781906",
+    "967657150769942578", "1128607975972548711",'1075867237891723404', // Luminescent Booster
+    '1075867596534055094', // luminescent Member Rooms
+    '1169317414748569701', // Luminescent Member Rooms II
+    '1075868205396017152', // Luminescent Plebs Rooms
+  ],
 
-	allowedGuilds: ['1135995107842195550','1113339391419625572', '839731097473908767','871269916085452870'],
-	allowedRoles: ['1147864509344661644', '1148992217202040942','807811542057222176',
-		'1113407924409221120', // epic wonderland staff
-		'1113451646031241316', // epic wonderland users
-		'845499229429956628', // Blackstone Staff
-		'839731097633423389', // Blackstone Users
-		"1130783135156670504", // Luminescent Users
-		'871393325389844521', // Luminescent Leiutenint
-		],
-	allowedCategories: ["1140190313915371530", "1147909067172483162", "1147909156196593787",
-		'1203928376205905960',
-		'1232728117936914432',
-		'1192106199404003379',
-		'1192108950049529906',
-		'1225165761920630845',
-		'966458661469839440',
-		'808109909266006087',
-		'825060923768569907',
-		'1113414355669753907',// epic wonderland play land staff
-		'1115772256052846632', /// epic wonderland staff
-		'1113414451912257536', // epic wonderland booster
-		'1115072766878691428', // epic wonderland supreme land
-		'1151855336865665024', // epic wonderland supreme land 1
-		'1320055421561471048', // epic wonderland supreme land 2
-		'1115357822222348319', // epic wonderland Epic Host Land
-		'839731102281105409', // Blacstone Knights Hall
-		'839731101885923345', // Blackstone wizards tower
-		'839731101622075415', // Blacstone Dragon Cave
-		'872692223488184350', // Blackstone Nitro Islands
-		'1019301054120210482', // Blackstone Donors
-		'839731101391781906', // Blackstone Kingdom Elite
-		'967657150769942578', // Blackstone Staff
-		'1128607975972548711', // Luminescent Staff
+  async execute(message: Message): Promise<void> {
+    try {
+      if (message.channel.type !== ChannelType.GuildText) return;
 
-	],
-    async execute(message: Message): Promise<void> {
-	try{
-		if(message.channel.type !== ChannelType.GuildText) return;
-                 // This whole Block checks for the channel owner and if not channel owner
-                 // if its not the channel owner, checks for the staff role
-                 // if user is a staff member, they can run the command
-                 // if user is a channel owner or a cowner on the channel / mentioned channel,
-                 // then they are authorized.
+      const getOwner = await isOwner(message.author.id);
+      const member = await message.guild.members.fetch(message.author.id);
+      const isOwnerOfChannel = getOwner?.some((entry: any) => entry.channel === message.channel.id);
+      const modRoles: { [guildId: string]: string } = {
+        "1135995107842195550": "1148992217202040942",
+        "1113339391419625572": "1113407924409221120",
+        "839731097473908767": "845499229429956628",
+        "871269916085452870": "871393325389844521",
+      };
+      const roleId = modRoles[message.guild.id];
 
-		let getOwner = await isOwner(message.author.id)
-		let checkStaff = await  message.guild.members.cache.get(message.author.id)
-		let channel = message.channel.id
-		let serverId = message.guild.id
+      if (!isOwnerOfChannel && (!roleId || !member.roles.cache.has(roleId))) {
+        await message.reply('❌ You must be an island owner or staff to run this command.');
+        return;
+      } else {
+        console.log("Slowmode Off Ran In:", message.channel.id, "by", message.author.id);
+      }
 
+      if (message.channel.rateLimitPerUser) {
+        await message.channel.setRateLimitPerUser(0);
+        const island = await getisland(message.channel.id);
+        const users = [
+          island.user, island.cowner1, island.cowner2, island.cowner3,
+          island.cowner4, island.cowner5, island.cowner6, island.cowner7
+        ];
 
-		//handles null values
-		let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+        for (const userId of users) {
+          if (!userId) continue;
+          const user = await message.guild.members.fetch(userId).catch(() => null);
+          const role = message.guild.roles.cache.get(userId);
+          if (user) {
+            await message.channel.permissionOverwrites.edit(user, { ManageMessages: false });
+          } else if (role) {
+            await message.channel.permissionOverwrites.edit(role, { ManageMessages: false });
+          }
+        }
+      }
 
-		const modRoleList: { [key: string]: string } = {
-			"1135995107842195550": "1148992217202040942", // epic park staff
-			'1113339391419625572':'1113407924409221120', // epic wonderland staff
-			"839731097473908767": "845499229429956628", // blackstone staff royal guards
-			"871269916085452870": "871393325389844521", // Luminescent Staff
+      const embed = new EmbedBuilder()
+        .setTitle("Channel Manager: Slowmode Off")
+        .setDescription("Slowmode has been disabled.\n*To re-enable, use `ep slowmode`*")
+        .setColor("#097969");
 
-		};
-
-		const roleId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];
-
-		if(!checkOwner){
-			if(!(checkStaff.roles.cache.has(roleId))){
-				await message.reply('you must be an owner/cowner of this channel to run this command')
-					return;
-			}else if(checkStaff.roles.cache.has(roleId)){
-				console.log("slowmode Ran In: ", message.channel.id, "by", message.author.id)
-			}
-		}
-
-
-		if(message.channel.rateLimitPerUser) {
-                	message.channel.setRateLimitPerUser(0)
-			let island = await getisland(message.channel.id)
-			let users = [island.user,
-				island.cowner1,
-				island.cowner2,
-				island.cowner3,
-				island.cowner4,
-				island.cowner5,
-				island.cowner6,
-				island.cowner7]
-            		for(let i = 0; i < 7; i++) {
-                		if(users[i]) message.channel.permissionOverwrites.edit(users[i], 
-									       {ManageMessages: false})
-			}
-		}
-		let embed1 = new EmbedBuilder()
-			.setTitle("Channel Manager:  Slowmode ")
-                	.setDescription(`Slowmode Has Been Disabled
-                                *to re-enable slowmode, use command ep slowmode*`)
-                	.setColor(`#097969`)
-
-   		await message.reply({embeds: [embed1]}) 
-	}catch(err)
-  	{console.log(err)}
+      await message.reply({ embeds: [embed] });
+    } catch (err) {
+      console.error("❌ Error in slowmodeoff command:", err);
     }
+  }
 });

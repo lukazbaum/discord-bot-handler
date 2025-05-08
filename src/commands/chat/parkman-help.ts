@@ -109,7 +109,7 @@ function createHelpEmbeds(type: string, prefix: string): EmbedBuilder[] {
 				{ name: "➡ Detailed User Information", value: "> userinfo, ui, chaninfo", inline: false },
 				{ name: "➡ Channel Quarantine (Epic Park Only)", value: "> quarantine, Quarantine, qch", inline: false },
 				{ name: "➡ Channel Recover (Epic Park Only)", value: "> recover, Recover, rch, rc", inline: false },
-				{ name: "➡ Channel Unassign (unrecoverable) (Epic Park Only)", value: "> unassign, uc, uch", inline: false },
+				{ name: "➡ Channel Unassign (unrecoverable settings, channel exists)", value: "> unassign, uc, uch", inline: false },
 				{ name: "➡ Channel Assign", value: "> assign, Assign, ac, assignchannel, assignch", inline: false },
 				{ name: "➡ Channel List", value: "> channellist, Channellist, cl", inline: false },
 				{ name: "➡ Channel Audit", value: "> audit, ac, auditchannels", inline: false },
