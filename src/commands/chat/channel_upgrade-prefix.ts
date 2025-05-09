@@ -142,7 +142,7 @@ export default new PrefixCommand({
       }
 
       // Add permissions for added users
-      const addedUsers = await addedusers(channel.id);
+      const addedUsers = await addedusers(channel.id) || [];
       for (const addedUser of addedUsers) {
         const resolvedUser = await resolveUserOrRole(guild, addedUser.user);
         if (resolvedUser) {
@@ -150,8 +150,7 @@ export default new PrefixCommand({
         }
       }
 
-      // Add permissions for banned users
-      const bannedUsers = await bannedusers(channel.id);
+      const bannedUsers = await bannedusers(channel.id) || [];
       for (const bannedUser of bannedUsers) {
         const resolvedUser = await resolveUserOrRole(guild, bannedUser.user);
         if (resolvedUser) {
