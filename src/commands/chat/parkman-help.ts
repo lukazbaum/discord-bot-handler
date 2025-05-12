@@ -19,14 +19,16 @@ function createHelpEmbeds(type: string, prefix: string): EmbedBuilder[] {
 
 		new EmbedBuilder()
 			.setTitle("Parkman Help Menu: All Users")
-			.setAuthor({ name: "🧩 All User Parkman Commands" })
+			.setAuthor({ name: "🧩 All Server User Parkman Commands" })
 			.setColor("#097969")
 			.setDescription(`Parkman commands all start with \`${prefix} <commandName>\`.`)
 			.addFields(
 				{ name: "➡ Channel Favorites List", value: "> favs, chanfav, ch, chfav, fav", inline: false },
 				{ name: "➡ Add Channel Favorites", value: "> addfav, Addfav", inline: false },
 				{ name: "➡ Remove Channel Favorites", value: "> removefav, Remfav", inline: false },
-				{ name: "➡ Use AI Chat (Epic Park Only)", value: "> ai, askai, askme, ask", inline: false },
+        { name: "➡ Eternal Profile (Epic Park Only)", value: "> et, eternal", inline: false },
+        { name: "➡ Eternal Predictor (Epic Park Only)", value: "> et help, eternal help", inline: false },
+        { name: "➡ Use AI Chat (Epic Park Only)", value: "> ai, askai, askme, ask", inline: false },
 				{ name: "➡ Use AI Image Maker (Epic Park Only)", value: "> makeimage, mi", inline: false },
 				{ name: "➡ List My Commands", value: "> commands, cm, mycommand, cmd, cmds, mc", inline: false },
 				{ name: "➡ Server Emojis", value: "> emojis, emojilist, allemojis", inline: false },
@@ -110,7 +112,7 @@ function createHelpEmbeds(type: string, prefix: string): EmbedBuilder[] {
 				{ name: "➡ Channel Quarantine (Epic Park Only)", value: "> quarantine, Quarantine, qch", inline: false },
 				{ name: "➡ Channel Recover (Epic Park Only)", value: "> recover, Recover, rch, rc", inline: false },
 				{ name: "➡ Channel Unassign (unrecoverable settings, channel exists)", value: "> unassign, uc, uch", inline: false },
-				{ name: "➡ Channel Assign", value: "> assign, Assign, ac, assignchannel, assignch", inline: false },
+				{ name: "➡ Channel Assign / Re-Assign", value: "> assign, Assign, ac, assignchannel, assignch", inline: false },
 				{ name: "➡ Channel List", value: "> channellist, Channellist, cl", inline: false },
 				{ name: "➡ Channel Audit", value: "> audit, ac, auditchannels", inline: false },
 				{ name: "➡ Booster Check (Epic Park Only)", value: "> boostercheck, bc, boosts", inline: false },
