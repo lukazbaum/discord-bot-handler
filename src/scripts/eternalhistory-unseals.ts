@@ -1,9 +1,13 @@
-// eternalhistory-unseals.ts – backfill unseal messages with correct date and values
+// eternalhistory-unseals.ts – Full History Unseal Backfill
 import { Client, GatewayIntentBits, TextChannel, Collection, Message } from "discord.js";
 import { config } from "dotenv";
 import fs from "fs/promises";
 import cliProgress from "cli-progress";
-import { addEternalUnseal, getAllUserIdsFromProfiles } from "./functions-wrapper.js";
+import {
+  addEternalUnseal,
+  getAllUserIdsFromProfiles,
+  getAllUnsealKeys
+} from "./functions-wrapper.js";
 
 config();
 
@@ -25,6 +29,7 @@ const EPIC_RPG_ID = "555955826880413696";
 let totalMessages = 0;
 let totalUnseals = 0;
 let lastIds: Record<string, string> = {};
+let existingUnsealKeys: Set<string> = new Set();
 
 async function loadLastIds() {
   try {
@@ -33,22 +38,6 @@ async function loadLastIds() {
   } catch {
     return {};
   }
-}
-
-async function resolveUserIdFromUnsealContext(message: Message, EPIC_RPG_ID: string): Promise<string | null> {
-  const recentMessages = await message.channel.messages.fetch({ before: message.id, limit: 10 });
-
-  for (const msg of recentMessages.values()) {
-    if (
-      msg.author.id === EPIC_RPG_ID &&
-      /are you sure you want to unseal/i.test(msg.content) &&
-      msg.mentions.users.size === 1
-    ) {
-      return msg.mentions.users.first()?.id || null;
-    }
-  }
-
-  return null;
 }
 
 async function saveLastIds() {
@@ -63,9 +52,18 @@ function parseUnsealFlamesAndTT(content: string): { flames: number, bonusTT: num
   return { flames, bonusTT };
 }
 
-function extractUsername(content: string): string | null {
-  const userMatch = content.match(/\*\*(\w+)\*\* unsealed/i);
-  return userMatch ? userMatch[1] : null;
+async function resolveUserIdFromUnsealContext(message: Message, EPIC_RPG_ID: string): Promise<string | null> {
+  const recentMessages = await message.channel.messages.fetch({ before: message.id, limit: 10 });
+  for (const msg of recentMessages.values()) {
+    if (
+      msg.author.id === EPIC_RPG_ID &&
+      /are you sure you want to unseal/i.test(msg.content) &&
+      msg.mentions.users.size === 1
+    ) {
+      return msg.mentions.users.first()?.id || null;
+    }
+  }
+  return null;
 }
 
 async function scanChannel(channel: TextChannel, guild: any, knownUserIds: Set<string>) {
@@ -76,7 +74,7 @@ async function scanChannel(channel: TextChannel, guild: any, knownUserIds: Set<s
     barIncompleteChar: '\u2591',
     hideCursor: true
   }, cliProgress.Presets.shades_classic);
-  progressBar.start(50000, 0);
+  progressBar.start(100000, 0);
 
   while (true) {
     try {
@@ -94,17 +92,20 @@ async function scanChannel(channel: TextChannel, guild: any, knownUserIds: Set<s
         if (!/unsealed \*\*the eternity\*\*/i.test(message.content)) continue;
 
         const userId = await resolveUserIdFromUnsealContext(message, EPIC_RPG_ID);
-
         if (!userId || !knownUserIds.has(userId)) {
-          console.warn(`⚠️ Could not resolve userId from nearby confirmation message.`);
+          console.warn(`⚠️ Could not resolve userId for message in ${channel.name}`);
           continue;
         }
 
-        const { flames, bonusTT } = parseUnsealFlamesAndTT(message.content);
         const date = new Date(message.createdTimestamp);
+        const key = `${userId}|${guild.id}|${date.toISOString()}`;
+        if (existingUnsealKeys.has(key)) continue;
 
-        await addEternalUnseal(userId, guild.id, flames, 0, bonusTT); // eternalityAtUnseal set to 0 for now
-        console.log(`🔓 Unseal recorded: ${userId} -${flames} 🔥, +${bonusTT} TT on ${date.toISOString()}`);
+        const { flames, bonusTT } = parseUnsealFlamesAndTT(message.content);
+        await addEternalUnseal(userId, guild.id, flames, 0, bonusTT);
+        existingUnsealKeys.add(key);
+
+        console.log(`🔓 Unseal: -${flames} 🔥, +${bonusTT} TT for ${userId} on ${date.toISOString()}`);
         totalUnseals++;
       }
 
@@ -116,7 +117,7 @@ async function scanChannel(channel: TextChannel, guild: any, knownUserIds: Set<s
 
       if (totalMessages % MAX_MESSAGES_BEFORE_SAVE === 0) {
         await saveLastIds();
-        console.log(`💾 Progress saved after ${totalMessages} messages`);
+        console.log(`💾 Saved progress after ${totalMessages} messages`);
       }
 
     } catch (err) {
@@ -135,17 +136,33 @@ async function main() {
     console.log(`🤖 Logged in as ${client.user!.tag}`);
     const guild = await client.guilds.fetch(TARGET_GUILD_ID).then(g => g.fetch());
     const channels = await guild.channels.fetch();
-    const textChannels = channels.filter((c: any): c is TextChannel => c.isTextBased());
-    console.log(`🛠️ Found ${textChannels.size} text channels.`);
+
+    const ALLOWED_CATEGORY_NAMES = ["eternal logs", "epic-rpg-activity"];
+    const ALLOWED_CATEGORY_IDS = new Set<string>([
+      "1140190313915371530", "1152913513598173214", "1137026511921229905"
+    ]);
+
+    const textChannels = Array.from(channels.values()).filter((c): c is TextChannel =>
+      c?.isTextBased?.() &&
+      c?.type === 0 &&
+      c?.parent &&
+      (
+        ALLOWED_CATEGORY_NAMES.includes(c.parent.name?.toLowerCase() || '') ||
+        ALLOWED_CATEGORY_IDS.has(c.parent.id)
+      )
+    );
+
+    console.log(`📂 Scanning ${textChannels.length} channels`);
+
+    lastIds = await loadLastIds();
+    existingUnsealKeys = await getAllUnsealKeys();
 
     const knownUserIds = new Set<string>(
-      (await getAllUserIdsFromProfiles()).map((u: { user_id: string }) => u.user_id)
+      (await getAllUserIdsFromProfiles()).map(u => u.user_id)
     );
-    lastIds = await loadLastIds();
-    const channelList = Array.from(textChannels.values());
 
-    for (let i = 0; i < channelList.length; i += PARALLEL_CHANNELS) {
-      const batch = channelList.slice(i, i + PARALLEL_CHANNELS);
+    for (let i = 0; i < textChannels.length; i += PARALLEL_CHANNELS) {
+      const batch = textChannels.slice(i, i + PARALLEL_CHANNELS);
       await Promise.all(batch.map(channel => scanChannel(channel, guild, knownUserIds)));
     }
 
