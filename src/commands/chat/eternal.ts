@@ -6,7 +6,7 @@ import { EmbedBuilder,
   ButtonBuilder,
   ButtonStyle } from 'discord.js';
 import { buildEternalProfilePages } from '../../services/eternalProfilePages';
-import { loadEternalProfile } from '../../services/eternalProfile';
+import { loadEternalProfile } from '../../services/eternityProfile';
 import { calculateFullInfo, formatPage1, formatPage2, formatPagePower, formatPage4 } from '../../services/eUtils';
 import { getEternityPlan, saveEternityPlan, updateEternityPlan, getEternalPathChoice } from '../../../../ep_bot/extras/functions.js';
 import { paginateEmbedWithSelect } from '../../utils/paginateEmbedWithSelect';
@@ -79,8 +79,8 @@ export default new PrefixCommand({
 
     if (subcommand === 'profile') {
       try {
-        const pages = await buildEternalProfilePages(userId, guildId);
-        await paginateEmbedWithSelect(message, pages, 120_000);
+        const { pages, labels } = await buildEternalProfilePages(userId, guildId);
+        await paginateEmbedWithSelect(message, pages, 120_000, labels);
       } catch (err) {
         console.error("❌ Error loading profile pages:", err);
         await message.reply('❌ Could not load your Eternity Profile.');
@@ -103,6 +103,12 @@ export default new PrefixCommand({
       const profile = await loadEternalProfile(userId, guildId);
       if (!profile) {
         await message.reply('❌ No Eternity Profile found. Run `rpg p e` and try again.');
+        return;
+      }
+
+
+      if (!profile.swordTier || !profile.armorTier) {
+        await message.reply("❗ I need your sword and armor tier to evaluate flame discounts. Please run `rpg p e` and try again.");
         return;
       }
 
@@ -156,10 +162,10 @@ export default new PrefixCommand({
         .setDescription("Your sealed strategy at a glance.")
         .setColor("#00b0f4")
         .addFields(
-          { name: "🌟 Current Eternity", value: `${savedPlan?.currentEternity ?? savedPath?.current_eternity ?? '❓'}`, inline: true },
-          { name: "🎯 Goal Eternity", value: `${savedPlan?.targetEternity ?? savedPath?.target_eternity ?? '❓'}`, inline: true },
-          { name: "📆 Sealed For (Days)", value: `${savedPlan?.daysSealed ?? '❓'}`, inline: true },
-          { name: "🕰️ TT Goal", value: `${savedPlan?.ttGoal ?? savedPath?.tt_goal ?? '❓'}`, inline: true },
+          { name: "🌟 Current Eternity", value: savedPlan?.currentEternity?.toLocaleString() ?? '❓', inline: true },
+          { name: "🎯 Goal Eternity", value: savedPlan?.targetEternity?.toLocaleString() ?? '❓', inline: true },
+          { name: "📆 Sealed For (Days)", value: savedPlan?.daysSealed != null ? savedPlan.daysSealed.toString() : '❓', inline: true },
+          { name: "🕰️ TT Goal", value: savedPlan?.ttGoal != null ? savedPlan.ttGoal.toLocaleString() : '❓', inline: true },
           { name: "🧠 Strategy", value: savedPath?.chosen_path || "❓", inline: true }
         )
         .setFooter({ text: `Saved on: ${savedPath?.date_chosen ? new Date(savedPath.date_chosen).toLocaleDateString() : 'Unknown'}` });
@@ -169,9 +175,9 @@ export default new PrefixCommand({
         .setColor("#ff8800")
         .addFields(
           { name: "🔓 Flames Needed", value: savedPlan?.flamesNeeded?.toLocaleString() || "❓", inline: true },
-          { name: "🏰 Dungeons Needed", value: savedPlan?.dungeonsNeeded?.toLocaleString() || "❓", inline: true },
-          { name: "🍪 Time Cookies (Est.)", value: savedPlan?.timeCookies?.toLocaleString() || "❓", inline: true },
-          { name: "📈 Bonus TT (Est.)", value: savedPlan?.bonusTT?.toLocaleString() || "❓", inline: true }
+          { name: "🏰 Dungeon Wins Needed", value: savedPlan?.dungeonsNeeded != null ? savedPlan.dungeonsNeeded.toLocaleString() : "❓", inline: true },
+          { name: "🍪 Time Cookies (Est.)", value: savedPlan?.timeCookies != null ? savedPlan.timeCookies.toLocaleString() : "❓", inline: true },
+          { name: "📈 Bonus TT (Est.)", value: savedPlan?.bonusTT != null ? savedPlan.bonusTT.toLocaleString() : "❓", inline: true }
         );
 
       const predictedGear = savedPlan?.swordTier
@@ -183,12 +189,21 @@ export default new PrefixCommand({
         .setColor("#00cc99")
         .addFields(
           { name: "🗡️ Predicted Gear", value: predictedGear, inline: true },
-          { name: "✅ Power 40% Ready", value: savedPlan?.powerReady ? "✅ Yes" : "❌ No", inline: true },
-          { name: "💙 Bite 52% Ready", value: savedPlan?.biteReady ? "✅ Yes" : "❌ No", inline: true },
-          { name: "🔮 Potency 20% Ready", value: savedPlan?.potencyReady ? "✅ Yes" : "❌ No", inline: true }
+          { name: "✅ Power 40% Ready", value: savedPlan?.powerReady === 1 ? "✅ Yes" : "❌ No", inline: true },
+          { name: "💙 Bite 52% Ready", value: savedPlan?.biteReady === 1 ? "✅ Yes" : "❌ No", inline: true },
+          { name: "🔮 Potency 20% Ready", value: savedPlan?.potencyReady === 1 ? "✅ Yes" : "❌ No", inline: true }
         );
 
-      await paginateEmbedWithSelect(message, [page1, page2, page3], 120_000);
+      await paginateEmbedWithSelect(
+        message,
+        [page1, page2, page3],
+        120_000,
+        [
+          '📈 Your Eternity Plan',
+          '🔥 Progress Requirements',
+          '🛡️ Gear Readiness',
+        ]
+      );
       return;
     }
 
@@ -205,17 +220,35 @@ export default new PrefixCommand({
         return;
       }
 
+      // ✅ Ensure we have sword and armor tier for discount check
+      if (!profile.swordTier || !profile.armorTier) {
+        await message.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("🛡️ Missing Gear Info for Discount")
+              .setDescription([
+                "I need your `T6`+ **sword and armor tier** to evaluate flame discounts.",
+                "",
+                "🔁 Please run `rpg p e` in your server.",
+                "📦 This will update your Eternity Profile automatically."
+              ].join("\n"))
+              .setColor("#ffaa00")
+          ]
+        });
+        return;
+      }
+
       const savedPlan = await getEternityPlan(userId, guildId);
       const ttGoal = manualTT ?? savedPlan?.ttGoal;
       const daysUntilUnseal = manualDays ?? savedPlan?.daysSealed;
       const targetEternity = savedPlan?.targetEternity ?? (profile.currentEternity + 200);
 
-      if (!ttGoal || !daysUntilUnseal) {
+      if (!ttGoal || !daysUntilUnseal || typeof profile.currentEternity !== 'number') {
         await message.reply({
           embeds: [
             new EmbedBuilder()
-              .setTitle("⏳ Missing Time Travel Goal or Days")
-              .setDescription("Set both with `ep eternal setplan -tt <goal> -d <days>` or override with `ep eternal predict -tt <tt> -d <days>`")
+              .setTitle("⚠️ Missing Eternity Data")
+              .setDescription("Unable to calculate prediction. Make sure you:\n• Set TT goal and days via `ep eternal setplan`\n• Ran `rpg p e` to update your gear and eternity.")
               .setColor("#ffaa00")
           ]
         });
@@ -227,7 +260,9 @@ export default new PrefixCommand({
 
       const eternal = {
         eternalProgress: profile.currentEternity,
-        lastUnsealTT
+        lastUnsealTT,
+        swordTier: profile.swordTier,
+        armorTier: profile.armorTier
       };
 
       const inventory = {
@@ -244,12 +279,34 @@ export default new PrefixCommand({
         daysUntilUnseal
       );
 
+      if (result._error) {
+        await message.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("⚠️ Incomplete Prediction")
+              .setDescription(result._error)
+              .setColor("#ff3333")
+          ]
+        });
+        return;
+      }
+
       const page1 = formatPage1(result);
       const page2 = formatPage2(result);
       const page3 = formatPagePower(result);
-      const page4 = formatPage4 (result, profile);
+      const page4 = formatPage4(result, profile);
 
-      await paginateEmbedWithSelect(message, [page3, page1, page4, page2], 120_000);
+      await paginateEmbedWithSelect(
+        message,
+        [page3, page1, page4, page2],
+        120_000,
+        [
+          '⚡ Gear Success Prediction',
+          '📈 Bonus TT Strategy',
+          '🚪 Exit Strategy',
+          '🎒 Inventory Readiness'
+        ]
+      );
       return;
     }
 

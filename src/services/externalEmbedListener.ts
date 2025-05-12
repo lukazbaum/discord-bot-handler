@@ -9,7 +9,12 @@ import {
 import {
   saveOrUpdateEternityProfile,
   addEternalUnseal,
-  addEternalDungeonWin
+  addEternalDungeonWin,
+  getEternityPlan,
+  getEternityProfile,
+  updateEternityPlan,
+  persistTTCache,
+  getCachedTT,
 } from '/home/ubuntu/ep_bot/extras/functions.js';
 
 import { getCachedTimeTravels, cacheTimeTravels } from '../utils/ttCache';
@@ -29,7 +34,6 @@ export async function handleFlameDetection(message: Message): Promise<void> {
   const parsed = parseInventoryEmbed(embed);
   const flames = parsed?.eternityFlames ?? 0;
 
-  // 🛡️ Prevent overwriting with 0
   if (!flames || flames === 0) {
     return;
   }
@@ -54,7 +58,9 @@ export async function handleProfileEmbed(message: Message): Promise<void> {
   const userId = await tryFindUserIdByName(message.guild, playerName);
   if (!userId) return;
 
-  await cacheTimeTravels(userId, tt);
+  await cacheTimeTravels(userId, tt); // in-memory
+  await persistTTCache(userId, guildId, tt); // persist to DB
+  console.log(`📦 Cached ${tt} TT for ${playerName} (${userId})`);
   console.log(`📦 Cached ${tt} TT for ${playerName} (${userId})`);
 }
 
@@ -72,17 +78,9 @@ export async function handleEternalProfileEmbed(message: Message): Promise<void>
   const parsed = parseEternalEmbed(embed);
   if (parsed?._error) return;
 
-  const cachedTT = getCachedTimeTravels(userId);
-  const gainedTT = cachedTT && parsed.lastUnsealTT ? cachedTT - parsed.lastUnsealTT : 0;
+  const cachedTT = getCachedTimeTravels(userId) ?? await getCachedTT(userId, guildId);
 
-  console.log("🧾 Saving eternity profile for", userId, {
-    currentEternity: parsed.eternalProgress,
-    lastUnsealTT: parsed.lastUnsealTT,
-    sanitizedLastUnsealTT: parsed.lastUnsealTT > 0 ? parsed.lastUnsealTT : null,
-    sword: `T${parsed.swordTier} Lv${parsed.swordLevel}`,
-    armor: `T${parsed.armorTier} Lv${parsed.armorLevel}`,
-    gainedTT
-  });
+  const gainedTT = cachedTT && parsed.lastUnsealTT ? cachedTT - parsed.lastUnsealTT : 0;
 
   await saveOrUpdateEternityProfile(
     userId,
@@ -112,22 +110,14 @@ export async function handleEternalDungeonVictory(message: Message): Promise<voi
   if (!guildId || !playerName) return;
 
   const userId = await tryFindUserIdByName(message.guild, playerName);
-  if (!userId) {
-    console.warn(`⚠️ [DUNGEON VICTORY] Could not resolve userId for "${playerName}"`);
-    return;
-  }
   if (!userId) return;
 
   const parsed = parseDungeonEmbed(embed);
-  if (!parsed?.flamesEarned) {
-    console.warn("⚠️ Dungeon embed had no flames.");
-    return;
-  }
+  if (!parsed?.flamesEarned) return;
 
   await addEternalDungeonWin(userId, guildId, parsed.flamesEarned);
   console.log(`🐉 +${parsed.flamesEarned} dungeon flames recorded for ${playerName}`);
   await forceProfileSync(userId, guildId);
-
 }
 
 export async function handleEternalUnsealMessage(message: Message): Promise<void> {
@@ -136,7 +126,6 @@ export async function handleEternalUnsealMessage(message: Message): Promise<void
 
   const content = message.content;
   const playerMatch = content.match(/^(\S+)/); // capture the username before 'unsealed'
-
   if (!playerMatch) {
     console.warn(`⚠️ Could not extract player name from unseal message: "${content}"`);
     return;
@@ -164,4 +153,27 @@ export async function handleEternalUnsealMessage(message: Message): Promise<void
 
   await addEternalUnseal(userId, guildId, flamesCost, 0, bonusTT);
   await forceProfileSync(userId, guildId);
+
+  // ⏬ Update eternity plan with new bonus_tt_estimate and flames_needed
+  const [plan, profile] = await Promise.all([
+    getEternityPlan(userId, guildId),
+    getEternityProfile(userId, guildId)
+  ]);
+
+  if (plan && profile) {
+    const unsealCost = (eternity: number) => 25 * Math.max(eternity, 200) + 25;
+    const hasT6Gear = profile.swordTier >= 6 && profile.armorTier >= 6;
+    const discountedFlames = Math.floor(unsealCost(profile.current_eternity) * (hasT6Gear ? 0.8 : 1));
+
+    const ttGained = plan.ttGoal - (profile.lastUnsealTT || 0);
+    const bonusMultiplier = 1 + (plan.daysSealed * 0.01);
+    const bonusTTEstimate = Math.floor(profile.current_eternity * (ttGained + (plan.daysSealed / 15)) * 3 / 2500 * bonusMultiplier);
+
+    await updateEternityPlan(userId, guildId, {
+      bonus_tt_estimate: bonusTTEstimate,
+      flames_needed: discountedFlames
+    });
+
+    console.log(`📊 Plan updated with bonusTT ≈ ${bonusTTEstimate} and flames_needed = ${discountedFlames}`);
+  }
 }

@@ -11,6 +11,10 @@ function findField(embed: any, keyword: string) {
   );
 }
 
+function safeLocale(val: any): string {
+  return typeof val === 'number' ? val.toLocaleString() : '❓';
+}
+
 export function extractPlayerNameFromEmbed(embed: any): string {
   return embed?.author?.name?.split("—")[0]?.trim() || "";
 }
@@ -147,9 +151,23 @@ export function calculateFullInfo(
   daysSealed: number = 7
 ) {
   const currentEternality = eternal.eternalProgress;
+  const fullUnsealCost = unsealCost(targetEternity); // before discount
 
-  const currentUnsealFlames = unsealCost(currentEternality);
-  const futureUnsealFlames = unsealCost(targetEternity);
+  const swordTier = eternal.swordTier || 0;
+  const armorTier = eternal.armorTier || 0;
+
+  // ❗ Graceful fallback if data is missing
+  if (swordTier === 0 || armorTier === 0) {
+    return {
+      _error: "❗ I need your current sword and armor tiers to calculate unseal costs accurately.\nPlease run `rpg p e` to update your Eternity Profile."
+    };
+  }
+
+  const hasTier6Gear = swordTier >= 6 && armorTier >= 6;
+  const costMultiplier = hasTier6Gear ? 0.8 : 1;
+
+  const currentUnsealFlames = Math.floor(unsealCost(currentEternality) * costMultiplier);
+  const futureUnsealFlames = Math.floor(unsealCost(targetEternity) * costMultiplier);
 
   const dungeonsNeeded = Math.ceil(futureUnsealFlames / 500);
   const estTC = dungeonsNeeded * tcPerDungeon;
@@ -203,6 +221,9 @@ export function calculateFullInfo(
     flameDeficit,
     canUnseal: flameInventory >= futureUnsealFlames,
 
+    // Discount info
+    discountApplied: hasTier6Gear, fullUnsealCost,
+
     // Plan
     bonusTT,
     ttGained,
@@ -245,6 +266,18 @@ function getPlanName(style: 'rush' | 'steady' | 'greedy') {
 }
 
 export function formatPagePower(result: any) {
+  if (
+    !result ||
+    !result.currentGear ||
+    typeof result.currentGear.attack !== 'number' ||
+    typeof result.atkPowerNeeded !== 'number' ||
+    typeof result.atkBitePowerNeeded !== 'number'
+  ) {
+    return new EmbedBuilder()
+      .setTitle("⚠️ Missing Gear Data")
+      .setDescription("I couldn't calculate your power prediction because gear info is incomplete.\nPlease run `rpg p e` to update your Eternity Profile.")
+      .setColor("#ff3333");
+  }
   const currentATK = result.currentGear.attack;
   const gearName = result.currentGear.name;
 
@@ -266,21 +299,28 @@ export function formatPagePower(result: any) {
     .setColor("#ff7043")
     .setDescription([
       `🛡️ **Power 40%:** ${meetsPower ? "☑️ Achievable" : `❌ Needs 🗡️ ${gearName}`}`,
-      `💙 **Power+Bite 52%:** ${meetsBite ? "☑️ Achievable" : `❌ Missing +${(result.atkBitePowerNeeded - currentATK).toLocaleString()} ATK`}`,
+      `💙 **Power+Bite 52%:** ${meetsBite ? "☑️ Achievable" : `❌ Missing +${safeLocale(result.atkBitePowerNeeded - currentATK)} ATK`}`,
       "",
       `🔮 **Potency Success:** ${potencyColor} **${potencyPercent}%**`,
       estimatedDungeonsForPotency > 0
-        ? `📈 ~**${estimatedDungeonsForPotency}** Eternal Dungeon wins needed for 20% Potency`
+        ? `📈 ~**${safeLocale(estimatedDungeonsForPotency)}** Eternal Dungeon wins needed for 20% Potency`
         : "☑️ Potency 20% ready now!",
       "",
-      `🔥 **Unseal Cost (Now):** **${result.currentUnsealFlames.toLocaleString()}** flames`,
+      `🔥 **Unseal Cost (Now):** **${safeLocale(result.currentUnsealFlames)}** flames${result.discountApplied ? " *(T6+ gear discount applied 🛡️)*" : ""}`,
       `${ttColor} **Bonus TT / TT gained:** **${ttEfficiency.toFixed(1)}**`,
-      `📈 **Total Bonus TTs at unseal:** **${result.bonusTT.toLocaleString()}**`
+      `📈 **Total Bonus TTs at unseal:** **${safeLocale(result.bonusTT)}**`
     ].filter(Boolean).join("\n"))
     .setTimestamp();
 }
 
 export function formatPage1(result: any) {
+  if (!result || !result.targetEternity || typeof result.targetEternity !== 'number') {
+    return new EmbedBuilder()
+      .setTitle("⚠️ Incomplete Eternity Plan")
+      .setDescription("Missing Eternity goal. Please set it with:\n`ep eternal setplan -tt <goal> -d <days>`\nOr use `ep eternal predict -tt <tt> -d <days>` to override.")
+      .setColor("#ff3333");
+  }
+
   const ttPerDay = result.ttGained / result.daysSealed;
   const currentStyle = classifyPlanStyle(ttPerDay);
   const currentPlan = {
@@ -311,22 +351,21 @@ export function formatPage1(result: any) {
     .setDescription("🔮 Grind Time Travels during sealed Eternity to maximize your Bonus TT when unsealing!")
     .setColor(result.canUnseal ? "#00cc66" : "#cc0000")
     .addFields(
-      { name: "🎯 Target Eternity", value: `${result.targetEternity.toLocaleString()}`, inline: true },
-      { name: "⛏️ Dungeons Needed", value: `${result.dungeonsNeeded}`, inline: true },
-      { name: "🍪 Estimated TCs", value: `${result.estTC}`, inline: true },
-
-      { name: "📘 Current Strategy", value: `${currentPlan.name} – ${currentPlan.tt} TTs over ${currentPlan.days} days → ${getEfficiencyEmoji(currentPlan.ratio)} **${currentPlan.bonusTT.toLocaleString()} Bonus TT** (${currentPlan.ratio.toFixed(2)}x)`, inline: false },
-
-      { name: "🧪 Strategy Comparison", value: [
-          `${getPlanName(alt1Style)} – ${alt1.tt} TTs over ${alt1.days} days → 💠 **${alt1.bonusTT.toLocaleString()}** (${alt1.ratio.toFixed(2)}x)`,
-          `${getPlanName(alt2Style)} – ${alt2.tt} TTs over ${alt2.days} days → 💠 **${alt2.bonusTT.toLocaleString()}** (${alt2.ratio.toFixed(2)}x)`
-        ].join('\n'), inline: false },
-
+      { name: "🎯 Target Eternity", value: safeLocale(result.targetEternity), inline: true },
+      { name: "⛏️ Dungeons Needed", value: safeLocale(result.dungeonsNeeded), inline: true },
+      { name: "🍪 Estimated TCs", value: safeLocale(result.estTC), inline: true },
+      { name: "🛡️ Gear Discount", value: result.discountApplied ? "✅ Applied (T6+ gear equipped)" : "❌ Not Eligible", inline: true },
+      { name: "📘 Current Strategy", value: `${currentPlan.name} – ${currentPlan.tt} TTs over ${currentPlan.days} days → ${getEfficiencyEmoji(currentPlan.ratio)} **${safeLocale(currentPlan.bonusTT)} Bonus TT** (${currentPlan.ratio.toFixed(2)}x)`, inline: false },
+      {
+        name: "🧪 Strategy Comparison", value: [
+          `${getPlanName(alt1Style)} – ${alt1.tt} TTs over ${alt1.days} days → 💠 **${safeLocale(alt1.bonusTT)}** (${alt1.ratio.toFixed(2)}x)`,
+          `${getPlanName(alt2Style)} – ${alt2.tt} TTs over ${alt2.days} days → 💠 **${safeLocale(alt2.bonusTT)}** (${alt2.ratio.toFixed(2)}x)`
+        ].join('\n'), inline: false
+      },
       ...(shouldSwitch ? [{
         name: "🧠 Recommended Plan",
         value: `${getPlanName(classifyPlanStyle(betterPlan.tt / betterPlan.days))} – Consider updating your plan in the database to improve efficiency.`
       }] : []),
-
       { name: "🧠 More Efficient", value: betterSuggestions.join("\n"), inline: false }
     )
     .setFooter({ text: "Compare your current plan with alternatives to find the most rewarding seal strategy." })
@@ -334,17 +373,28 @@ export function formatPage1(result: any) {
 }
 
 export function formatPage2(result: any) {
+  if (!result || typeof result.futureUnsealFlames !== 'number') {
+    return new EmbedBuilder()
+      .setTitle("⚠️ Incomplete Eternity Inventory Data")
+      .setDescription("I couldn't calculate your inventory readiness. Please make sure you've run `rpg p e` recently.")
+      .setColor("#ff3333");
+  }
+
   const progressPercent = Math.min(100, Math.floor((result.flameInventory / result.futureUnsealFlames) * 100));
   const progressBar = createProgressBar(progressPercent);
+
+  const flameNeededDisplay = result.discountApplied
+    ? `🛡️ ${safeLocale(result.futureUnsealFlames)} (original: ${safeLocale(result.fullUnsealCost)}) *(T6 gear discount applied)*`
+    : safeLocale(result.futureUnsealFlames);
 
   return new EmbedBuilder()
     .setTitle("🎒 Eternal Inventory & Readiness")
     .setColor(result.canUnseal ? "#00cc66" : "#cc0000")
     .addFields(
-      { name: "🔥 Flames Owned", value: `${result.flameInventory.toLocaleString()}`, inline: true },
-      { name: "🧮 Flames Needed", value: `${result.futureUnsealFlames.toLocaleString()}`, inline: true },
+      { name: "🔥 Flames Owned", value: safeLocale(result.flameInventory), inline: true },
+      { name: "🧮 Flames Needed", value: flameNeededDisplay, inline: true },
       { name: "📊 Flame Progress", value: `${progressBar} (${progressPercent}%)`, inline: false },
-      { name: "❗ Deficit", value: result.flameDeficit > 0 ? `🔻 ${result.flameDeficit.toLocaleString()}` : "✅ No Deficit", inline: true },
+      { name: "❗ Deficit", value: result.flameDeficit > 0 ? `🔻 ${safeLocale(result.flameDeficit)}` : "✅ No Deficit", inline: true },
       { name: "✅ Can Unseal?", value: result.canUnseal ? "🟢 Yes" : "🔴 No", inline: true }
     )
     .setFooter({ text: "Flames gathered vs needed for your next Unseal." })
@@ -352,6 +402,20 @@ export function formatPage2(result: any) {
 }
 
 export function formatPage4(result: any, profile: any) {
+  if (
+    !result ||
+    !result.recommended ||
+    typeof result.recommended.attack !== 'number' ||
+    typeof result.atkPowerNeeded !== 'number' ||
+    typeof result.atkBitePowerNeeded !== 'number' ||
+    typeof result.futureUnsealFlames !== 'number'
+  ) {
+    return new EmbedBuilder()
+      .setTitle("⚠️ Incomplete Gear or Flame Data")
+      .setDescription("Missing gear recommendation or flame calculation. Please ensure you've run `rpg p e` recently.")
+      .setColor("#ff3333");
+  }
+
   const {
     targetEternity,
     futureUnsealFlames,
@@ -371,30 +435,28 @@ export function formatPage4(result: any, profile: any) {
   };
   const currentBaseAtk = Math.floor((baseAtkMap[swordTier] || 0) * (1 + swordLevel * 0.01));
 
-  // ✅ Fixed checks
   const meetsPower = currentBaseAtk >= atkPowerNeeded;
   const meetsBite = currentBaseAtk >= atkBitePowerNeeded;
-
   const potencyPercent = Math.min(100, Math.floor((currentBaseAtk / atkPowerNeeded) * 40));
 
   const tactical = [
-    `Planned Eternity Level: **${targetEternity}**`,
-    `Flames Required to Unseal: **${futureUnsealFlames.toLocaleString()}**`,
-    `Required Gear: **${tierLabel}** → **${requiredATK.toLocaleString()} ATK**`,
-    `Power 40% Threshold: **${atkPowerNeeded.toLocaleString()} ATK**`,
-    `Bite 52% Threshold: **${atkBitePowerNeeded.toLocaleString()} ATK**`
+    `Planned Eternity Level: **${safeLocale(targetEternity)}**`,
+    `Flames Required to Unseal: **${safeLocale(futureUnsealFlames)}**${
+      result.discountApplied ? ` (original: ${safeLocale(result.fullUnsealCost)}) *(T6+ gear discount applied 🛡️)*` : ""
+    }`,
+    `Required Gear: **${tierLabel}** → **${safeLocale(requiredATK)} ATK**`,
+    `Power 40% Threshold: **${safeLocale(atkPowerNeeded)} ATK**`,
+    `Bite 52% Threshold: **${safeLocale(atkBitePowerNeeded)} ATK**`
   ];
 
   const analytical = [
     meetsPower
       ? `✅ Your current weapon meets the 40% power threshold.`
-      : `❌ You need **${atkPowerNeeded - currentBaseAtk} more ATK** to reach 40% power.`,
-
+      : `❌ You need **${safeLocale(atkPowerNeeded - currentBaseAtk)} more ATK** to reach 40% power.`,
     meetsBite
       ? `✅ You're bite-safe (52% threshold met).`
-      : `❌ You need **${atkBitePowerNeeded - currentBaseAtk} more ATK** for bite safety.`,
-
-    `Estimated Potency if unsealed now: **${potencyPercent}%** (target: 20%)`
+      : `❌ You need **${safeLocale(atkBitePowerNeeded - currentBaseAtk)} more ATK** for bite safety.`,
+    `Estimated Potency if unsealed now: **${safeLocale(potencyPercent)}%** (target: 20%)`
   ];
 
   return new EmbedBuilder()
@@ -425,7 +487,7 @@ function findBetterSuggestions(
 
       if (ratio > currentRatio) {
         const emoji = getEfficiencyEmoji(ratio);
-        const display = `${emoji} ${bonus.toLocaleString()} Bonus TT from ${tt} TTs in ${days} days (${ratio.toFixed(2)}x)`;
+        const display = `${emoji} ${safeLocale(bonus)} Bonus TT from ${tt} TTs in ${days} days (${ratio.toFixed(2)}x)`;
         suggestions.push({ ratio, display });
       }
     }
@@ -443,4 +505,3 @@ function findBetterSuggestions(
   top[0].display = `**${top[0].display}**`;
   return top.map(t => t.display);
 }
-

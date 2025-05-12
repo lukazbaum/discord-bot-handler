@@ -16,13 +16,18 @@ const activePaginations = new Map<
   }
 >();
 
-async function paginateEmbedWithSelect(message: Message, pages: EmbedBuilder[], timeout = 60000) {
+async function paginateEmbedWithSelect(
+  message: Message,
+  pages: EmbedBuilder[],
+  timeout = 60000,
+  labels?: string[]
+) {
   if (!pages || pages.length === 0) {
     return message.reply('❌ No pages to display.');
+
   }
 
   let currentPage = 0;
-  let contentNonce = 0;
   const sessionId = 'localpg';
 
   const embedWithFooter = (index: number) =>
@@ -41,7 +46,7 @@ async function paginateEmbedWithSelect(message: Message, pages: EmbedBuilder[], 
         .setPlaceholder('Jump to page...')
         .addOptions(
           pages.map((_, i) => ({
-            label: `Page ${i + 1}`,
+            label: labels?.[i] ?? `Page ${i + 1}`,
             value: `${i}`,
           }))
         )
@@ -53,14 +58,12 @@ async function paginateEmbedWithSelect(message: Message, pages: EmbedBuilder[], 
   const messageReply = await message.reply({
     embeds: [embedWithFooter(currentPage)],
     components: createRows(),
-    content: `Page ${currentPage + 1} • ${contentNonce++}`,
   });
 
   activePaginations.set(sessionId, {
     updatePage: async (delta: number) => {
       currentPage = (currentPage + delta + pages.length) % pages.length;
       await messageReply.edit({
-        content: `Page ${currentPage + 1} • ${contentNonce++}`,
         embeds: [embedWithFooter(currentPage)],
         components: createRows(),
       });
@@ -68,7 +71,6 @@ async function paginateEmbedWithSelect(message: Message, pages: EmbedBuilder[], 
     jumpTo: async (index: number) => {
       currentPage = index;
       await messageReply.edit({
-        content: `Page ${currentPage + 1} • ${contentNonce++}`,
         embeds: [embedWithFooter(currentPage)],
         components: createRows(),
       });
@@ -101,7 +103,6 @@ async function paginateEmbedWithSelect(message: Message, pages: EmbedBuilder[], 
       }
 
       await interaction.update({
-        content: `Page ${currentPage + 1} • ${contentNonce++}`,
         embeds: [embedWithFooter(currentPage)],
         components: createRows(),
       });
@@ -116,7 +117,6 @@ async function paginateEmbedWithSelect(message: Message, pages: EmbedBuilder[], 
       currentPage = selected;
 
       await interaction.update({
-        content: `Page ${currentPage + 1} • ${contentNonce++}`,
         embeds: [embedWithFooter(currentPage)],
         components: createRows(),
       });
@@ -134,7 +134,7 @@ async function paginateEmbedWithSelect(message: Message, pages: EmbedBuilder[], 
       );
 
       await messageReply.edit({
-        content: '⏳ Pagination session expired.',
+        content: '⏳ Tool Expired',
         components: [disabledButtons],
       });
     }

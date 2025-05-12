@@ -1,5 +1,5 @@
 // src/scripts/sync_eternity_profiles.ts
-import { syncAllProfiles } from './syncEternityProfiles';
+import { syncAllProfiles } from './syncEternityProfiles.js';
 import { config } from 'dotenv';
 config();
 

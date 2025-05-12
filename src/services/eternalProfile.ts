@@ -33,13 +33,16 @@ export interface EternalProfileData {
 
   dungeonWins?: {
     flamesEarned: number;
-    createdAt: string | Date;
+    winDate: string | Date;
   }[];
 }
 
 export async function loadEternalProfile(userId: string, guildId: string): Promise<EternalProfileData | null> {
   const profile = await functions.getEternityProfile(userId, guildId);
   if (!profile) return null;
+
+  const unsealHistory = await functions.getEternalUnsealHistory(userId) ?? [];
+  const dungeonWins = await functions.getDungeonWins(userId, guildId) ?? [];
 
   return {
     userId,
@@ -56,10 +59,20 @@ export async function loadEternalProfile(userId: string, guildId: string): Promi
     armorLevel: profile.armor_level ?? 0,
     targetEternity: profile.target_eternality ?? undefined,
     pathChoice: profile.path_choice ? JSON.parse(profile.path_choice) : undefined,
-    unsealHistory: [],
-    dungeonWins: [],
+    unsealHistory: unsealHistory.map(u => ({
+      flamesCost: u.flamesCost,
+      bonusTT: u.bonusTT,
+      createdAt: u.createdAt,
+      eternalityAtUnseal: u.eternityLevel ?? undefined
+    })),
+    dungeonWins: dungeonWins.map(d => ({
+      flamesEarned: d.flamesEarned,
+      winDate: d.winDate ?? d.createdAt
+    }))
   };
 }
+
+
 
 export async function ensureEternityProfile(userId: string, guildId: string): Promise<void> {
   await functions.saveOrUpdateEternityProfile(userId, guildId, 0, 0);

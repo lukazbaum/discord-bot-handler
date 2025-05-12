@@ -1,3 +1,4 @@
+// src/services/eternityProfile.ts
 import {
   saveOrUpdateEternityProfile,
   getEternityProfile,
@@ -5,7 +6,7 @@ import {
   getEternalUnsealHistory
 } from '/home/ubuntu/ep_bot/extras/functions.js';
 
-import { EternalProfileData } from './eternalProfile';
+import type { EternalProfileData } from './eternalProfile';
 
 export async function loadEternalProfile(userId: string, guildId: string): Promise<EternalProfileData | null> {
   const profile = await getEternityProfile(userId, guildId);
@@ -34,11 +35,11 @@ export async function loadEternalProfile(userId: string, guildId: string): Promi
 export async function updateEternity(userId: string, guildId: string, newEternity: number): Promise<string> {
   return await saveOrUpdateEternityProfile(userId, guildId, newEternity);
 }
+
 export async function ensureEternityProfile(userId: string, guildId: string): Promise<void> {
   const profile = await getEternityProfile(userId, guildId);
-
   if (!profile) {
     console.log(`🆕 Creating new Eternity Profile for user ${userId}`);
-    await saveOrUpdateEternityProfile(userId, guildId, 0, 0); // 0 eternality, 0 flames
+    await saveOrUpdateEternityProfile(userId, guildId, 0, 0);
   }
 }

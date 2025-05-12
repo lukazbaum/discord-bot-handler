@@ -5,15 +5,18 @@ import {
   getEternalUnsealHistory,
   getEternalDungeonWins,
   upsertEternityCareer,
-  saveOrUpdateEternityProfile
+  saveOrUpdateEternityProfile,
+  updateEternityPlan,
+  getEternityPlan
 } from '../scripts/functions-wrapper'; // Adjust path if needed
 
 export async function forceProfileSync(userId: string, guildId: string): Promise<void> {
   try {
-    const [profile, unseals, dungeons] = await Promise.all([
+    const [profile, unseals, dungeons, savedPlan] = await Promise.all([
       getEternityProfile(userId, guildId),
       getEternalUnsealHistory(userId),
-      getEternalDungeonWins(userId, guildId)
+      getEternalDungeonWins(userId, guildId),
+      getEternityPlan(userId, guildId)
     ]);
 
     if (!profile) {
@@ -28,7 +31,6 @@ export async function forceProfileSync(userId: string, guildId: string): Promise
     const totalFlamesFromDungeons = dungeons.reduce((sum, d) => sum + (d.flamesEarned || 0), 0);
     const totalFlamesEarned = totalFlamesFromUnseals + totalFlamesFromDungeons;
 
-    // 🚫 DO NOT overwrite lastUnsealTT using bonusTT
     const existingLastUnsealTT = profile.last_unseal_tt ?? 0;
 
     const needsProfileUpdate =
@@ -51,11 +53,36 @@ export async function forceProfileSync(userId: string, guildId: string): Promise
       console.log(`ℹ️ Eternity Profile already up-to-date for user ${userId}`);
     }
 
-    // 🎯 Build career data
+    // 🔁 Always attempt to update eternity_plans if plan and gear info exists
+    if (savedPlan && profile.sword_tier && profile.armor_tier) {
+      const latestTT = profile.last_unseal_tt || 0;
+      const daysSealed = savedPlan.daysSealed || 0;
+      const ttGoal = savedPlan.ttGoal || 0;
+
+      const hasDiscount = profile.sword_tier >= 6 && profile.armor_tier >= 6;
+      const flamesNeeded = Math.floor((25 * Math.max(profile.current_eternality, 200) + 25) * (hasDiscount ? 0.8 : 1));
+      const bonusTT = Math.floor(
+        profile.current_eternality *
+        (ttGoal - latestTT + (daysSealed / 15)) *
+        3 / 2500 *
+        (1 + daysSealed * 0.01)
+      );
+
+      await updateEternityPlan(userId, guildId, {
+        bonus_tt_estimate: bonusTT,
+        flames_needed: flamesNeeded
+      });
+
+      console.log(`📘 Eternity Plan updated for ${userId}: ${bonusTT} bonus TT, ${flamesNeeded} flames`);
+    }
+
+    // 🎯 Build career data with historical bonus TT
+    const totalBonusTT = unseals.reduce((sum, u) => sum + (u.bonusTT || 0), 0);
+
     const careerData = {
       highestEternity: profile.current_eternality || 0,
       totalFlamesBurned: totalFlamesEarned,
-      totalBonusTT: unseals.reduce((sum, u) => sum + (u.bonusTT || 0), 0),
+      totalBonusTT,
       totalUnseals,
       firstUnsealDate: unseals.length ? unseals[unseals.length - 1].unsealDate : null,
       achievements: []
