@@ -5,13 +5,19 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { PrefixCommand } from "../../handler";
-const { checkisland, createisland, enableevents, getisland, updateOwner } = require('/home/ubuntu/ep_bot/extras/functions');
+const {
+  checkisland,
+  createisland,
+  enableevents,
+  getisland,
+  updateOwner
+} = require("/home/ubuntu/ep_bot/extras/functions");
 const emojiRegex = require("emoji-regex");
 const { amarikey } = require("../../../../ep_bot/extras/settings");
 const { AmariBot } = require("amaribot.js");
 const amariclient = new AmariBot(amarikey);
 
-// Centralized config for all guilds
+// Guild-specific configurations
 const guildConfigs = {
   "1135995107842195550": {
     ownerRole: "1147864509344661644",
@@ -26,29 +32,29 @@ const guildConfigs = {
       80: "1147909539413368883",
       120: "1147909156196593787",
     },
-    nameFormat: (emoji, name) => emoji ? `${emoji}・${name}` : `・${name}`,
+    nameFormat: (emoji, name) => (emoji ? `${emoji}・${name}` : `・${name}`),
     useAmari: true,
   },
   "1113339391419625572": {
     ownerRole: "1306823581870854174",
     categories: { default: "1151855336865665024" },
-    nameFormat: (emoji, name) => emoji ? `${emoji} ⸾⸾${name}⸾⸾` : `⸾⸾${name}⸾⸾`,
+    nameFormat: (emoji, name) => (emoji ? `${emoji} ⸾⸾${name}⸾⸾` : `⸾⸾${name}⸾⸾`),
   },
   "839731097473908767": {
     ownerRole: "892026418937077760",
     categories: { default: "839731102813913107" },
-    nameFormat: (emoji, name) => emoji ? `${emoji} ||${name}` : `||${name}`,
+    nameFormat: (emoji, name) => (emoji ? `${emoji} ||${name}` : `||${name}`),
   },
   "871269916085452870": {
     ownerRole: "1173220944882450564",
     categories: { default: "1075868205396017152" },
-    nameFormat: (emoji, name) => emoji ? `${emoji}║${name}` : `║${name}`,
+    nameFormat: (emoji, name) => (emoji ? `${emoji}║${name}` : `║${name}`),
   },
 };
 
 export default new PrefixCommand({
   name: "assign",
-  aliases: ["ac", "assignch"],
+  aliases: ["assignch"],
   allowedGuilds: Object.keys(guildConfigs),
   allowedRoles: [
     "1148992217202040942", "807826290295570432", "1073788272452579359",
@@ -64,12 +70,12 @@ export default new PrefixCommand({
 
       const args = message.content.trim().split(/\s+/);
 
-      // Identify the user
+      // 🧑 Extract user mention or ID
       const userToken = args.find(arg =>
-        !/^<#\d+>$/.test(arg) && (/^<@!?(\d+)>$/.test(arg) || /^\d{17,20}$/.test(arg))
+        !/^<#\d+>$/.test(arg) &&
+        (/^<@!?(\d+)>$/.test(arg) || /^\d{17,20}$/.test(arg))
       );
       const userId = userToken?.match(/\d{17,20}/)?.[0];
-
       if (!userId) {
         await message.reply("❌ Please mention a valid user or provide a valid ID.");
         return;
@@ -87,7 +93,6 @@ export default new PrefixCommand({
       const userIndex = args.findIndex(arg => arg === userToken);
       const potentialArgs = args.slice(userIndex + 1);
 
-      // Try resolving existing channel by mention
       const mentionedChannel = message.mentions.channels.first();
       let channel: TextChannel | undefined;
       let finalName: string | undefined;
@@ -96,7 +101,10 @@ export default new PrefixCommand({
         channel = mentionedChannel as TextChannel;
         finalName = channel.name;
       } else {
-        const rawArgs = potentialArgs.filter(arg => !/^<#\d+>$/.test(arg)).join(" ");
+        const rawArgs = potentialArgs
+          .filter(arg => !/^<#\d+>$/.test(arg))
+          .join(" ");
+
         if (!rawArgs) {
           await message.reply("❌ Usage: assign <userId or mention> emoji channelname");
           return;
@@ -117,15 +125,23 @@ export default new PrefixCommand({
 
       const progressBar = await message.channel.send("=>..");
 
+      // 📦 Create new channel if it doesn't exist
       if (!channel) {
         channel = await message.guild.channels.create({
-          name: finalName,
+          name: finalName!,
           type: ChannelType.GuildText,
           parent: config.categories.default,
         });
       }
 
-      // Category logic
+      let dbInfo = await getisland(channel.id);
+      if (!dbInfo) {
+        await createisland(owner.id, channel.id);
+      } else if (dbInfo.user !== owner.id) {
+        await updateOwner(owner.id, channel.id);
+      }
+
+      // 🎚️ Amari logic
       let level = 0;
       if (config.useAmari) {
         try {
@@ -136,6 +152,7 @@ export default new PrefixCommand({
         }
       }
 
+      // 📁 Category assignment
       if (config.categories) {
         if (config.useAmari && level >= 120 && config.categories[120]) {
           await channel.setParent(config.categories[120]);
@@ -151,17 +168,6 @@ export default new PrefixCommand({
       }
 
       await channel.lockPermissions();
-
-      const dbInfo = await getisland(channel.id);
-      if (dbInfo && dbInfo.user && dbInfo.user !== owner.id) {
-        try {
-          await channel.permissionOverwrites.delete(dbInfo.user);
-        } catch (e) {
-          console.warn("⚠️ Couldn't remove old owner's permissions:", e);
-        }
-        await updateOwner(owner.id, channel.id);
-      }
-
       await channel.permissionOverwrites.edit(owner.id, {
         SendMessages: true,
         ViewChannel: true,
@@ -182,6 +188,7 @@ export default new PrefixCommand({
         .setColor("#097969");
 
       await message.reply({ embeds: [embed] });
+
       await channel.send({
         embeds: [
           new EmbedBuilder()

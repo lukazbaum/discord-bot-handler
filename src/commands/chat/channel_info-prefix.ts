@@ -57,6 +57,7 @@ export default new PrefixCommand({
     '1075867596534055094', // luminescent Member Rooms
     '1169317414748569701', // Luminescent Member Rooms II
     '1075868205396017152', // Luminescent Plebs Rooms
+    '1128608416823263293', // LUminescent Archive
 
 	],
     async execute(message: Message): Promise<void> {
