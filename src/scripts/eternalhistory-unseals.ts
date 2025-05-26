@@ -6,7 +6,8 @@ import cliProgress from "cli-progress";
 import {
   addEternalUnseal,
   getAllUserIdsFromProfiles,
-  getAllUnsealKeys
+  getAllUnsealKeys,
+  getEternityProfile
 } from "./functions-wrapper.js";
 
 config();
@@ -45,10 +46,12 @@ async function saveLastIds() {
 }
 
 function parseUnsealFlamesAndTT(content: string): { flames: number, bonusTT: number } {
-  const flamesMatch = content.match(/-\s*([\d,]+)\s*<:eternityflame/i);
-  const ttMatch = content.match(/got\s*([\d,]+)\s*<:timetravel/i);
+  const flamesMatch = content.match(/-\s*([\d,]+)\s*(<:eternityflame|🔥|eternity flames?)/i);
+  const bonusTTMatch = content.match(/got\s+([\d,]+)\s*(?::timetravel:|<:timetravel:[^>]*>|🌀|time travels?)/i);
   const flames = flamesMatch ? parseInt(flamesMatch[1].replace(/,/g, '')) : 0;
-  const bonusTT = ttMatch ? parseInt(ttMatch[1].replace(/,/g, '')) : 0;
+  const bonusTT = bonusTTMatch ? parseInt(bonusTTMatch[1].replace(/,/g, '')) : 0;
+  console.debug(`[DEBUG] Unseal message:`, content);
+  console.debug(`[DEBUG] Parsed bonusTT:`, bonusTT);
   return { flames, bonusTT };
 }
 
@@ -98,11 +101,33 @@ async function scanChannel(channel: TextChannel, guild: any, knownUserIds: Set<s
         }
 
         const date = new Date(message.createdTimestamp);
+        let username = "";
+        const recentMessages = await message.channel.messages.fetch({ before: message.id, limit: 10 });
+        for (const msg of recentMessages.values()) {
+          if (
+            msg.author.id === EPIC_RPG_ID &&
+            /are you sure you want to unseal/i.test(msg.content) &&
+            msg.mentions.users.size === 1
+          ) {
+            username = msg.mentions.users.first()?.username || "";
+            break;
+          }
+        }
         const key = `${userId}|${guild.id}|${date.toISOString()}`;
         if (existingUnsealKeys.has(key)) continue;
 
         const { flames, bonusTT } = parseUnsealFlamesAndTT(message.content);
-        await addEternalUnseal(userId, guild.id, flames, 0, bonusTT);
+        const prof = await getEternityProfile(userId, guild.id);
+        const currentEternity = prof?.current_eternality ?? 0;
+        await addEternalUnseal(
+          userId,
+          guild.id,
+          flames,
+          currentEternity,
+          bonusTT,
+          username,
+          date
+        );
         existingUnsealKeys.add(key);
 
         console.log(`🔓 Unseal: -${flames} 🔥, +${bonusTT} TT for ${userId} on ${date.toISOString()}`);
@@ -139,7 +164,16 @@ async function main() {
 
     const ALLOWED_CATEGORY_NAMES = ["eternal logs", "epic-rpg-activity"];
     const ALLOWED_CATEGORY_IDS = new Set<string>([
-      "1140190313915371530", "1152913513598173214", "1137026511921229905"
+      "1140190313915371530",
+      "1152913513598173214",
+      "1137026511921229905",
+      "1147909067172483162",
+      "1147909156196593787",
+      "1147909539413368883",
+      "1147909373180530708",
+      "1147909282201870406",
+      "1147909200924643349",
+      "1219009472593399909",
     ]);
 
     const textChannels = Array.from(channels.values()).filter((c): c is TextChannel =>
@@ -173,7 +207,7 @@ async function main() {
     process.exit(0);
   });
 
-  client.login(process.env.DISCORD_TOKEN);
+  client.login(process.env.DUNGEON_TOKEN);
 }
 
 main();
