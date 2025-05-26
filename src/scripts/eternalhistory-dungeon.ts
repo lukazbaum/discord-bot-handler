@@ -1,14 +1,10 @@
-// eternalhistory_dungeon.ts - Full History Dungeon Win Scanner
-
-import { Client, GatewayIntentBits, TextChannel, Collection, Message } from "discord.js";
+import { Client, GatewayIntentBits, TextChannel, Collection, Message, Guild } from 'discord.js';
 import { config } from "dotenv";
 import fs from "fs/promises";
 import cliProgress from "cli-progress";
+import { extractPlayerNameFromEmbed, parseDungeonEmbed  } from './services/eUtils.js';
 
-import {
-  parseDungeonEmbed,
-  extractPlayerNameFromEmbed
-} from "./services/eUtils.js";
+
 
 import {
   addEternalDungeonWin,
@@ -32,6 +28,7 @@ const LAST_IDS_FILE = "last_scanned_ids_dungeon.json";
 const MAX_MESSAGES_BEFORE_SAVE = 5000;
 const PARALLEL_CHANNELS = 5;
 const EPIC_RPG_ID = "555955826880413696";
+const OLDEST_BEFORE_ID = "1359737811007438849"; // message ID just after your cutoff
 
 let totalMessages = 0;
 let totalDungeons = 0;
@@ -51,85 +48,103 @@ async function saveLastIds() {
   await fs.writeFile(LAST_IDS_FILE, JSON.stringify(lastIds, null, 2));
 }
 
-function isDungeonWinEmbed(embed: any): boolean {
-  return embed.author?.name?.toLowerCase().includes("quest") &&
-    embed.fields?.some((f: any) => /eternity flame/i.test(f.value));
+async function tryFindUserIdByName(guild: Guild, username: string): Promise<string | null> {
+  try {
+    const fetched = await guild.members.fetch({ query: username, limit: 1 });
+    const match = fetched.find(member =>
+      member.user.username.toLowerCase() === username.toLowerCase() ||
+      member.displayName.toLowerCase() === username.toLowerCase()
+    );
+
+    if (match) return match.user.id;
+    return null;
+  } catch (err: any) {
+    if (err.code === 'GuildMembersTimeout') {
+      console.warn(`⏱️ Timeout fetching members in ${guild.name} when looking for ${username}`);
+      return null;
+    }
+    console.error("❌ Unexpected error fetching member:", err);
+    return null;
+  }
 }
 
-function parseFlamesFromDungeonEmbed(embed: any): number {
-  const parsed = parseDungeonEmbed(embed);
-  return parsed.flamesEarned ?? 0;
-}
 
-function extractUserIdFromIconUrl(url: string): string | null {
-  const match = url.match(/\/avatars\/(\d+)\//);
-  return match ? match[1] : null;
-}
+async function scanChannel(
+  channel: TextChannel,
+  guild: Guild,
+  knownUserIds: Set<string>
+) {
+  // initialize lastId from file or default
+  let lastId = lastIds[channel.id] || OLDEST_BEFORE_ID;
 
-async function scanChannel(channel: TextChannel, guild: any, knownUserIds: Set<string>) {
-  let lastId = lastIds[channel.id];
-
+  console.log(`📡 Scanning channel ${channel.name} (ID: ${channel.id}) before ${lastId}`);
   const progressBar = new cliProgress.SingleBar({
-    format: `[{bar}] {percentage}% | {value} msgs | ETA: {eta_formatted}`,
-    barCompleteChar: '\u2588',
-    barIncompleteChar: '\u2591',
-    hideCursor: true
-  }, cliProgress.Presets.shades_classic);
+      format: `[{bar}] {percentage}% | {value} msgs | ETA: {eta_formatted}`,
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true
+    },
+    cliProgress.Presets.shades_classic
+  );
   progressBar.start(100000, 0);
 
   while (true) {
-    try {
-      const options: { limit: number; before?: string } = { limit: 100 };
-      if (lastId) options.before = lastId;
+    const options: { limit: number; before?: string } = { limit: 100 };
+    if (lastId) options.before = lastId;
 
-      const messages = await channel.messages.fetch(options) as Collection<string, Message<true>>;
-      if (messages.size === 0) break;
+    const messages = await channel.messages.fetch(options) as Collection<string, Message<true>>;
+    if (messages.size === 0) break;
 
-      for (const message of messages.values()) {
-        totalMessages++;
-        progressBar.increment();
+    for (const message of messages.values()) {
+      totalMessages++;
+      progressBar.increment();
 
-        if (message.author?.id !== EPIC_RPG_ID || !message.embeds.length) continue;
+      // only EpicRPG bot’s embeds
+      if (message.author.id !== EPIC_RPG_ID || message.embeds.length === 0) continue;
+      const embed = message.embeds[0];
 
-        const embed = message.embeds[0];
-        if (!isDungeonWinEmbed(embed)) continue;
+      // 1️⃣ parse the embed as a dungeon win
+      const { flamesEarned, _error } = parseDungeonEmbed(embed);
+      if (_error || flamesEarned <= 0) continue;
 
-        const userId = extractUserIdFromIconUrl(embed.author?.iconURL || '');
-        const username = embed.author?.name?.split(' — ')[0];
-        const flames = parseFlamesFromDungeonEmbed(embed);
-        const winDate = new Date(message.createdTimestamp);
-
-        if (!userId || !knownUserIds.has(userId) || flames <= 0) continue;
-
-        const key = `${userId}|${guild.id}|${winDate.toISOString()}`;
-        if (existingWinKeys.has(key)) continue;
-
-        await addEternalDungeonWin(userId, guild.id, flames, winDate);
-        existingWinKeys.add(key);
-        totalDungeons++;
-        console.log(`🐉 +${flames} flames for ${username} (${userId}) on ${winDate.toISOString()}`);
+      // 2️⃣ we know it’s a dungeon win—now extract the player
+      const playerName = extractPlayerNameFromEmbed(embed);
+      if (!playerName) {
+        console.warn(`⚠️ Could not extract player name from dungeon embed in #${channel.name}`);
+        continue;
       }
 
-      const lastMessage = messages.last();
-      if (lastMessage) {
-        lastId = lastMessage.id;
-        lastIds[channel.id] = lastId;
-      }
+      // 3️⃣ resolve to your real userId
+      const userId = await tryFindUserIdByName(message.guild!, playerName);
+      if (!userId || !knownUserIds.has(userId)) continue;
 
-      if (totalMessages % MAX_MESSAGES_BEFORE_SAVE === 0) {
-        await saveLastIds();
-        console.log(`💾 Saved progress after ${totalMessages} messages`);
-      }
+      // 4️⃣ dedupe + persist
+      const winDate = new Date(message.createdTimestamp);
+      const key = `${userId}|${guild.id}|${winDate.toISOString()}`;
+      if (existingWinKeys.has(key)) continue;
 
-    } catch (err) {
-      console.error(`⚠️ Error scanning ${channel.name}:`, err);
-      await new Promise(resolve => setTimeout(resolve, 60000));
+      await addEternalDungeonWin(userId, guild.id, flamesEarned, winDate);
+      existingWinKeys.add(key);
+      totalDungeons++;
+      console.log(`🐉 +${flamesEarned} flames for ${playerName} (${userId}) on ${winDate.toISOString()}`);
+    }
+
+    // pagination
+    const lastMessage = messages.last();
+    if (lastMessage) {
+      lastId = lastMessage.id;
+      lastIds[channel.id] = lastId;
+    }
+
+    if (totalMessages % MAX_MESSAGES_BEFORE_SAVE === 0) {
+      await saveLastIds();
+      console.log(`💾 Saved progress after ${totalMessages} messages`);
     }
   }
 
   await saveLastIds();
   progressBar.stop();
-  console.log(`✅ Done with ${channel.name}`);
+  console.log(`✅ Done scanning ${channel.name}`);
 }
 
 async function main() {
@@ -155,9 +170,9 @@ async function main() {
     const textChannels = Array.from(channels.values()).filter((c): c is TextChannel =>
       c?.isTextBased?.() &&
       c?.type === 0 &&
-      c?.parent &&
+      c.parent &&
       (
-        ALLOWED_CATEGORY_NAMES.includes(c.parent.name?.toLowerCase() || '') ||
+        ALLOWED_CATEGORY_NAMES.includes(c.parent.name.toLowerCase()) ||
         ALLOWED_CATEGORY_IDS.has(c.parent.id)
       )
     );
@@ -175,14 +190,15 @@ async function main() {
       await Promise.all(batch.map(channel => scanChannel(channel, guild, knownUserIds)));
     }
 
-    await saveLastIds();
     console.log("\n🏁 Scan complete!");
     console.log(`🔎 Messages scanned: ${totalMessages}`);
     console.log(`🐉 Dungeon wins recorded: ${totalDungeons}`);
     process.exit(0);
   });
 
-  client.login(process.env.DISCORD_TOKEN);
+  client.login(process.env.CLIENT_TOKEN).catch(error => {
+    console.error('Login Error:', error);
+  });
 }
 
 main();
