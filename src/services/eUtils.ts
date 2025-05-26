@@ -35,33 +35,54 @@ function createProgressBar(percent: number): string {
  * 🔍 Embed Parsers
  * ----------------------------------- */
 
-export function parseEternalEmbed(embed: any) {
-  try {
-    const stats = findField(embed, "eternal stats")?.value || "";
-    const progress = findField(embed, "eternal progress")?.value || "";
-    const equip = findField(embed, "eternal equipment")?.value || "";
+export interface EternalEmbedData {
+  eternalAT: number;
+  eternalDEF: number;
+  eternalLIFE: number;
+  eternalProgress: number;
+  lastUnsealTT: number;
+  swordTier: number;
+  swordLevel: number;
+  armorTier: number;
+  armorLevel: number;
+  _error?: string;
+}
 
-    const statsMatch = stats.match(/E-AT\*\*: (\d+).+E-DEF\*\*: (\d+).+E-LIFE\*\*: (\d+)/s);
-    const progressMatch = progress.match(/\*\*Eternality\*\*: (\d+).+\*\*Last unseal time travels\*\*: (\d+)/s);
-    const swordMatch = equip.match(/sword.*\| T(\d+) Lv(\d+)/i);
-    const armorMatch = equip.match(/armor.*\| T(\d+) Lv(\d+)/i);
+export function parseEternalEmbed(embed: any): EternalEmbedData {
+  const statsField    = embed.fields.find((f: any) => f.name.toLowerCase().includes('eternal stats'))?.value || '';
+  const progressField = embed.fields.find((f: any) => f.name.toLowerCase().includes('eternal progress'))?.value || '';
+  const equipField    = embed.fields.find((f: any) => f.name.toLowerCase().includes('eternal equipment'))?.value || '';
 
-    if (!statsMatch || !progressMatch) return { _error: "Missing key data from embed" };
+  // E-AT, E-DEF, E-LIFE
+  const statsMatch    = statsField.match(/E-AT\*\*:\s*(\d+).*?E-DEF\*\*:\s*(\d+).*?E-LIFE\*\*:\s*(\d+)/s);
+  // Eternality and Last unseal time travels
+  const progMatch     = progressField.match(/\*\*Eternality\*\*:\s*(\d+).*?\*\*Last unseal time travels\*\*:\s*(\d+)/is);
+  // sword tier/level
+  const swordMatch    = equipField.match(/sword.*?\|\s*T(\d+)\s*Lv(\d+)/i);
+  // armor tier/level
+  const armorMatch    = equipField.match(/armor.*?\|\s*T(\d+)\s*Lv(\d+)/i);
 
+  if (!statsMatch || !progMatch) {
     return {
-      eternalAT: parseInt(statsMatch[1]),
-      eternalDEF: parseInt(statsMatch[2]),
-      eternalLIFE: parseInt(statsMatch[3]),
-      eternalProgress: parseInt(progressMatch[1]),
-      lastUnsealTT: parseInt(progressMatch[2]),
-      swordTier: swordMatch ? parseInt(swordMatch[1]) : 0,
-      swordLevel: swordMatch ? parseInt(swordMatch[2]) : 0,
-      armorTier: armorMatch ? parseInt(armorMatch[1]) : 0,
-      armorLevel: armorMatch ? parseInt(armorMatch[2]) : 0
+      eternalAT: 0, eternalDEF: 0, eternalLIFE: 0,
+      eternalProgress: 0, lastUnsealTT: 0,
+      swordTier: 0, swordLevel: 0,
+      armorTier: 0, armorLevel: 0,
+      _error: 'Missing or malformed E-stats / progress field'
     };
-  } catch {
-    return { _error: "Error parsing embed" };
   }
+
+  return {
+    eternalAT:        parseInt(statsMatch[1], 10),
+    eternalDEF:       parseInt(statsMatch[2], 10),
+    eternalLIFE:      parseInt(statsMatch[3], 10),
+    eternalProgress:  parseInt(progMatch[1],  10),
+    lastUnsealTT:     parseInt(progMatch[2],  10),
+    swordTier:        swordMatch ? parseInt(swordMatch[1], 10) : 0,
+    swordLevel:       swordMatch ? parseInt(swordMatch[2], 10) : 0,
+    armorTier:        armorMatch ? parseInt(armorMatch[1], 10) : 0,
+    armorLevel:       armorMatch ? parseInt(armorMatch[2], 10) : 0,
+  };
 }
 
 export function parseProfileEmbed(embed: any) {
@@ -73,22 +94,51 @@ export function parseProfileEmbed(embed: any) {
   };
 }
 
-export function parseInventoryEmbed(embed: any) {
-  const val = findField(embed, "items")?.value || findField(embed, "more items")?.value || "";
-  const match = val.match(/eternity\s*flame\*\*?:\s*([\d,]+)/i);
-  return { eternityFlames: parseInt((match?.[1] || "0").replace(/,/g, "")) };
+export function parseInventoryEmbed(embed: any): { eternityFlames: number } {
+  // 1️⃣ find the field whose value mentions "eternity flame" (case-insensitive)
+  const flameField = embed.fields.find(f => /eternity\s*flame/i.test(f.value));
+  if (!flameField) {
+    console.debug("🔥 parseInventoryEmbed: no field mentions 'eternity flame'");
+    return { eternityFlames: 0 };
+  }
+
+  // 2️⃣ split into lines
+  const lines = flameField.value.split(/\r?\n/);
+
+  // 3️⃣ find the exact line
+  const flameLine = lines.find(l => /eternity\s*flame/i.test(l));
+  if (!flameLine) {
+    return { eternityFlames: 0 };
+  }
+
+  console.debug("🔥 parseInventoryEmbed: flameLine =", flameLine);
+
+  // 4️⃣ strip bold markdown and match the number
+  const cleaned = flameLine.replace(/\*\*/g, '');
+  const m = cleaned.match(/([\d,]+)\s*$/);
+  const n = m ? parseInt(m[1].replace(/,/g, '')) : 0;
+
+  console.debug("🔥 parseInventoryEmbed → eternityFlames =", n);
+  return { eternityFlames: n };
 }
 
-export function parseDungeonEmbed(embed: any) {
-  try {
-    const rewardsField = embed.fields?.find((f: any) => f.name.toLowerCase().includes("rewards"));
-    if (!rewardsField) return { _error: "❌ No Rewards field found in embed." };
+export interface DungeonEmbedData {
+  flamesEarned: number;
+  _error?: string;
+}
 
-    const flamesMatch = rewardsField.value.match(/([\d,]+)\s*<:eternityflame/i);
-    return { flamesEarned: flamesMatch ? parseInt(flamesMatch[1].replace(/,/g, '')) : 0 };
-  } catch {
-    return { _error: "❌ Failed to parse dungeon embed." };
+export function parseDungeonEmbed(embed: any): DungeonEmbedData {
+  const winField = embed.fields.find((f: any) =>
+    f.name.toLowerCase().includes('eternity flame')
+  );
+  if (!winField) {
+    return { flamesEarned: 0, _error: 'No eternity‐flame field' };
   }
+  const m = winField.name.match(/won\s*([\d,]+)\s*<:eternityflame/i);
+  if (!m) {
+    return { flamesEarned: 0, _error: 'Couldn’t extract flame number' };
+  }
+  return { flamesEarned: parseInt(m[1].replace(/,/g, ''), 10) };
 }
 
 /** -------------------------------------
