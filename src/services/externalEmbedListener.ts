@@ -147,8 +147,11 @@ export async function handleEternalDungeonVictory(message: Message): Promise<voi
   }
   if (!flamesEarned) return;
 
-  await addEternalDungeonWin(userId, guildId, flamesEarned);
-  console.log(`🐉 +${flamesEarned.toLocaleString()} dungeon flames for ${author}`);
+  // Use the time of the detected embed as winDate
+  const winDate = message.createdAt;
+
+  await addEternalDungeonWin(userId, guildId, flamesEarned, winDate);
+  console.log(`🐉 +${flamesEarned.toLocaleString()} dungeon flames for ${author} on ${winDate.toISOString()}`);
   await forceProfileSync(userId, guildId);
 }
 
