@@ -16,16 +16,11 @@ export class CommandRegistrar {
 
   static async registerCommands(client: ExtendedClient): Promise<void> {
     try {
-      console.log('[DEBUG] Loading commands...');
 
       const commandFiles: string[] = await ModuleManager.getAllModulePaths(this.folderPath);
-      console.log('[DEBUG] Command files:', commandFiles);
-
       const commandModules: any[] = await Promise.all(commandFiles.map(ModuleManager.importModule));
 
       commandModules.forEach((module, index: number): void => {
-        console.log(`[DEBUG] Import result from ${commandFiles[index]}:`, module);
-
         this.registerCommand(client, module, commandFiles[index]);
       });
     } catch (err) {
