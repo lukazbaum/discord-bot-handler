@@ -13,8 +13,8 @@ export async function syncAllProfiles(): Promise<void> {
 
   for (const { user_id, guild_id } of users) {
     const [profile, plan, unseals, dungeons] = await Promise.all([
-      getEternityProfile(user_id, guild_id),
-      getEternityPlan(user_id, guild_id),
+      getEternityProfile(user_id),
+      getEternityPlan(user_id),
       getEternalUnsealHistory(user_id),
       getEternalDungeonWins(user_id, guild_id)
     ]);

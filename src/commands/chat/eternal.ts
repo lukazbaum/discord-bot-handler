@@ -7,8 +7,8 @@ import { EmbedBuilder,
   ButtonStyle } from 'discord.js';
 import { buildEternalProfilePages } from '../../services/eternalProfilePages';
 import { loadEternalProfile } from '../../services/eternityProfile';
-import { calculateFullInfo, formatPage1, formatPage2, formatPagePower, formatPage4 } from '../../services/eUtils';
-import { getEternityPlan, saveEternityPlan, updateEternityPlan, getEternalPathChoice } from '../../../../ep_bot/extras/functions.js';
+import { calcBonusTT, calculateFullInfo, formatPage1, formatPage2, formatPagePower, formatPage4, buildLeaderboardEmbed} from '../../services/eUtils';
+import { getEternityPlan, saveEternityPlan, updateEternityPlan, getEternalPathChoice, getGlobalLeaderboard, getLeaderboard, getUserRank} from '../../../../ep_bot/extras/functions.js';
 import { paginateEmbedWithSelect } from '../../utils/paginateEmbedWithSelect';
 
 export default new PrefixCommand({
@@ -25,7 +25,7 @@ export default new PrefixCommand({
     const guildId = message.guild!.id;
 
     if (!subcommand) {
-      await message.reply('❓ Usage: `ep eternal profile`, `ep eternal predict -d <days>`, or `ep eternal setplan -tt <tt> -d <days>`');
+      await message.reply('❓ Usage: `ep eternal profile`, `ep eternal predict -d <days>`, or `ep eternal setplan -tt <tt> -d <days> -t <targetE>`');
       return;
     }
     if (subcommand === 'help') {
@@ -44,11 +44,11 @@ export default new PrefixCommand({
                 value: "Simulate your next unseal based on Time Travel and seal duration. Estimates Bonus TT, readiness, and gear.",
                 inline: false
               },
-              {
-                name: "🗓️ `ep eternal setplan -tt <goal> -d <days>`",
-                value: "Save your Eternity target plan in the database so predictions remember it.",
-                inline: false
-              },
+            {
+              name: "🗓️ `ep eternal setplan -tt <goal> -d <days> -e <target>`",
+              value: "Save your Eternity target plan in the database so predictions remember it.",
+              inline: false
+            },
               {
                 name: "📘 `ep eternal myplan`",
                 value: "[UNDER DEVELOPMENT] View your saved Eternity plan with bonus projections, flame needs, dungeon estimates, and gear status.",
@@ -79,8 +79,8 @@ export default new PrefixCommand({
 
     if (subcommand === 'profile') {
       try {
-        const { pages, labels } = await buildEternalProfilePages(userId, guildId);
-        await paginateEmbedWithSelect(message, pages, 120_000, labels);
+          const { pages, labels } = await buildEternalProfilePages(userId, guildId, message.client, undefined);
+          await paginateEmbedWithSelect(message, pages, 120_000, labels);
       } catch (err) {
         console.error("❌ Error loading profile pages:", err);
         await message.reply('❌ Could not load your Eternity Profile.');
@@ -91,32 +91,45 @@ export default new PrefixCommand({
     if (subcommand === 'setplan') {
       const ttIndex = args.findIndex(arg => arg === '-tt');
       const dIndex = args.findIndex(arg => arg === '-d');
+      const targetIndex = args.findIndex(arg => ['-e', '-target'].includes(arg));
+      const targetEternity = targetIndex !== -1 ? parseInt(args[targetIndex + 1]) : undefined;
+
+      if (targetIndex !== -1 && isNaN(targetEternity)) {
+        await message.reply("❌ Invalid target Eternity provided after `-e`. Please use a valid number.");
+        return;
+      }
 
       const ttGoal = ttIndex !== -1 ? parseInt(args[ttIndex + 1]) : NaN;
       const days = dIndex !== -1 ? parseInt(args[dIndex + 1]) : NaN;
 
       if (isNaN(ttGoal) || isNaN(days)) {
-        await message.reply('❌ Invalid usage. Use: `ep eternal setplan -tt <tt_goal> -d <days>`');
+        await message.reply('❌ Invalid usage. Use: `ep eternal setplan -tt <tt_goal> -d <days> -target <Eternity>`\n\nYou can also omit `-tt` to default to your last unseal TT.');
         return;
       }
 
-      const profile = await loadEternalProfile(userId, guildId);
+      // Load the profile using userId only (now global)
+      const profile = await loadEternalProfile(userId);
       if (!profile) {
         await message.reply('❌ No Eternity Profile found. Run `rpg p e` and try again.');
         return;
       }
-
 
       if (!profile.swordTier || !profile.armorTier) {
         await message.reply("❗ I need your sword and armor tier to evaluate flame discounts. Please run `rpg p e` and try again.");
         return;
       }
 
+      // Check if plan already exists (global, by userId)
+      const existingPlan = await getEternityPlan(userId);
+
+      // Only set guildId if there is not one already
+      const planGuildId = existingPlan?.guildId || message.guild?.id;
+
       const plan = {
         userId,
-        guildId,
+        guildId: planGuildId,
         currentEternity: profile.currentEternity,
-        targetEternity: profile.targetEternity || (profile.currentEternity + 200),
+        targetEternity: targetEternity ?? profile.targetEternity ?? (profile.currentEternity + 200),
         ttGoal,
         flamesNeeded: 0,
         dungeonsNeeded: 0,
@@ -130,26 +143,37 @@ export default new PrefixCommand({
         daysSealed: days
       };
 
-      const existingPlan = await getEternityPlan(userId, guildId);
+      const ttGained = plan.ttGoal - (profile.lastUnsealTT ?? 0);
+      const bonusEstimate = calcBonusTT(
+        profile.currentEternity,
+        Math.max(1, ttGained),
+        plan.daysSealed
+      );
 
       if (existingPlan) {
         await updateEternityPlan(userId, guildId, {
+          current_eternity: profile.currentEternity,
           tt_goal: plan.ttGoal,
           target_eternity: plan.targetEternity,
-          days_sealed: plan.daysSealed
+          days_sealed: plan.daysSealed,
+          bonus_tt_estimate: bonusEstimate
+          // Don't pass guildId; keep original
         });
-        await message.reply(`🔄 Plan updated: TT Goal = ${ttGoal}, Days Sealed = ${days}`);
+        await message.reply(`✅ Plan updated: TT Goal = ${ttGoal} ${ttIndex === -1 ? "(from last unseal)" : ""}, Days Sealed = ${days}, Target Eternity ≈ ${targetEternity}`);
       } else {
-        await saveEternityPlan(plan);
-        await message.reply(`✅ Plan saved: TT Goal = ${ttGoal}, Days Sealed = ${days}`);
+        await saveEternityPlan({
+          ...plan,
+          bonus_tt_estimate: bonusEstimate
+        });
+        await message.reply(`✅ Plan saved: TT Goal = ${ttGoal} ${ttIndex === -1 ? "(from last unseal)" : ""}, Days Sealed = ${days}, Target Eternity ≈ ${targetEternity}`);
       }
       return;
     }
 
     if (subcommand === 'myplan') {
       const [savedPlan, savedPath] = await Promise.all([
-        getEternityPlan(userId, guildId),
-        getEternalPathChoice(userId, guildId)
+        getEternityPlan(userId),
+        getEternalPathChoice(userId)
       ]);
 
       if (!savedPlan && !savedPath) {
@@ -206,21 +230,77 @@ export default new PrefixCommand({
       );
       return;
     }
+    function parseStatAlias(raw) {
+      const normalized = (raw || '').toLowerCase();
+      if (["flames", "flame", "f"].includes(normalized)) return "flames";
+      if (["wins", "win", "dungeons", "dungeon", "w"].includes(normalized)) return "wins";
+      if (["bonus", "tt", "bonus_tt", "bonustt", "b"].includes(normalized)) return "bonus";
+      return "flames";
+    }
+
+    if (subcommand === 'leaderboard' || subcommand === 'lb') {
+      // ep eternal leaderboard [flames|wins|bonus|alias] [topN] [global|server]
+      let stat = parseStatAlias(args[1] || 'flames');
+      let topN = Math.max(3, Math.min(Number(args[2]) || 10, 20));
+      let scopeArg = args[3]?.toLowerCase();
+      let showBoth = !scopeArg || (scopeArg !== "global" && scopeArg !== "server");
+      let guildName = message.guild?.name ?? "this server";
+      let guildId = message.guild?.id ?? "";
+
+      // force one only if specified
+      let scopes: ("global" | "server")[] = showBoth ? ["global", "server"] : [scopeArg as "global" | "server"];
+
+      try {
+        const results = await Promise.all(scopes.map(scope => {
+          if (scope === "global") {
+            return getLeaderboard({ stat, scope: "global", topN });
+          } else {
+            return getLeaderboard({ stat, scope: "server", guildId, topN });
+          }
+        }));
+
+        // Build both embeds
+        const userRanks = await Promise.all(scopes.map(scope => {
+          if (scope === "global") {
+            return getUserRank({ userId, stat, scope: "global" });
+          } else {
+            return getUserRank({ userId, stat, scope: "server", guildId });
+          }
+        }));
+
+        let embeds = [];
+        for (let i = 0; i < scopes.length; ++i) {
+          const scope = scopes[i];
+          const rows = results[i];
+          const yourRank = userRanks[i];
+          embeds.push(buildLeaderboardEmbed(
+            rows, stat, scope, scope === "server" ? guildName : null, yourRank, userId
+          ));
+        }
+        await message.reply({ embeds });
+      } catch (err) {
+        console.error("❌ Error in leaderboard:", err);
+        await message.reply('❌ Could not load leaderboard.');
+      }
+      return;
+    }
 
     if (subcommand === 'predict') {
       const ttIndex = args.findIndex(arg => arg === '-tt');
       const dIndex = args.findIndex(arg => arg === '-d');
 
+      const targetIndex = args.findIndex(arg => ['-e', '-target'].includes(arg));
+      const manualTarget = targetIndex !== -1 ? parseInt(args[targetIndex + 1]) : undefined;
+
       const manualTT = ttIndex !== -1 ? parseInt(args[ttIndex + 1]) : undefined;
       const manualDays = dIndex !== -1 ? parseInt(args[dIndex + 1]) : undefined;
 
-      const profile = await loadEternalProfile(userId, guildId);
+      const profile = await loadEternalProfile(userId);
       if (!profile) {
         await message.reply('❌ No Eternity Profile found. Run `rpg p e` and try again.');
         return;
       }
 
-      // ✅ Ensure we have sword and armor tier for discount check
       if (!profile.swordTier || !profile.armorTier) {
         await message.reply({
           embeds: [
@@ -238,10 +318,12 @@ export default new PrefixCommand({
         return;
       }
 
-      const savedPlan = await getEternityPlan(userId, guildId);
-      const ttGoal = manualTT ?? savedPlan?.ttGoal;
+      const savedPlan = await getEternityPlan(userId);
+      const ttGoal = ttIndex !== -1
+        ? parseInt(args[ttIndex + 1])
+        : savedPlan?.ttGoal ?? profile.lastUnsealTT ?? NaN;
       const daysUntilUnseal = manualDays ?? savedPlan?.daysSealed;
-      const targetEternity = savedPlan?.targetEternity ?? (profile.currentEternity + 200);
+      const targetEternity = manualTarget ?? savedPlan?.targetEternity ?? (profile.currentEternity + 200);
 
       if (!ttGoal || !daysUntilUnseal || typeof profile.currentEternity !== 'number') {
         await message.reply({
@@ -269,15 +351,23 @@ export default new PrefixCommand({
         eternityFlames: profile.flamesOwned ?? 0
       };
 
-      const result = calculateFullInfo(
-        eternal,
-        profile,
-        inventory,
-        targetEternity,
-        36,
+      const result = {
+        ...calculateFullInfo(
+          eternal,
+          profile,
+          inventory,
+          targetEternity,
+          36,
+          ttGained,
+          daysUntilUnseal
+        ),
+        ttGoal,
+        lastUnsealTT,
         ttGained,
-        daysUntilUnseal
-      );
+        daysSealed: daysUntilUnseal,
+        currentEternality: profile.currentEternity,
+        targetEternity
+      };
 
       if (result._error) {
         await message.reply({
@@ -310,6 +400,5 @@ export default new PrefixCommand({
       return;
     }
 
-    await message.reply('❓ Unknown subcommand. Try `ep eternal profile`, `ep eternal predict -tt <goal> -d <days>`, or `ep eternal setplan -tt <goal> -d <days>`');
-  }
+    await message.reply('❌ Invalid usage. Use: `ep eternal setplan -tt <tt_goal> -d <days> -e <targetEternity>`');  }
 });

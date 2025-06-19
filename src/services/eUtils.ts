@@ -98,7 +98,6 @@ export function parseInventoryEmbed(embed: any): { eternityFlames: number } {
   // 1️⃣ find the field whose value mentions "eternity flame" (case-insensitive)
   const flameField = embed.fields.find(f => /eternity\s*flame/i.test(f.value));
   if (!flameField) {
-    console.debug("🔥 parseInventoryEmbed: no field mentions 'eternity flame'");
     return { eternityFlames: 0 };
   }
 
@@ -178,10 +177,13 @@ function getPredictedWeaponTier(eternity: number) {
   return { tier, level };
 }
 
-function calcBonusTT(eternity: number, tt: number, days: number): number {
-  if (!eternity || !tt || !days) return 0;
+export function calcBonusTT(eternity: number, tt: number, days: number): number {
+  if (!Number.isFinite(eternity) || !Number.isFinite(tt) || !Number.isFinite(days)) return 0;
+  if (eternity <= 0 || tt < 0 || days < 0) return 0;
+
   const bonusMultiplier = 1 + (days * 0.01);
-  return Math.floor(eternity * (tt + (days / 15)) * 3 / 2500 * bonusMultiplier);
+  const baseValue = eternity * (tt + (days / 15)) * 3 / 2500;
+  return Math.floor(baseValue * bonusMultiplier);
 }
 
 function getEfficiencyEmoji(ratio: number): string {
@@ -339,8 +341,12 @@ export function formatPagePower(result: any) {
   const estimatedDungeonsForPotency = potencyNeeded > 0 ? Math.ceil(potencyNeeded / 2) : 0;
 
   const ttEfficiency = result.ttGained > 0 ? result.bonusTT / result.ttGained : 0;
-  const ttColor = ttEfficiency >= 4 ? "🟢" : ttEfficiency >= 2 ? "🟡" : "🔴";
-
+  const ttEffRatio = parseFloat(ttEfficiency.toFixed(2));
+  const ttColor =
+    ttEffRatio >= 3.0 ? "💎" :
+      ttEffRatio >= 2.0 ? "🟢" :
+        ttEffRatio >= 1.5 ? "🟡" :
+          "🔴";
   const meetsPower = currentATK >= result.atkPowerNeeded;
   const meetsBite = currentATK >= result.atkBitePowerNeeded;
 
@@ -348,6 +354,12 @@ export function formatPagePower(result: any) {
     .setTitle("⚡ Eternal Unseal & Gear Success Prediction")
     .setColor("#ff7043")
     .setDescription([
+      "📊 **Prediction Inputs**",
+      `• Planned TT Gain: \`${safeLocale(result.ttGained)}\``,
+      `• Days Sealed: \`${safeLocale(result.daysSealed)}\``,
+      `• Current Eternity: \`${safeLocale(result.currentEternality)}\``,
+      `• Target Eternity: \`${safeLocale(result.targetEternity)}\``,
+      "─────────────────────────────\n",
       `🛡️ **Power 40%:** ${meetsPower ? "☑️ Achievable" : `❌ Needs 🗡️ ${gearName}`}`,
       `💙 **Power+Bite 52%:** ${meetsBite ? "☑️ Achievable" : `❌ Missing +${safeLocale(result.atkBitePowerNeeded - currentATK)} ATK`}`,
       "",
@@ -359,18 +371,28 @@ export function formatPagePower(result: any) {
       `🔥 **Unseal Cost (Now):** **${safeLocale(result.currentUnsealFlames)}** flames${result.discountApplied ? " *(T6+ gear discount applied 🛡️)*" : ""}`,
       `${ttColor} **Bonus TT / TT gained:** **${ttEfficiency.toFixed(1)}**`,
       `📈 **Total Bonus TTs at unseal:** **${safeLocale(result.bonusTT)}**`
-    ].filter(Boolean).join("\n"))
+    ].join("\n"))
     .setTimestamp();
 }
 
 export function formatPage1(result: any) {
-  if (!result || !result.targetEternity || typeof result.targetEternity !== 'number') {
+  // Validate presence of all necessary numbers
+  if (
+    !result ||
+    typeof result.targetEternity !== 'number' ||
+    typeof result.ttGoal !== 'number' ||
+    typeof result.lastUnsealTT !== 'number' ||
+    typeof result.ttGained !== 'number' ||
+    typeof result.daysSealed !== 'number' ||
+    typeof result.currentEternality !== 'number'
+  ) {
     return new EmbedBuilder()
       .setTitle("⚠️ Incomplete Eternity Plan")
-      .setDescription("Missing Eternity goal. Please set it with:\n`ep eternal setplan -tt <goal> -d <days>`\nOr use `ep eternal predict -tt <tt> -d <days>` to override.")
+      .setDescription("Missing Eternity data. Please set your plan with:\n`ep eternal setplan -tt <goal> -d <days>`\nOr use `ep eternal predict -tt <tt> -d <days>` to override.")
       .setColor("#ff3333");
   }
 
+  // Calculate efficiency, styles, alt plans
   const ttPerDay = result.ttGained / result.daysSealed;
   const currentStyle = classifyPlanStyle(ttPerDay);
   const currentPlan = {
@@ -396,15 +418,23 @@ export function formatPage1(result: any) {
     currentPlan.days
   );
 
+  // Compose the "Prediction Inputs" section using actual numbers
+  const inputSummary = [
+    "📊 **Prediction Inputs**",
+    `• 🕰️ TT Goal: \`${safeLocale(result.ttGoal)}\``,
+    `• 🔓 Last Unseal TT: \`${safeLocale(result.lastUnsealTT)}\``,
+    `• 🧮 Est. TTs Gained: \`${safeLocale(result.ttGained)}\``,
+    `• ⏳ Days Sealed: \`${safeLocale(result.daysSealed)}\``,
+    `• 🌟 Current Eternity: \`${safeLocale(result.currentEternality)}\``,
+    `• 🎯 Target Eternity: \`${safeLocale(result.targetEternity)}\``,
+    ""
+  ];
+
   return new EmbedBuilder()
     .setTitle("📈 Eternal Sealed Progress & Bonus Planning")
-    .setDescription("🔮 Grind Time Travels during sealed Eternity to maximize your Bonus TT when unsealing!")
+    .setDescription(inputSummary.join('\n') + "\n" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     .setColor(result.canUnseal ? "#00cc66" : "#cc0000")
     .addFields(
-      { name: "🎯 Target Eternity", value: safeLocale(result.targetEternity), inline: true },
-      { name: "⛏️ Dungeons Needed", value: safeLocale(result.dungeonsNeeded), inline: true },
-      { name: "🍪 Estimated TCs", value: safeLocale(result.estTC), inline: true },
-      { name: "🛡️ Gear Discount", value: result.discountApplied ? "✅ Applied (T6+ gear equipped)" : "❌ Not Eligible", inline: true },
       { name: "📘 Current Strategy", value: `${currentPlan.name} – ${currentPlan.tt} TTs over ${currentPlan.days} days → ${getEfficiencyEmoji(currentPlan.ratio)} **${safeLocale(currentPlan.bonusTT)} Bonus TT** (${currentPlan.ratio.toFixed(2)}x)`, inline: false },
       {
         name: "🧪 Strategy Comparison", value: [
@@ -519,6 +549,52 @@ export function formatPage4(result: any, profile: any) {
     )
     .setFooter({ text: "Compare current weapon stats against your Eternity goal gear." })
     .setTimestamp();
+}
+function statDisplay(stat) {
+  if (stat === "flames") return { name: "Flames", emoji: "🔥" };
+  if (stat === "wins") return { name: "Dungeon Wins", emoji: "🏰" };
+  if (stat === "bonus") return { name: "Bonus TT", emoji: "🌀" };
+  return { name: "Flames", emoji: "🔥" };
+}
+
+export function buildLeaderboardEmbed(
+  rows,
+  stat = "flames",
+  scope = "global",
+  guildName = null,
+  yourRank,
+  userId
+) {
+  const statNames = {
+    flames: { name: "Flames", emoji: "🔥" },
+    wins: { name: "Dungeon Wins", emoji: "🏰" },
+    bonus: { name: "Bonus TT", emoji: "🌀" }
+  };
+  const { name, emoji } = statNames[stat];
+  const scopeStr = scope === "server" && guildName ? `in ${guildName}` : "Global";
+  let title = `🌎 Eternity Leaderboard: ${name} ${emoji} (${scopeStr})`;
+
+  // Are you in the visible top N?
+  const inTop = rows.findIndex(r => r.userId == userId);
+
+  let desc = rows.length
+    ? rows.map((u, i) => {
+      const isUser = userId && u.userId == userId;
+      const line = `#${i + 1} <@${u.userId}> — ...`;
+      return isUser ? `**⭐ ${line} (You)**` : line;
+    }).join('\n')
+    : "_No data found!_";
+
+  if (yourRank && (inTop === -1 || yourRank !== inTop + 1)) {
+    desc += `\n\n👤 **Your Rank:** #${yourRank}`;
+  }
+
+
+  return new EmbedBuilder()
+    .setTitle(title)
+    .setColor(scope === "server" ? "#007bff" : "#d4af37")
+    .setDescription(desc)
+    .setFooter({ text: scope === "server" && guildName ? `This server only` : `Global stats across all servers!` });
 }
 // ────── Suggestion Logic ──────
 

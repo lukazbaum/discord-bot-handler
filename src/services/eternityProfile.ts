@@ -1,4 +1,3 @@
-// src/services/eternityProfile.ts
 import {
   saveOrUpdateEternityProfile,
   getEternityProfile,
@@ -8,13 +7,14 @@ import {
 
 import type { EternalProfileData } from './eternalProfile';
 
-export async function loadEternalProfile(userId: string, guildId: string): Promise<EternalProfileData | null> {
-  const profile = await getEternityProfile(userId, guildId);
+// Loads the single global profile for this user.
+export async function loadEternalProfile(userId: string): Promise<EternalProfileData | null> {
+  const profile = await getEternityProfile(userId);
   if (!profile) return null;
 
   return {
     userId,
-    guildId,
+    guildId: profile.guild_id ?? null,
     username: profile.username ?? null,
     currentEternity: profile.current_eternality ?? 0,
     flamesOwned: profile.flames_owned ?? 0,
@@ -28,18 +28,20 @@ export async function loadEternalProfile(userId: string, guildId: string): Promi
     armorLevel: profile.armor_level ?? undefined,
     pathChoice: profile.path_choice ? JSON.parse(profile.path_choice) : undefined,
     unsealHistory: await getEternalUnsealHistory(userId) ?? [],
-    dungeonWins: await getDungeonWins(userId, guildId) ?? []
+    dungeonWins: await getDungeonWins(userId) ?? []
   };
 }
 
-export async function updateEternity(userId: string, guildId: string, newEternity: number): Promise<string> {
-  return await saveOrUpdateEternityProfile(userId, guildId, newEternity);
+// Updates only by userId
+export async function updateEternity(userId: string, newEternity: number): Promise<string> {
+  return await saveOrUpdateEternityProfile(userId, newEternity);
 }
 
-export async function ensureEternityProfile(userId: string, guildId: string): Promise<void> {
-  const profile = await getEternityProfile(userId, guildId);
+// Ensures a single profile per userId
+export async function ensureEternityProfile(userId: string, guildId?: string): Promise<void> {
+  const profile = await getEternityProfile(userId);
   if (!profile) {
     console.log(`🆕 Creating new Eternity Profile for user ${userId}`);
-    await saveOrUpdateEternityProfile(userId, guildId, 0, 0);
+    await saveOrUpdateEternityProfile(userId, 0, guildId);
   }
 }

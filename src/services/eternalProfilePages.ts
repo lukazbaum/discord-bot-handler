@@ -1,64 +1,102 @@
-// eternalProfilePages.ts
-
-import { EmbedBuilder, time, TimestampStyles } from 'discord.js';
+import { EmbedBuilder, time, TimestampStyles, Client } from 'discord.js';
 import { loadEternalProfile, ensureEternityProfile } from './eternityProfile';
-import { getEternityPlan, getEternalUnsealHistory, getEternityProfile } from '/home/ubuntu/ep_bot/extras/functions';
+import {
+  getEternityPlan,
+  getEternalUnsealHistory,
+  getDungeonWinsByServer,
+  getUnsealsByServer
+} from '/home/ubuntu/ep_bot/extras/functions';
 
+/**
+ * Get Discord guild/server name or fallback.
+ */
+function getGuildName(client: Client, guildId: string): string {
+  return client.guilds.cache.get(guildId)?.name || `Server ${guildId}`;
+}
+
+/**
+ * Build per-server Eternity stats breakdown page.
+ */
+export async function buildServerBreakdownPage(userId: string, client: Client): Promise<EmbedBuilder> {
+  const wins = await getDungeonWinsByServer(userId) as any[];
+  const unseals = await getUnsealsByServer(userId) as any[];
+
+  // Map unseals by guild for quick lookup
+  const unsealsMap = Object.fromEntries((unseals ?? []).map((u: any) => [u.guildId, u]));
+
+  let desc = '';
+  for (const server of wins) {
+    const guildName = getGuildName(client, server.guildId);
+    const serverUnseals = unsealsMap[server.guildId];
+
+    desc += `__**🏰 ${guildName}**__\n`;
+    desc += `• Dungeon Wins: **${server.wins || 0}**\n`;
+    desc += `• Flames: **${Number(server.flames || 0).toLocaleString()}**\n`;
+    if (serverUnseals) {
+      const dateStr = (serverUnseals.dates || '').split(',').slice(0, 3).join(', ');
+      desc += `• Unseals: **${serverUnseals.unseals || 0}**`;
+      if (dateStr) desc += `\n• Last Unseals: ${dateStr}`;
+    }
+    desc += `\n\n`;
+  }
+  if (!desc) desc = "No stats found for this user across servers.";
+
+  return new EmbedBuilder()
+    .setColor(0x6a5acd)
+    .setTitle("🌐 Eternity Stats By Server")
+    .setDescription(desc)
+    .setFooter({ text: "Server-by-server Eternity overview" });
+}
+
+/**
+ * Build the main Eternity Profile pages (global, not per-guild).
+ */
 export async function buildEternalProfilePages(
   userId: string,
-  guildId: string,
-  discordUsername?: string
+  _guildId: string, // Only used for fallback, profile is always global
+  client: Client,
+  discordUsername?: string,
 ): Promise<{ pages: EmbedBuilder[]; labels: string[] }> {
-  // 1. Load or create profile
-  let profile = await loadEternalProfile(userId, guildId);
+  // 1. Load or create profile (global scope)
+  let profile = await loadEternalProfile(userId);
   if (!profile) {
-    await ensureEternityProfile(userId, guildId);
-    profile = await loadEternalProfile(userId, guildId);
+    await ensureEternityProfile(userId, _guildId);
+    profile = await loadEternalProfile(userId);
     if (!profile) throw new Error(`Failed to create Eternity Profile for ${userId}`);
   }
 
-  const displayName      = discordUsername ?? 'Eternity User';
-  const dbRow = await getEternityProfile(userId, guildId);
-  const flamesOwned = dbRow?.flames_owned ?? 0;
-
-  const {
-    currentEternity = 0,
-    dungeonWins     = [],
-    lastUnsealTT    = 0,
-    ttsGainedDuringSeal = 0
-  } = profile;
-
-  // 2. Load plan
-  const plan          = await getEternityPlan(userId, guildId);
+  const displayName = discordUsername ?? profile.username ?? 'Eternity User';
+  const flamesOwned = profile.flamesOwned ?? 0;
+  const currentEternity = profile.currentEternity ?? 0;
+  const dungeonWins = profile.dungeonWins ?? [];
+  const lastUnsealTT = profile.lastUnsealTT ?? 0;
+  const unsealHistory = profile.unsealHistory ?? [];
+  const lastUnseal = unsealHistory[0];
+  const lastBonusTT = lastUnseal?.bonusTT ?? 0;
+  const plan = await getEternityPlan(userId, _guildId);
   const plannedTarget = plan?.targetEternity ?? 'N/A';
 
-  // 3. Pull raw unseals & filter by guild, take 10 most recent
-  const rawUnseals    = await getEternalUnsealHistory(userId, guildId);
-  const unsealHistory = (rawUnseals as any[]).slice(0, 10);  // already newest first
-  const lastUnseal    = unsealHistory[0];
-  const lastBonusTT   = lastUnseal?.bonusTT ?? 0;
-
-  // 4. Page 1 – Summary
+  // --- PAGE 1: Eternity Profile (Global) ---
   const page1 = new EmbedBuilder()
     .setTitle('📜 Eternal Profile')
     .setDescription(`**${displayName}**’s Eternity overview`)
     .setColor('#00ccff')
     .addFields(
-      { name: '🏆 Current Eternity',   value: currentEternity.toLocaleString(), inline: true },
-      { name: '📌 Target Goal',         value: `${plannedTarget}`,               inline: true },
-      { name: '📅 Last Unseal Date',    value: lastUnseal
-          ? time(new Date(lastUnseal.unsealDate), TimestampStyles.ShortDate)
-          : 'N/A',                           inline: true },
-      { name: '⏳ Last Unseal TT',      value: `${lastUnsealTT.toLocaleString()} TT`, inline: true },
-      { name: '💠 Last Bonus TT',       value: `${lastBonusTT.toLocaleString()} 🌀`,    inline: true },
-      { name: '🔥 Flames Owned',        value: flamesOwned.toLocaleString(),           inline: true },
-      { name: '🏰 Dungeon Wins',        value: dungeonWins.length.toLocaleString(),    inline: true }
+      { name: '🏆 Current Eternity', value: currentEternity.toLocaleString(), inline: true },
+      { name: '📌 Target Goal', value: `${plannedTarget}`, inline: true },
+      { name: '📅 Last Unseal Date', value: lastUnseal
+          ? time(new Date(lastUnseal.createdAt), TimestampStyles.ShortDate)
+          : 'N/A', inline: true },
+      { name: '⏳ Last Unseal TT', value: `${lastUnsealTT.toLocaleString()} TT`, inline: true },
+      { name: '💠 Last Bonus TT', value: `${lastBonusTT.toLocaleString()} 🌀`, inline: true },
+      { name: '🔥 Flames Owned', value: flamesOwned.toLocaleString(), inline: true },
+      { name: '🏰 Dungeon Wins', value: dungeonWins.length.toLocaleString(), inline: true }
     )
     .setFooter({ text: 'ParkMan Eternal Progress Tracker' })
     .setTimestamp();
 
-  // 5. Page 2 – 90-Day Summary
-  const past90Days   = Array.from({length:90}, (_,i)=> {
+  // --- PAGE 2: 90-Day Dungeon Summary ---
+  const past90Days = Array.from({length:90}, (_,i)=> {
     const d = new Date();
     d.setDate(d.getDate() - (89 - i));
     return d.toISOString().slice(0,10);
@@ -107,7 +145,27 @@ export async function buildEternalProfilePages(
     .setFooter({ text: 'Includes only days with dungeon wins.' })
     .setTimestamp();
 
-  // 6. Page 3 – Monthly History
+  // --- PAGE 3: Unseal History (last 10) ---
+  const page3 = new EmbedBuilder()
+    .setTitle('🔓 Your Last Unseals')
+    .setColor('#ff4444')
+    .setDescription(
+      unsealHistory.length
+        ? unsealHistory
+          .slice(0, 10)
+          .map(u => {
+            const dateStr = time(new Date(u.createdAt), TimestampStyles.ShortDate);
+            const flames  = `🔥 -${(u.flamesCost ?? 0).toLocaleString()} flames`;
+            const bonus   = `🌀 +${(u.bonusTT ?? 0).toLocaleString()} TT`;
+            const lvl     = `📈 E-${u.eternalityAtUnseal ?? "?"}`;
+            return `:small_blue_diamond:  ${dateStr} ┃ ${flames} ┃ ${bonus} ┃ ${lvl}`;
+          })
+          .join('\n')
+        : "You haven't unsealed yet!"
+    )
+    .setTimestamp();
+
+  // --- PAGE 4: Monthly Dungeon History ---
   const monthlyFlames = new Map<string,number>();
   const monthlyWins   = new Map<string,number>();
   dungeonWins.forEach(w=>{
@@ -120,7 +178,7 @@ export async function buildEternalProfilePages(
     .sort((a,b)=>a[0].localeCompare(b[0]))
     .map(([m,v])=> `**${m}**: ${v.toLocaleString()} 🔥 (${monthlyWins.get(m)||0} wins)`);
 
-  const page3 = new EmbedBuilder()
+  const page4 = new EmbedBuilder()
     .setTitle('📆 Monthly Dungeon History')
     .setColor('#00aaff')
     .addFields({
@@ -129,28 +187,11 @@ export async function buildEternalProfilePages(
     })
     .setTimestamp();
 
-  // 7. Page 4 – Unseal History
-  const page4 = new EmbedBuilder()
-    .setTitle('🔓 Your Last Unseals')
-    .setColor('#ff4444')
-    .setDescription(
-      unsealHistory.length
-        ? unsealHistory
-          .map(u => {
-            const dateStr = time(new Date((u as any).unsealDate), TimestampStyles.ShortDate);
-            const flames  = `🔥 -${(u as any).flamesCost.toLocaleString()} flames`;
-            const bonus   = `🌀 +${(u as any).bonusTT.toLocaleString()} TT`;
-            const lvl     = `📈 E-${(u as any).eternalityAtUnseal}`;
-            return `:small_blue_diamond:  ${dateStr} ┃ ${flames} ┃ ${bonus} ┃ ${lvl}`;
-          })
-          .join('\n')
-        : "You haven't unsealed yet!"
-    )
-    .setTimestamp();
-
+  // --- PAGE 5: By Server Breakdown ---
+  const breakdownPage = await buildServerBreakdownPage(userId, client);
 
   return {
-    pages: [page1, page2, page4, page3],
-    labels: ['📜 Profile', '📊 90-Day', '🔓 Unseals', '📆 Monthly']
+    pages: [page1, page2, page3, page4, breakdownPage],
+    labels: ['📜 Profile', '📊 90-Day', '🔓 Unseals', '📆 Monthly', '🌐 By Server']
   };
 }
