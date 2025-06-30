@@ -136,7 +136,7 @@ export default new PrefixCommand({
 
       let dbInfo = await getisland(channel.id);
       if (!dbInfo) {
-        await createisland(owner.id, channel.id);
+        await createisland(owner.id, channel.id, message.guild.id);
       } else if (dbInfo.user !== owner.id) {
         await updateOwner(owner.id, channel.id);
       }
