@@ -23,8 +23,11 @@ const defaultConfig: Config = {
   eventsFolder: 'events',
   commandsFolder: 'commands',
   componentsFolder: 'components',
-  defaultIntents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent],
-
+  defaultIntents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,   // <-- THIS LINE is critical!
+    GatewayIntentBits.MessageContent,
+  ],
   /* More customizability coming soon */
   deniedCommandReplies: {
     general: 'You are not allowed to use this command.',
