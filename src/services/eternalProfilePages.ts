@@ -29,7 +29,7 @@ export async function buildServerBreakdownPage(userId: string, client: Client): 
     const guildName = getGuildName(client, server.guildId);
     const serverUnseals = unsealsMap[server.guildId];
 
-    desc += `__**🏰 ${guildName}**__\n`;
+    desc += `__**<:ep_greenleaf:1375735418292801567> ${guildName}**__\n`;
     desc += `• Dungeon Wins: **${server.wins || 0}**\n`;
     desc += `• Flames: **${Number(server.flames || 0).toLocaleString()}**\n`;
     if (serverUnseals) {

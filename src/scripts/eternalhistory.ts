@@ -254,7 +254,6 @@ async function main() {
     console.log(`🔓 Unseals recorded: ${totalUnseals}`);
     process.exit(0);
   });
-
   client.login(process.env.DISCORD_TOKEN);
 }
 
