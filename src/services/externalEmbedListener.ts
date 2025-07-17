@@ -171,13 +171,22 @@ export async function handleEternalUnsealMessage(message: Message): Promise<void
   const guildId = message.guild.id;
   const text = message.content.trim();
 
-  // 1️⃣ Look for the "unsealed the eternity" line
-  const unsealLine = text.match(
-    /^(\S+)\s+unsealed the eternity for\s*([\d,]+)\s*<:eternityflame:.*?>/i
-  );
+  console.log("DEBUG: Unseal message received:", JSON.stringify(text));
+
+  // 1️⃣ Try the primary modern format
+  let unsealLine = text.match(/\*\*(.+?)\*\* unsealed \*\*the eternity\*\* for \*\*(\d+d)\*\* \((-?[\d,]+) <:eternityflame:.*?>\)/i);
+
+  // 2️⃣ Fallback to non-bold (older/alternate formats)
+  if (!unsealLine) {
+    unsealLine = text.match(/(\S+)\s+unsealed\s+the eternity for\s+(\d+d)\s+\((-?[\d,]+) <:eternityflame:.*?>\)/i);
+  }
+
   if (unsealLine) {
     const playerName = unsealLine[1];
-    const flamesCost = parseInt(unsealLine[2].replace(/,/g, ''), 10);
+    const duration = unsealLine[2];
+    const flamesCost = parseInt(unsealLine[3].replace(/,/g, ''), 10);
+    console.log('DEBUG: Matched unseal:', { playerName, duration, flamesCost });
+
     const userId = await tryFindUserIdByName(message.guild, playerName);
     if (!userId) return;
 
@@ -195,7 +204,6 @@ export async function handleEternalUnsealMessage(message: Message): Promise<void
     });
     return;
   }
-
   // 2️⃣ Look for the "got X time travels" line
   const ttLine = text.match(
     /^(\S+)\s+got\s*([\d,]+)\s*<:timetravel:.*?>/i

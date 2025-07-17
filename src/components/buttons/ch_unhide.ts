@@ -13,7 +13,7 @@ export default new Button({
             const publicViewRoleList: { [key: string]: string } = {
               "1135995107842195550": "1143236724718317673", // EPic Park
               "1113339391419625572": "1113451646031241316", // Epic Wonderland
-              "839731097473908767" : "839731097473908767", // Blackstone
+              "839731097473908767" : "839731097633423389", // Blackstone
               "871269916085452870" : "1130783135156670504", // Luminescent
              };
 	    

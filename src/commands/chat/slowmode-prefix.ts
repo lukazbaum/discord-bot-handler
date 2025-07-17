@@ -32,6 +32,16 @@ export default new PrefixCommand({
     '1075867596534055094', // luminescent Member Rooms
     '1169317414748569701', // Luminescent Member Rooms II
     '1075868205396017152', // Luminescent Plebs Rooms
+    '1113414355669753907',// epic wonderland staff
+    '1113414451912257536', // epic wonderland booster
+    '1391112199367557280', // epic wonderland booster 1
+    '1115072766878691428', // epic wonderland supreme land
+    '1151855336865665024', // epic wonderland supreme land 1
+    '1320055421561471048', // epic wonderland supreme land 2
+    '1391110746477428887', // epic wonderland supreme land 3
+    '1391110806661369927', // epic wonderland supreme land 4
+    '1391110893101912215', // epic wonderland supreme land 5
+    '1115357822222348319', // epic wonderland Epic Host Land
   ],
 
   async execute(message: Message): Promise<void> {

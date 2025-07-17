@@ -37,13 +37,16 @@ export default new PrefixCommand({
 		'808109909266006087',
 		'1170776642080215081',
 		'825060923768569907',
-		'1113414355669753907',// epic wonderland play land staff
-		'1115772256052846632', /// epic wonderland staff
-		'1113414451912257536', // epic wonderland booster
-		'1115072766878691428', // epic wonderland supreme land
-		'1151855336865665024', // epic wonderland supreme land 1
-		'1320055421561471048', // epic wonderland supreme land 2
-		'1115357822222348319', // epic wonderland Epic Host Land
+    '1113414355669753907',// epic wonderland staff
+    '1113414451912257536', // epic wonderland booster
+    '1391112199367557280', // epic wonderland booster 1
+    '1115072766878691428', // epic wonderland supreme land
+    '1151855336865665024', // epic wonderland supreme land 1
+    '1320055421561471048', // epic wonderland supreme land 2
+    '1391110746477428887', // epic wonderland supreme land 3
+    '1391110806661369927', // epic wonderland supreme land 4
+    '1391110893101912215', // epic wonderland supreme land 5
+    '1115357822222348319', // epic wonderland Epic Host Land
 		'839731102281105409', // Blacstone Knights Hall
 		'839731101885923345', // Blackstone wizards tower
 		'839731101622075415', // Blacstone Dragon Cave
@@ -76,7 +79,7 @@ export default new PrefixCommand({
 			// object is guildId:RoleId
 			const modRoleList: { [key: string]: string } = {
 				"1135995107842195550": "1148992217202040942", //epic park
-				"801822272113082389": "807826290295570432", // epic
+				"839731097473908767": "845499229429956628", // blacksone
 				"1113339391419625572": "1113407924409221120", // epic wonderland staff
 				"871269916085452870": "871393325389844521", // Luminescent Staff
 			};
@@ -93,40 +96,38 @@ export default new PrefixCommand({
 
 			}
 
-			let island = await getisland(message.channel.id)
-			let addids = await addedusers(message.channel.id)
-			let userlist = " "
+      let island = await getisland(message.channel.id);
+      let addids = await addedusers(message.channel.id);
 
-			for (let i = 0; i < addids.length; i++) {
-				userlist = await userlist.concat(`\n added: <@!${addids[i].user}>`)
-			}
+      let userlist = "";
+      for (let i = 0; i < addids.length; i++) {
+        userlist += `\nadded: <@!${addids[i].user}>`;
+      }
 
-			let ownerlist = ""
-			let cowners = [island.user,
-				island.cowner1,
-				island.cowner2,
-				island.cowner3,
-				island.cowner4,
-				island.cowner5,
-				island.cowner6,
-				island.cowner7]
+      let ownerlist = "";
+      if (island.user) ownerlist += `\n**owner:** <@!${island.user}>`;
 
-			const filteredOwners: string[] = cowners.filter((s): s is string => !!(s));
+      const cowners = [
+        island.cowner1, island.cowner2, island.cowner3,
+        island.cowner4, island.cowner5, island.cowner6, island.cowner7
+      ].filter(Boolean).filter(uid => uid !== island.user);
 
-			for (let i = 0; i < filteredOwners.length; i++) {
-				ownerlist = await ownerlist.concat(`\nco-owner: <@!${filteredOwners[i]}>`)
-			}
+      for (const id of cowners) {
+        ownerlist += `\nco-owner: <@!${id}>`;
+      }
 
-			let embed = new EmbedBuilder()
-				.setTitle("Channel Locking")
-				.setDescription(`
-				    *Locking Channels removes the ability for all users to chat except added users.*
-				    *Channel is still publicly visible. hide/unhide affects visibility*\n
-				    __Members Not Affected by Lock:__
-				     ${userlist}
-				     ${ownerlist}
-				     `)
-				.setColor('#097969')
+      console.log("owner list:", ownerlist);
+
+      let embed = new EmbedBuilder()
+        .setTitle("Channel Locking")
+        .setDescription(`
+        *Locking Channels removes the ability for all users to chat except added users and owners.*
+        *Channel is still publicly visible. hide/unhide affects visibility*\n
+        __Members Not Affected by Lock:__
+        ${userlist || "None"}
+        ${ownerlist || "None"}
+        `)
+        .setColor('#097969');
 
 			const row: any = new ActionRowBuilder()
 				.addComponents(

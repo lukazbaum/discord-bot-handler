@@ -38,10 +38,14 @@ export default new PrefixCommand({
 			'1219009472593399909', //epic park quaruntine
 			'1113414355669753907',// epic wonderland staff
 			'1113414451912257536', // epic wonderland booster
+      '1391112199367557280', // epic wonderland booster 1
 			'1115072766878691428', // epic wonderland supreme land
 			'1151855336865665024', // epic wonderland supreme land 1
 			'1320055421561471048', // epic wonderland supreme land 2
-			'1115357822222348319', // epic wonderland Epic Host Land
+      '1391110746477428887', // epic wonderland supreme land 3
+      '1391110806661369927', // epic wonderland supreme land 4
+      '1391110893101912215', // epic wonderland supreme land 5
+      '1115357822222348319', // epic wonderland Epic Host Land
 			'872692223488184350', // Blackstone Nitro Islands
 			'1019301054120210482', // Blackstone Donors
 			'967657150769942578', // Blackstone Staff

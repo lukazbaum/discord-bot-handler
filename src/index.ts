@@ -29,6 +29,7 @@ export const client: ExtendedClient = new ExtendedClient({
 
 (async (): Promise<void> => {
     await client.login(process.env.CLIENT_TOKEN);
+
     // You can delete commands like this:
     // await client.deleteCommand(RegisterType, 'command_id_here');
     // await client.deleteCommands(RegisterType, ['command_id_1', 'command_id_2']);
