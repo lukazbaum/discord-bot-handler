@@ -46,20 +46,20 @@ const EPIC_RPG_ID             = '555955826880413696';
 
 // When doing your very first backfill, start *after* this message ID.
 // On subsequent runs, the script will load per‐channel cursors from LAST_IDS_FILE.
-const START_AFTER_ID          = '1367369155430580337';
+const START_AFTER_ID          = '1375984017446535200';
 
 // Categories (by ID or lowercase name) in which “unseal” messages appear:
 const ALLOWED_CATEGORY_IDS    = new Set<string>([
   '1140190313915371530',
-  '1152913513598173214',
-  '1137026511921229905',
-  '1147909067172483162',
-  '1147909156196593787',
-  '1147909539413368883',
-  '1147909373180530708',
-  '1147909282201870406',
-  '1147909200924643349',
-  '1219009472593399909'
+ // '1152913513598173214',
+ // '1137026511921229905',
+ // '1147909067172483162',
+ // '1147909156196593787',
+ // '1147909539413368883',
+ // '1147909373180530708',
+ // '1147909282201870406',
+ // '1147909200924643349',
+ // '1219009472593399909'
 ]);
 const ALLOWED_CATEGORY_NAMES  = new Set<string>([
   'eternal logs',
@@ -219,88 +219,69 @@ async function scanChannel(
       progressBar.setTotal(totalMessages);
       progressBar.update(totalMessages);
 
-      // Only consider plain‐text messages from EpicRPG bot
       if (msg.author.id !== EPIC_RPG_ID) continue;
-      const text = msg.content.trim();
+      const lines = msg.content.split('\n');
+      for (const line of lines) {
+        // 1️⃣ Unseal line (Discord markdown)
+        const unsealLine = line.match(
+          /^\*\*(.+?)\*\* unsealed \*\*the eternity\*\* for \*\*(\d+d)\*\* \((-?[\d,]+)[^)]*\)/i
+        );
+        if (unsealLine) {
+          const playerName = unsealLine[1];
+          const duration = unsealLine[2];
+          const flamesCost = parseInt(unsealLine[3].replace(/,/g, ''), 10);
+          console.log('DEBUG: Matched unseal:', { playerName, duration, flamesCost });
 
-      // ───── Step 1: Look for the “unsealed the eternity for … (-X flames)” line ─────
-      // Example: “jennyb unsealed the eternity for 7d (-12,775 <:eternityflame:…>)”
-      const unsealLine = text.match(
-        /^(\S+)\s+unsealed the eternity for\s+[\d,]+d\s*\(-\s*([\d,]+)\s*<:eternityflame:.*?>/i
-      );
-      if (unsealLine) {
-        const playerName = unsealLine[1];
-        const flamesCost = parseInt(unsealLine[2].replace(/,/g, ''), 10);
-        const userId = await tryFindUserIdByName(msg.guild!, playerName);
-        if (!userId || !knownUserIds.has(userId)) {
+          const userId = await tryFindUserIdByName(msg.guild!, playerName);
+          if (!userId || !knownUserIds.has(userId)) continue;
+
+          const profile = await getEternityProfile(userId, guild.id);
+          const currentEternity = profile?.current_eternality ?? 0;
+          const username = profile?.username || playerName;
+
+          pendingUnseals.set(msg.channel.id, {
+            userId,
+            guildId: guild.id,
+            flamesCost,
+            unsealDate: new Date(msg.createdTimestamp),
+            currentEternity,
+            username
+          });
           continue;
         }
 
-        // Fetch the player’s current eternity level
-        const profile = await getEternityProfile(userId, guild.id);
-        const currentEternity = profile?.current_eternality ?? 0;
-        const username = profile?.username || playerName;
+        // 2️⃣ TT line (Discord markdown)
+        const ttLine = line.match(
+          /^\*\*(.+?)\*\* got (\d+) [^*]+?\*\*time travels\*\*/i
+        );
+        if (ttLine) {
+          const pending = pendingUnseals.get(msg.channel.id);
+          if (!pending) continue;
+          const bonusTT = parseInt(ttLine[2].replace(/,/g, ''), 10);
 
-        // Queue up a “pending unseal” for this channel → we expect a “got X TT” message soon
-        pendingUnseals.set(channel.id, {
-          userId,
-          guildId: guild.id,
-          flamesCost,
-          unsealDate: new Date(msg.createdTimestamp),
-          currentEternity,
-          username
-        });
-        continue;
-      }
+          console.log(
+            `📤 Recording historical unseal for ${pending.username} (${pending.userId}):` +
+            ` -${pending.flamesCost} 🔥, +${bonusTT} TT @ Eternity ${pending.currentEternity}`
+          );
 
-      // ───── Step 2: Look for the “got X time travels” line ─────
-      // Example: “jennyb got 29 <t:…> time travels”
-      const ttLine = text.match(
-        /^(\S+)\s+got\s+([\d,]+)\s*(?::timetravel:|<:timetravel:[^>]*>|🌀|time travels?)/i
-      );
-      if (ttLine) {
-        // If we have a pending entry for THIS CHANNEL, complete it
-        const pending = pendingUnseals.get(channel.id);
-        if (!pending) {
+          await addEternalUnseal(
+            pending.userId,
+            pending.guildId,
+            pending.flamesCost,
+            pending.currentEternity,
+            bonusTT,
+            pending.username,
+            pending.unsealDate
+          );
+          await getEternityProfile(pending.userId, pending.guildId);
+
+          try { await msg.react('🔓'); } catch {}
+          pendingUnseals.delete(msg.channel.id);
+          totalUnseals++;
           continue;
         }
-
-        const bonusTT = parseInt(ttLine[2].replace(/,/g, ''), 10);
-
-        console.log(
-          `📤 Recording historical unseal for ${pending.username} (${pending.userId}):` +
-          ` -${pending.flamesCost} 🔥, +${bonusTT} TT @ Eternity ${pending.currentEternity}`
-        );
-
-        // Insert into DB
-        await addEternalUnseal(
-          pending.userId,
-          pending.guildId,
-          pending.flamesCost,
-          pending.currentEternity,
-          bonusTT,
-          pending.username,
-          pending.unsealDate
-        );
-
-        // Refresh profile cache
-        await getEternityProfile(pending.userId, pending.guildId);
-
-        // React (optional—skip if you don’t want reactions during backfill)
-        try {
-          await msg.react('🔓');
-        } catch {}
-
-        // Update any plan logic if you store “plan” in DB
-        // (replicating your real-time plan update)
-        // …
-        // (You can omit this block if you’ll run plan‐updater separately.)
-
-        pendingUnseals.delete(channel.id);
-        totalUnseals++;
       }
     }
-
     // Advance cursor to the latest message we just processed
     const lastMessage = sorted.last();
     if (!lastMessage) break;
