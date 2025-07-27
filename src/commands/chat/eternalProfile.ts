@@ -47,15 +47,15 @@ export default new PrefixCommand({
       const totalFlamesBurned = totalFlamesFromUnseals + totalFlamesFromDungeons;
       const highestEternity = eternityProfile?.current_eternality || 0;
 
-      const firstUnsealDate = history.length ? new Date(history[history.length - 1].createdAt) : null;
-      const latestUnsealDate = history.length ? new Date(history[0].createdAt) : null;
+      const firstUnsealDate = history.length ? new Date(history[history.length - 1].unsealDate) : null;
+      const latestUnsealDate = history.length ? new Date(history[0].unsealDate) : null;
 
       // Trends: last 5 bonus TT efficiency
       const trends = history
-        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort((a: any, b: any) => new Date(b.unsealDate).getTime() - new Date(a.unsealDate).getTime())
         .slice(0, 5)
         .map((h: any) => ({
-          date: new Date(h.createdAt),
+          date: new Date(h.unsealDate),
           bonusTT: h.bonusTT || 0,
           eternityLevel: h.eternityLevel || 'N/A'
         }));

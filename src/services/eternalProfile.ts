@@ -27,7 +27,7 @@ export interface EternalProfileData {
   unsealHistory?: {
     flamesCost: number;
     bonusTT: number;
-    createdAt: string | Date;
+    unsealDate: string | Date;
     eternalityAtUnseal?: number;
   }[];
 
@@ -62,7 +62,7 @@ export async function loadEternalProfile(userId: string, guildId: string): Promi
     unsealHistory: unsealHistory.map(u => ({
       flamesCost: u.flamesCost,
       bonusTT: u.bonusTT,
-      createdAt: u.createdAt,
+      unsealDate: u.unsealDate,
       eternalityAtUnseal: u.eternityLevel ?? undefined
     })),
     dungeonWins: dungeonWins.map(d => ({

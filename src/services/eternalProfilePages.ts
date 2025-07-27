@@ -85,7 +85,7 @@ export async function buildEternalProfilePages(
       { name: '🏆 Current Eternity', value: currentEternity.toLocaleString(), inline: true },
       { name: '📌 Target Goal', value: `${plannedTarget}`, inline: true },
       { name: '📅 Last Unseal Date', value: lastUnseal
-          ? time(new Date(lastUnseal.createdAt), TimestampStyles.ShortDate)
+          ? time(new Date(lastUnseal.unsealDate), TimestampStyles.ShortDate)
           : 'N/A', inline: true },
       { name: '⏳ Last Unseal TT', value: `${lastUnsealTT.toLocaleString()} TT`, inline: true },
       { name: '💠 Last Bonus TT', value: `${lastBonusTT.toLocaleString()} 🌀`, inline: true },
@@ -154,7 +154,7 @@ export async function buildEternalProfilePages(
         ? unsealHistory
           .slice(0, 10)
           .map(u => {
-            const dateStr = time(new Date(u.createdAt), TimestampStyles.ShortDate);
+            const dateStr = time(new Date(u.unsealDate), TimestampStyles.ShortDate);
             const flames  = `🔥 -${(u.flamesCost ?? 0).toLocaleString()} flames`;
             const bonus   = `🌀 +${(u.bonusTT ?? 0).toLocaleString()} TT`;
             const lvl     = `📈 E-${u.eternalityAtUnseal ?? "?"}`;
