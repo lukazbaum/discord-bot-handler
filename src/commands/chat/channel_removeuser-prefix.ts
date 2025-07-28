@@ -64,113 +64,73 @@ export default new PrefixCommand({
     '1075868205396017152', // Luminescent Plebs Rooms
 
   ],
-    async execute(message: Message): Promise<void> {
-	try{
-		if(message.channel.type !== ChannelType.GuildText) return;
-                // This whole Block checks for the channel owner and if not channel owner
-                 // if its not the channel owner, checks for the staff role
-                 // if user is a staff member, they can run the command
-                 // if user is a channel owner or a cowner on the channel / mentioned channel,
-                 // then they are authorized.
+  async execute(message: Message): Promise<void> {
+    try {
+      if (message.channel.type !== ChannelType.GuildText) return;
 
-        let getOwner = await isOwner(message.author.id)
-        let checkStaff = await  message.guild.members.cache.get(message.author.id)
-        let channel = message.channel.id
-		let serverId = message.guild.id
+      // Ensure channel owner or staff
+      const getOwner = await isOwner(message.author.id);
+      const isChannelOwner = getOwner?.some(o => o.channel === message.channel.id);
+      const member = message.guild.members.cache.get(message.author.id);
+      const modRoles = {
+        '1135995107842195550': '1148992217202040942',
+        '1113339391419625572': '1113407924409221120',
+        '839731097473908767': '845499229429956628',
+        '871269916085452870': '871393325389844521'
+      };
+      const staffRole = modRoles[message.guild.id];
+      if (!isChannelOwner && !(member?.roles.cache.has(staffRole))) {
+        await message.reply('You must be the channel owner or staff to run this command.');
+        return;
+      }
 
-                //handles null values
-        let checkOwner = getOwner && getOwner.some((authorized) => authorized.channel === channel)
+      // Parse target ID or mention without fetching guild member
+      const parts = message.content.trim().split(/\s+/);
+      const rawTarget = parts[2];
+      if (!rawTarget) {
+        await message.reply('Please specify a valid user mention or user ID.');
+        return;
+      }
+      let cleanId: string | null = null;
+      const mentionMatch = rawTarget.match(/^<@!?(\d+)>$/);
+      if (mentionMatch) {
+        cleanId = mentionMatch[1];
+      } else if (/^\d{17,19}$/.test(rawTarget)) {
+        cleanId = rawTarget;
+      } else {
+        await message.reply('Please specify a valid user mention or user ID.');
+        return;
+      }
 
-                // object is guildId:RoleId
+      // Remove from addedusers even if user left server
+      const adds = await addedusers(message.channel.id);
+      if (adds.some(u => u.user === cleanId)) {
+        await removeuser(cleanId, message.channel.id);
+      }
 
-        const modRoleList: { [key: string]: string } = {
-            "1135995107842195550": "1148992217202040942",
-            "801822272113082389": "807826290295570432",
-            "1113339391419625572":"1113407924409221120", // epic wonderland staff
-          "839731097473908767": "845499229429956628", // blackstone staff royal guards
-          "871269916085452870": "871393325389844521", // Luminescent Staff
+      // Remove from cowners
+      const channelInfo = await getisland(message.channel.id);
+      const cownerKeys = Object.entries(channelInfo)
+        .filter(([key, val]) => val === cleanId)
+        .map(([key]) => key.replace(/cowner/, ''));
+      for (const idx of cownerKeys) {
+        await removecowners(message.channel.id, idx);
+      }
 
-        };
+      // Remove permission overwrite if exists
+      try {
+        await message.channel.permissionOverwrites.delete(cleanId);
+      } catch {}
 
-        const roleId = Object.entries(modRoleList).find(([key, val]) => key === serverId)?.[1];
+      const embed = new EmbedBuilder()
+        .setTitle('Channel Manager: Remove User')
+        .setDescription(`<@!${cleanId}> has been removed\n*To add the user back, use ep adduser*`)
+        .setColor('#097969');
 
-        if(!checkOwner){
-            if(!(checkStaff.roles.cache.has(roleId))){
-                await message.reply('you must be an owner/cowner of this channel to run this command')
-                    return;
+      await message.reply({ embeds: [embed] });
 
-            }else if(checkStaff.roles.cache.has(roleId)){
-                console.log("Remove user Ran In: ", message.channel.id, "by", message.author.id)
-            }
-        }
-
-		let messageContent = message.content.toString().toLowerCase();
-        let messageContentSplit = messageContent.split(" ");
-        let userName = message.mentions.users.first();
-        let id;
-        if(!userName){
-            if(Number.isInteger(Number(messageContentSplit[0]))){
-                id = messageContentSplit[0]
-            }else{
-                await message.reply("please specify a valid userid or username")
-                    return;
-            }
-        }else if(userName) {
-            id = message.mentions.users.first().id
-        }
-
-		let cleanid = await id.replace(/\D/g, '');
-        const checkAdds = await addedusers(message.channel.id)
-        const channelInfo = await getisland(message.channel.id)
-        const isAdded = checkAdds.some((added) => added.user === cleanid)
-        const cownersArray = [channelInfo.cowner1,
-                                    channelInfo.cowner2,
-	    				            channelInfo.cowner3,
-                                    channelInfo.cowner4,
-                                    channelInfo.cowner5,
-                                    channelInfo.cowner6,
-                                    channelInfo.cowner7]
-        const filteredOwners: string[] = cownersArray.filter((s): s is string => !!(s));
-           
-        let cowners = ' '
-        let cownerRole = '1246691890183540777'
-
-        if(id  === message.author.id){
-            await message.reply("Seriously? <a:ep_bozabonk:1164312811468496916>")
-		  	    return;
-        }
-
-        if(isAdded) {
-	    		await removeuser(cleanid, message.channel.id)
-        }
-
-        Object.entries(channelInfo).forEach(([key, value]) => {
-            cowners = cowners.concat(`${key}:${value},`)
-		});
-
-        let cownersTemp = cowners.split(",").map(pair => pair.split(":"));
-        const result = Object.fromEntries(cownersTemp);
-
-        function getOwners(obj, value) {
-			return Object.keys(obj)
-		    		.filter(key => obj[key] === value);
-        }
-
-        let remuser = getOwners(result, cleanid)
-        if(remuser[0]){
-            let ownerid = remuser[0].slice(-1)
-		    	await removecowners(message.channel.id, ownerid)
-        }
-        await message.channel.permissionOverwrites.delete(cleanid)
-
-        let embed = new EmbedBuilder()
-            .setTitle("Channel Manager: Remove User")
-			.setDescription(`<@!${cleanid}> has been removed
-				 \n *to add user back use ep adduser*`)
-			.setColor(`#097969`)
-
-	   	await message.reply({embeds:[embed]})
-	}catch(err)
-  	{console.log(err)}
-    },
+    } catch (err) {
+      console.error('Removeuser command error:', err);
+    }
+  }
 });
