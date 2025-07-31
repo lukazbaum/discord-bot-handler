@@ -228,7 +228,8 @@ The following table explains the optional configuration arguments available for 
 
 ## Commands
 
-This bot supports several types of commands, including Slash Commands, Context Menus, Prefix Commands, and Autocomplete Commands.
+This bot supports several types of commands, including Slash Commands, Context Menus, Prefix Commands, and Autocomplete Commands. The folders within the command folder can be renamed as needed, and subfolders can also be created to organize commands further.
+
 
 <details>
 <summary><b>Slash Commands</b></summary> You can find more examples at: <a href="https://github.com/lukazbaum/discord-bot-handler/tree/master/src/commands/slash">commands/slash</a>
@@ -342,6 +343,7 @@ export default new SlashCommand({
 ## Components
 
 This bot supports all types of components, including Buttons, Select Menus, and Modals.
+The folders within the component folder can be renamed as needed, and subfolders can also be created to organize components further.
 
 ### Component Arguments
 
