@@ -636,7 +636,7 @@ await interaction.reply({ content: coloredMessage });
 - [x] Enhance the Embed Paginator to support non-interaction-based commands.
 - [x] Add a command argument which logs command usage.
 - [x] Enhance the Embed Paginator to support custom components.
-- [ ] Increase customization options for denied command responses.
+- [x] Increase customization options for denied command responses.
 - [ ] Add command-line tools to quickly create commands, components and events with predefined templates.
 - [ ] Implement a plugin system, enabling features like a ticket system to be seamlessly integrated into the project with a single line of code.
 

@@ -10,9 +10,7 @@ import {
   AutocompleteInteraction,
   Channel,
   ChatInputCommandInteraction,
-  Colors,
   ContextMenuCommandInteraction,
-  EmbedBuilder,
   Interaction,
   Message,
   MessageFlags,
@@ -109,7 +107,7 @@ export class CommandHandler {
       ? config.deniedCommandReplies.cooldowns[cooldown.type]?.replace('{time}', cooldown.timeLeft.toString())
       : config.deniedCommandReplies.specific[reason ?? ''] || config.deniedCommandReplies.general;
 
-    const replyEmbed: EmbedBuilder = new EmbedBuilder().setColor(Colors.Red).setTitle(reply);
+    const replyEmbed = config.deniedCommandReplies.replyFormat(reply);
 
     await (context.reply?.({
       embeds: [replyEmbed],

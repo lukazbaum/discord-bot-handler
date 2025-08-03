@@ -1,6 +1,8 @@
 import { Config, getLogChannelPresetEmbed } from './handler';
 import {
+  Colors,
   type ContextMenuCommandInteraction,
+  EmbedBuilder,
   GatewayIntentBits,
   type Interaction,
   Message,
@@ -11,9 +13,9 @@ const defaultConfig: Config = {
   prefix: '!',
   customPrefixes: [
     {
-      guildId: "GUILD_ID",
-      prefix: "?"
-    }
+      guildId: 'GUILD_ID',
+      prefix: '?',
+    },
   ],
 
   ownerId: 'YOUR_USER_ID',
@@ -22,8 +24,13 @@ const defaultConfig: Config = {
   componentsFolder: 'components',
   defaultIntents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent],
 
-  /* More customizability coming soon */
   deniedCommandReplies: {
+    replyFormat: (reply: string) => {
+      return new EmbedBuilder()
+        .setColor(Colors.Red)
+        .setTitle('Access Denied')
+        .setDescription(reply);
+    },
     general: 'You are not allowed to use this command.',
     specific: {
       allowedUsers: 'This command is restricted to specific users.',
